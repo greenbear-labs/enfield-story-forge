@@ -1,0 +1,45 @@
+rules_version = '2';
+
+// Default deny. A user can reach a workspace and everything under it only if
+// their uid is in that workspace's memberIds.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isMember(wsId) {
+      return signedIn()
+        && request.auth.uid in get(/databases/$(database)/documents/workspaces/$(wsId)).data.memberIds;
+    }
+
+    match /workspaces/{wsId} {
+      // A missing doc reads as null so the app can check whether the personal workspace exists.
+      allow get: if signedIn() && (resource == null || request.auth.uid in resource.data.memberIds);
+      // Queries must filter with memberIds array-contains the user's uid.
+      allow list: if signedIn() && request.auth.uid in resource.data.memberIds;
+
+      allow create: if signedIn()
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.memberIds == [request.auth.uid];
+
+      // Members can update; the owner never changes, and only the owner changes membership.
+      allow update: if signedIn()
+        && request.auth.uid in resource.data.memberIds
+        && request.resource.data.ownerId == resource.data.ownerId
+        && (request.resource.data.memberIds == resource.data.memberIds
+            || resource.data.ownerId == request.auth.uid);
+
+      allow delete: if signedIn() && resource.data.ownerId == request.auth.uid;
+
+      // entries, bodies, links, snapshots, and anything added later.
+      match /{document=**} {
+        allow read, write: if isMember(wsId);
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

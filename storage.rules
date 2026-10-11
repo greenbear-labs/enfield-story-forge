@@ -1,0 +1,24 @@
+rules_version = '2';
+
+// Default deny. Files live under workspaces/{wsId}/... and only that workspace's
+// members can use them. Uploads must be images under 10 MB.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /workspaces/{wsId}/{allPaths=**} {
+      function isMember() {
+        return request.auth != null
+          && request.auth.uid in firestore.get(/databases/(default)/documents/workspaces/$(wsId)).data.memberIds;
+      }
+
+      allow read: if isMember();
+      allow create, update: if isMember()
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+      allow delete: if isMember();
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
