@@ -11,6 +11,7 @@ import {
   signUpWithEmail,
 } from './authActions';
 import { useAuthStore } from './authStore';
+import { safeRedirect } from './safeRedirect';
 
 type Mode = 'signIn' | 'signUp' | 'reset';
 
@@ -19,11 +20,6 @@ const TITLES: Record<Mode, string> = {
   signUp: 'Create an account',
   reset: 'Reset your password',
 };
-
-/** Only follow redirects that stay inside the app. */
-function safeRedirect(redirect?: string): string {
-  return redirect && redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/hub';
-}
 
 export function SignInPage({ redirect }: { redirect?: string }) {
   const navigate = useNavigate();
