@@ -9,6 +9,7 @@ import { entryRoute, entryTypeName } from '../../lib/entries/entryLinks';
 import { useEntries, useEntryMap } from '../../lib/entries/hooks';
 import { recentlyUpdatedFirst } from '../../lib/entries/model';
 import { useAuthStore } from '../auth/authStore';
+import { WritingHabit } from '../desk/WritingHabit';
 import { createShard } from '../shards/shardModel';
 
 interface JourneyStep {
@@ -235,6 +236,10 @@ export function HubPage() {
             </div>
           </form>
         </div>
+        <section className="panel flex flex-col gap-2" data-sec="desk" aria-label="Your writing">
+          <div className="label">Your writing</div>
+          <WritingHabit />
+        </section>
         <div className="grid grid-cols-[1.3fr_1fr] gap-3 max-[900px]:grid-cols-1">
           <div className="panel flex flex-col gap-2">
             <div className="label">Recent</div>

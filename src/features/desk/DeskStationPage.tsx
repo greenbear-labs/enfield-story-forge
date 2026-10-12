@@ -11,6 +11,7 @@ import { StationPage, StationSection } from '../stations/StationPage';
 import { onDesk } from './deskModel';
 import { ManuscriptCard } from './ManuscriptCard';
 import { useManuscriptStats } from './useManuscriptStats';
+import { WritingHabit } from './WritingHabit';
 
 export function DeskStationPage() {
   const navigate = useNavigate();
@@ -51,6 +52,11 @@ export function DeskStationPage() {
               : void navigate({ to: '/outlines' }),
       }}
     >
+      <StationSection title="Your writing">
+        <div className="panel">
+          <WritingHabit />
+        </div>
+      </StationSection>
       <Library manuscripts={manuscripts} loading={books.data === undefined} error={!!books.error} />
     </StationPage>
   );
