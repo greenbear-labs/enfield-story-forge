@@ -41,15 +41,29 @@ const MESSAGES: Record<string, string> = {
   'auth/network-request-failed': 'You seem to be offline. Check your connection.',
   'auth/popup-blocked': 'The browser blocked the Google window. Allow pop-ups and try again.',
   'auth/operation-not-allowed': 'This sign-in method isn’t turned on yet.',
+  'auth/unauthorized-domain':
+    'Google sign-in isn’t allowed on this web address. Use enfield.greenbearlabs.com, or sign in with email.',
+  'auth/account-exists-with-different-credential':
+    'That email already has an account with a different sign-in method. Sign in with email instead.',
+  'auth/web-storage-unsupported':
+    'This browser is blocking what Google sign-in needs. Allow cookies for this site, or sign in with email.',
+  'auth/operation-not-supported-in-this-environment':
+    'Google sign-in doesn’t work in this browser view. Open the site in your browser, or sign in with email.',
 };
 
-/** A calm, human message for an auth error. Returns null when the user just closed the popup. */
+/**
+ * A calm, human message for an auth error. Returns null when the user just
+ * closed the popup. Unknown errors include their code, so a report can say
+ * what actually went wrong.
+ */
 export function authErrorMessage(err: unknown): string | null {
   if (err instanceof FirebaseError) {
     if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
       return null;
     }
-    return MESSAGES[err.code] ?? 'Something went wrong. Please try again.';
+    console.error('Sign-in failed', err);
+    return MESSAGES[err.code] ?? `Something went wrong (${err.code}). Please try again.`;
   }
+  console.error('Sign-in failed', err);
   return 'Something went wrong. Please try again.';
 }

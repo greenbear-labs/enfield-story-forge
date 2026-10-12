@@ -13,13 +13,21 @@ service cloud.firestore {
         && request.auth.uid in get(/databases/$(database)/documents/workspaces/$(wsId)).data.memberIds;
     }
 
+    // A personal workspace's id is its owner's uid. Checking that first needs no
+    // document read, and works before the workspace document has synced (a brand
+    // new account, or a first sign-in while offline).
+    function ownsPersonal(wsId) {
+      return signedIn() && request.auth.uid == wsId;
+    }
+
     match /workspaces/{wsId} {
       // A missing doc reads as null so the app can check whether the personal workspace exists.
       allow get: if signedIn() && (resource == null || request.auth.uid in resource.data.memberIds);
       // Queries must filter with memberIds array-contains the user's uid.
       allow list: if signedIn() && request.auth.uid in resource.data.memberIds;
 
-      allow create: if signedIn()
+      // Only personal workspaces for now, so nobody can claim another user's id.
+      allow create: if ownsPersonal(wsId)
         && request.resource.data.ownerId == request.auth.uid
         && request.resource.data.memberIds == [request.auth.uid];
 
@@ -34,7 +42,7 @@ service cloud.firestore {
 
       // entries, bodies, links, snapshots, and anything added later.
       match /{document=**} {
-        allow read, write: if isMember(wsId);
+        allow read, write: if ownsPersonal(wsId) || isMember(wsId);
       }
     }
 
