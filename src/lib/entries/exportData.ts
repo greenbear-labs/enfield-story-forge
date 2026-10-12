@@ -171,8 +171,9 @@ async function readWorkspace(workspaceId: string) {
 }
 
 /** Saves a file to the device. */
-function downloadFile(filename: string, content: string, type: string) {
-  const url = URL.createObjectURL(new Blob([content], { type }));
+export function downloadFile(filename: string, content: string | Blob, type: string) {
+  const blob = typeof content === 'string' ? new Blob([content], { type }) : content;
+  const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
   a.download = filename;

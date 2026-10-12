@@ -75,6 +75,13 @@ function Manuscript({ book }: { book: Entry }) {
           >
             Chapter Breakdown
           </Link>
+          <Link
+            to="/desk/$bookId/compile"
+            params={{ bookId: book.id }}
+            className="font-semibold text-accent"
+          >
+            Compile and export
+          </Link>
         </div>
       </header>
 

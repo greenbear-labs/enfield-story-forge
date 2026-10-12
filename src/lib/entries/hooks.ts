@@ -111,6 +111,22 @@ export function useBody(entryId: string | null): Live<EntryBody | null> {
   );
 }
 
+/** Every rich text body in the workspace, by entry id. For compiling a whole book. */
+export function useBodies(): Live<Map<string, unknown>> {
+  const ws = useWorkspaceId();
+  const live = useQueryListener<EntryBody>(
+    ws ? `bodies:${ws}` : null,
+    () => query(collection(getFirebase().db, paths.bodies(ws!))),
+    // A body's id is its entry's id.
+    (snap) => ({ ...(snap.data() as EntryBody), entryId: snap.id }),
+  );
+  const data = useMemo(
+    () => live.data && new Map(live.data.map((b) => [b.entryId, b.doc as unknown])),
+    [live.data],
+  );
+  return { data, error: live.error };
+}
+
 /** An entry's snapshots, newest first. */
 export function useSnapshots(entryId: string | null): Live<Snapshot[]> {
   const ws = useWorkspaceId();

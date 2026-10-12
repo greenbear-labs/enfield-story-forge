@@ -27,6 +27,7 @@ import { OutlinePage } from '../features/outlines/OutlinePage';
 import { OutlinesStationPage } from '../features/outlines/OutlinesStationPage';
 import { BreakdownPage } from '../features/desk/BreakdownPage';
 import { ChapterPage } from '../features/desk/ChapterPage';
+import { CompilePage } from '../features/desk/CompilePage';
 import { DeskStationPage } from '../features/desk/DeskStationPage';
 import { ManuscriptPage } from '../features/desk/ManuscriptPage';
 import { ScenePage } from '../features/desk/ScenePage';
@@ -205,6 +206,14 @@ const breakdownRoute = createRoute({
     return <BreakdownPage key={bookId} bookId={bookId} />;
   },
 });
+const compileRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/desk/$bookId/compile',
+  component: function CompileRouteComponent() {
+    const { bookId } = compileRoute.useParams();
+    return <CompilePage key={bookId} bookId={bookId} />;
+  },
+});
 const chapterRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/desk/chapters/$chapterId',
@@ -322,6 +331,7 @@ const routeTree = rootRoute.addChildren([
     deskRoute,
     manuscriptRoute,
     breakdownRoute,
+    compileRoute,
     chapterRoute,
     sceneRoute,
     charactersRoute,
