@@ -1,14 +1,14 @@
 import { Link } from '@tanstack/react-router';
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Icon } from '../../components/ui/Icon';
 import { Loading } from '../../components/ui/Loading';
 import type { Entry } from '../../data/types';
 import { saveBody, updateEntry } from '../../lib/entries/entries';
-import { useBody, useEntries, useEntry } from '../../lib/entries/hooks';
+import { useBody, useEntries, useEntry, useLinks } from '../../lib/entries/hooks';
 import { useAutosaved } from '../../lib/entries/useAutosaved';
 import { useAuthStore } from '../auth/authStore';
-import { manuscriptScenes, sceneText, words } from './deskModel';
+import { manuscriptScenes, sceneText, syncMentions, words } from './deskModel';
 import type { ProseSave } from './ProseEditor';
 import { SceneSetup } from './SceneSetup';
 
@@ -79,10 +79,27 @@ function SceneDesk({ scene }: { scene: Entry }) {
   const title = useAutosaved(scene.title, (v) =>
     updateEntry(ws, scene.id, { title: v.trim() || 'Untitled scene' }),
   );
+  const characters = useEntries('character');
+  const mentionables = useMemo(
+    () =>
+      (characters.data ?? [])
+        .filter((c) => c.title.trim())
+        .map((c) => ({ id: c.id, label: c.title.trim(), kind: 'Character' }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
+    [characters.data],
+  );
+  // Who the scene mentions now, so a save can drop the links it no longer needs.
+  const mentionLinks = useLinks({ kind: 'mention', fromId: scene.id });
+  const mentioned = useRef<string[]>([]);
+  useEffect(() => {
+    mentioned.current = (mentionLinks.data ?? []).map((l) => l.toId);
+  }, [mentionLinks.data]);
   const onSave = useCallback(
-    ({ doc, words }: ProseSave) => {
+    ({ doc, words, mentions }: ProseSave) => {
       saveBody(ws, scene.id, doc);
       updateEntry(ws, scene.id, { wordCount: words });
+      syncMentions(ws, scene.id, mentioned.current, mentions);
+      mentioned.current = mentions;
     },
     [ws, scene.id],
   );
@@ -169,6 +186,7 @@ function SceneDesk({ scene }: { scene: Entry }) {
                 onSave={onSave}
                 onWords={setCount}
                 label={`${scene.title || 'Untitled scene'}: the prose`}
+                mentionables={mentionables}
               />
             </Suspense>
           )}

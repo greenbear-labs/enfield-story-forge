@@ -29,6 +29,7 @@ import {
   relationNotes,
   type FieldDef,
 } from './characterModel';
+import { AppearsIn } from '../desk/AppearsIn';
 import { RoleInput } from './RoleInput';
 
 export function CharacterPage({ characterId }: { characterId: string }) {
@@ -204,6 +205,7 @@ function CharacterEditor({ character }: { character: Entry }) {
         </Module>
       </section>
 
+      <AppearsIn entryId={character.id} name={character.title || 'this character'} />
       <FromShards characterId={character.id} />
     </>
   );

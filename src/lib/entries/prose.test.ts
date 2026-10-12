@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { countWords, proseText, proseToMarkdown } from './prose';
+import { countWords, mentionIds, proseText, proseToMarkdown } from './prose';
 
 const doc = {
   type: 'doc',
@@ -47,5 +47,26 @@ describe('prose', () => {
     expect(proseText(undefined)).toBe('');
     expect(proseText({ type: 'doc' })).toBe('');
     expect(proseToMarkdown({ type: 'doc', content: [{ nope: true }] })).toBe('');
+  });
+
+  it('reads @mentions as names and lists who is mentioned', () => {
+    const withMentions = {
+      type: 'doc',
+      content: [
+        {
+          type: 'paragraph',
+          content: [
+            { type: 'mention', attrs: { id: 'c1', label: 'Mira' } },
+            { type: 'text', text: ' saw ' },
+            { type: 'mention', attrs: { id: 'c2', label: 'Tam' } },
+            { type: 'text', text: ' and ' },
+            { type: 'mention', attrs: { id: 'c1', label: 'Mira' } },
+          ],
+        },
+      ],
+    };
+    expect(proseText(withMentions)).toBe('Mira saw Tam and Mira');
+    expect(mentionIds(withMentions)).toEqual(['c1', 'c2']);
+    expect(mentionIds(doc)).toEqual([]);
   });
 });
