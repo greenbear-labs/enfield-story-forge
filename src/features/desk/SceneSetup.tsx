@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router';
 import { useMemo, useState } from 'react';
 import type { Entry } from '../../data/types';
 import { updateEntry } from '../../lib/entries/entries';
@@ -5,7 +6,14 @@ import { useEntries, useLinks } from '../../lib/entries/hooks';
 import { useAutosaved } from '../../lib/entries/useAutosaved';
 import { useAuthStore } from '../auth/authStore';
 import { filterCast } from '../characters/characterModel';
-import { childrenOf, SCENE_FIELDS, SCENE_TYPES, sceneText, scenePov } from './deskModel';
+import {
+  childrenOf,
+  SCENE_FIELDS,
+  SCENE_TYPES,
+  sceneText,
+  scenePov,
+  setScenePlace,
+} from './deskModel';
 import { plotlineColor, setScenePlotline } from './plotlineModel';
 
 /**
@@ -53,6 +61,7 @@ export function SceneSetup({ scene, narrow = false }: { scene: Entry; narrow?: b
             ))}
           </select>
         </label>
+        <ScenePlace scene={scene} />
       </div>
       <ScenePlotlines scene={scene} />
       <div className={`grid gap-3 ${narrow ? '' : 'grid-cols-2 max-sm:grid-cols-1'}`}>
@@ -61,6 +70,61 @@ export function SceneSetup({ scene, narrow = false }: { scene: Entry; narrow?: b
         ))}
       </div>
     </>
+  );
+}
+
+/** Where the scene is set: a place from the World Creator, kept as a `location` link. */
+function ScenePlace({ scene }: { scene: Entry }) {
+  const ws = useAuthStore((s) => s.workspaceId)!;
+  const pages = useEntries('page');
+  const notebooks = useEntries('notebook');
+  const links = useLinks({ kind: 'location', fromId: scene.id });
+  const current = (links.data ?? []).map((l) => l.toId);
+  // A pick shows at once; the live link catches up a moment later.
+  const [picked, setPicked] = useState<string | null>(null);
+  const groups = useMemo(() => {
+    const places = (pages.data ?? [])
+      .filter((p) => p.template === 'location' && p.title.trim())
+      .sort((a, b) => a.title.localeCompare(b.title));
+    return (notebooks.data ?? [])
+      .map((n) => ({ notebook: n, places: places.filter((p) => p.fields.notebookId === n.id) }))
+      .filter((g) => g.places.length > 0)
+      .sort((a, b) => a.notebook.title.localeCompare(b.notebook.title));
+  }, [pages.data, notebooks.data]);
+  const value = picked ?? current[0] ?? '';
+
+  return (
+    <label data-sec="world" className="flex min-w-[180px] flex-1 flex-col gap-1">
+      <span className="label">Place</span>
+      {groups.length === 0 && !value ? (
+        <span className="txt text-[0.85rem] text-muted">
+          No places yet.{' '}
+          <Link to="/world" className="font-semibold text-accent hover:underline">
+            Add some in the World Creator
+          </Link>
+        </span>
+      ) : (
+        <select
+          className="txt"
+          value={value}
+          onChange={(e) => {
+            setPicked(e.target.value);
+            setScenePlace(ws, scene.id, current, e.target.value || null);
+          }}
+        >
+          <option value="">No place chosen</option>
+          {groups.map((g) => (
+            <optgroup key={g.notebook.id} label={g.notebook.title || 'Untitled notebook'}>
+              {g.places.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.title}
+                </option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
+      )}
+    </label>
   );
 }
 

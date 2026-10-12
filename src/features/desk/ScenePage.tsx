@@ -8,6 +8,7 @@ import { saveBody, updateEntry } from '../../lib/entries/entries';
 import { useBody, useEntries, useEntry, useLinks } from '../../lib/entries/hooks';
 import { useAutosaved } from '../../lib/entries/useAutosaved';
 import { useAuthStore } from '../auth/authStore';
+import { linkables } from '../world/worldModel';
 import { manuscriptScenes, sceneText, syncMentions, words } from './deskModel';
 import type { ProseHandle, ProseSave } from './ProseEditor';
 import { SceneSetup } from './SceneSetup';
@@ -82,13 +83,16 @@ function SceneDesk({ scene }: { scene: Entry }) {
     updateEntry(ws, scene.id, { title: v.trim() || 'Untitled scene' }),
   );
   const characters = useEntries('character');
+  const worldPages = useEntries('page');
+  const indexes = useEntries('index');
+  // Your cast, and the World Creator's pages: places, peoples, items, and the rest.
   const mentionables = useMemo(
     () =>
-      (characters.data ?? [])
-        .filter((c) => c.title.trim())
-        .map((c) => ({ id: c.id, label: c.title.trim(), kind: 'Character' }))
-        .sort((a, b) => a.label.localeCompare(b.label)),
-    [characters.data],
+      linkables(
+        [...(characters.data ?? []), ...(worldPages.data ?? []), ...(indexes.data ?? [])],
+        scene.id,
+      ),
+    [characters.data, worldPages.data, indexes.data, scene.id],
   );
   // Who the scene mentions now, so a save can drop the links it no longer needs.
   const mentionLinks = useLinks({ kind: 'mention', fromId: scene.id });

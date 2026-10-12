@@ -11,6 +11,7 @@ import { useBody, useEntries, useEntry, useEntryMap, useLinks } from '../../lib/
 import { byOrder } from '../../lib/entries/model';
 import { useAutosaved } from '../../lib/entries/useAutosaved';
 import { useAuthStore } from '../auth/authStore';
+import { AppearsIn } from '../desk/AppearsIn';
 import { syncMentions } from '../desk/deskModel';
 import { PropField } from './PropField';
 import { Breadcrumbs, EntryGate, NotebookLayout } from './WorldFrame';
@@ -201,17 +202,27 @@ function WorldPage({
         )}
       </section>
 
+      <AppearsIn
+        entryId={page.id}
+        title="Used in Story Forge"
+        empty={
+          page.template === 'location'
+            ? 'Not in any scenes yet. Pick it as a scene’s place on the Writer’s Desk, or type @ and its name while you write.'
+            : 'Not in any scenes yet. Type @ and its name while you write a scene on the Writer’s Desk.'
+        }
+      />
       <LinkedFrom entryId={page.id} byId={byId} />
     </>
   );
 }
 
-/** Pages, scenes, and anything else that @links to this entry. */
+/** World pages (and anything else but scenes) that @link to this entry. */
 export function LinkedFrom({ entryId, byId }: { entryId: string; byId: Map<string, Entry> }) {
   const links = useLinks({ kind: 'mention', toId: entryId });
   const from = (links.data ?? [])
     .map((l) => byId.get(l.fromId))
-    .filter((e): e is Entry => !!e && !e.deletedAt && !!entryRoute(e))
+    // Scenes are listed under "Used in Story Forge".
+    .filter((e): e is Entry => !!e && !e.deletedAt && e.type !== 'scene' && !!entryRoute(e))
     .sort(byOrder);
   if (from.length === 0) return null;
   return (
