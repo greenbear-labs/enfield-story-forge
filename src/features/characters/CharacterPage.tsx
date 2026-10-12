@@ -15,6 +15,7 @@ import {
 } from '../../lib/entries/entries';
 import { useEntries, useEntry, useEntryMap, useLinks } from '../../lib/entries/hooks';
 import { useAutosaved } from '../../lib/entries/useAutosaved';
+import { InfoLink } from '../appendix/InfoLink';
 import { useAuthStore } from '../auth/authStore';
 import { ShardCard, cardGrid } from '../shards/ShardCard';
 import {
@@ -255,7 +256,10 @@ function ArcType({ character }: { character: Entry }) {
           </button>
         ))}
       </div>
-      {hint && <p className="text-[0.82rem] text-muted">{hint}</p>}
+      <p className="text-[0.82rem] text-muted">
+        {hint ? `${hint} ` : ''}
+        <InfoLink topic="Character arcs" label="About character arcs" />
+      </p>
     </div>
   );
 }

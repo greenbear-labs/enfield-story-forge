@@ -8,6 +8,7 @@ import type { Entry } from '../../data/types';
 import { removedField, restoreEntry, trashEntry, updateEntry } from '../../lib/entries/entries';
 import { useEntries, useEntry, useEntryMap, useLinks } from '../../lib/entries/hooks';
 import { useAutosaved } from '../../lib/entries/useAutosaved';
+import { InfoLink } from '../appendix/InfoLink';
 import { useAuthStore } from '../auth/authStore';
 import { filterCast } from '../characters/characterModel';
 import {
@@ -248,7 +249,11 @@ function StorySpine({ outline }: { outline: Entry }) {
       <p className="-mt-1.5 text-[0.85rem] text-muted">
         {method === 'theme'
           ? 'The theme-first, ending-first guide: answer in this order, then fill the rest.'
-          : `Numbered in the order “${START_METHODS.find((m) => m.key === method)!.label}” walks it. Fill it in any order.`}
+          : `Numbered in the order “${START_METHODS.find((m) => m.key === method)!.label}” walks it. Fill it in any order.`}{' '}
+        <InfoLink
+          topic={method === 'theme' ? 'The theme-first, ending-first method' : 'The Story Spine'}
+          label="Learn more"
+        />
       </p>
       <div className="panel flex flex-col gap-3">
         <div data-sec="char" className="flex flex-wrap items-end gap-2">
@@ -348,7 +353,7 @@ function BeatBoard({ outline, structure }: { outline: Entry; structure: Structur
       </div>
       <p className="-mt-1.5 text-[0.85rem] text-muted">
         {structure.name}, from {structure.origin}. Each beat shows roughly how far through the story
-        it lands.
+        it lands. <InfoLink topic={structure.name} label={`About ${structure.name}`} />
       </p>
       <div className="panel flex flex-wrap items-end gap-3 !py-3">
         <label className="flex min-w-[220px] flex-1 flex-col gap-1">
