@@ -631,6 +631,11 @@
     background: var(--sec-char-soft);
     color: var(--sec-char);
   }
+  /* A cast name typed without an @: offered as a mention. */
+  .prose-page .name-hint {
+    text-decoration: underline dotted var(--sec-char) 1.5px;
+    text-underline-offset: 4px;
+  }
   .prose-page p.is-editor-empty:first-child::before {
     content: attr(data-placeholder);
     float: left;
