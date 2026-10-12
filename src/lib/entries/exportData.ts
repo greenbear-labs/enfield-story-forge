@@ -4,6 +4,7 @@ import { getFirebase } from '../firebase/client';
 import { paths } from '../firestore/paths';
 import { characterSummary } from '../../features/characters/characterModel';
 import { outlineStructure, outlineSummary } from '../../features/outlines/outlineModel';
+import { notebookMarkdown } from '../../features/world/worldExport';
 import { byOrder, newestFirst } from './model';
 import { proseToMarkdown } from './prose';
 
@@ -16,8 +17,8 @@ export interface BodyRow {
 }
 
 /**
- * Manuscripts (with their prose), outlines, concepts, characters, shard
- * groups, and shards as a readable Markdown file. Trashed entries are left out.
+ * Manuscripts (with their prose), outlines, concepts, characters, World
+ * Creator notebooks, shard groups, and shards as a readable Markdown file. Trashed entries are left out.
  */
 export function toMarkdown(
   entries: Entry[],
@@ -122,6 +123,15 @@ export function toMarkdown(
     if (text(c.fields.notes)) out.push(text(c.fields.notes), '');
   }
 
+  const notebooks = live
+    .filter((e) => e.type === 'notebook')
+    .sort((a, b) => a.title.localeCompare(b.title));
+  if (notebooks.length) {
+    const docs = new Map(bodies.map((b) => [b.id, b.doc]));
+    out.push('## World Creator', '');
+    for (const n of notebooks) out.push(...notebookMarkdown(n, live, docs, 3));
+  }
+
   out.push('## Shard groups', '');
   if (groups.length === 0) out.push('None yet.', '');
   for (const g of groups) {
@@ -143,7 +153,8 @@ export function toMarkdown(
   return out.join('\n');
 }
 
-async function readAll(workspaceId: string) {
+/** Every entry, link, and body in the workspace, read once (from the cache when offline). */
+async function readWorkspace(workspaceId: string) {
   const { db } = getFirebase();
   const read = (path: string) => getDocs(collection(db, path));
   const [entries, links, bodies] = await Promise.all([
@@ -159,7 +170,8 @@ async function readAll(workspaceId: string) {
   };
 }
 
-function download(filename: string, content: string, type: string) {
+/** Saves a file to the device. */
+function downloadFile(filename: string, content: string, type: string) {
   const url = URL.createObjectURL(new Blob([content], { type }));
   const a = document.createElement('a');
   a.href = url;
@@ -172,7 +184,7 @@ const stamp = () => new Date().toISOString().slice(0, 10);
 
 /** Everything in the workspace, as JSON. Timestamps become ISO strings. */
 export async function exportJson(workspaceId: string): Promise<void> {
-  const data = await readAll(workspaceId);
+  const data = await readWorkspace(workspaceId);
   const json = JSON.stringify(
     { app: 'Enfield Story Forge', version: 1, exportedAt: new Date().toISOString(), ...data },
     (_key, value: unknown) =>
@@ -181,14 +193,22 @@ export async function exportJson(workspaceId: string): Promise<void> {
         : value,
     2,
   );
-  download(`story-forge-${stamp()}.json`, json, 'application/json');
+  downloadFile(`story-forge-${stamp()}.json`, json, 'application/json');
 }
 
 export async function exportMarkdown(workspaceId: string): Promise<void> {
-  const { entries, links, bodies } = await readAll(workspaceId);
-  download(
+  const { entries, links, bodies } = await readWorkspace(workspaceId);
+  downloadFile(
     `story-forge-${stamp()}.md`,
     toMarkdown(entries, links, new Date(), bodies as BodyRow[]),
     'text/markdown',
   );
+}
+
+/** One World Creator notebook, as Markdown. */
+export async function exportNotebookMarkdown(workspaceId: string, notebook: Entry): Promise<void> {
+  const { entries, bodies } = await readWorkspace(workspaceId);
+  const docs = new Map((bodies as BodyRow[]).map((b) => [b.id, b.doc]));
+  const name = (notebook.title || 'notebook').replace(/[^\p{L}\p{N}]+/gu, '-').toLowerCase();
+  downloadFile(`${name}.md`, notebookMarkdown(notebook, entries, docs).join('\n'), 'text/markdown');
 }

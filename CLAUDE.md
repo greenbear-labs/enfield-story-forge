@@ -34,7 +34,7 @@ src/
     outlines/       Outline Builder: New Outline, Story Spine, Beat Board, structure library (data), series
     characters/     Character Center: the cast, character page (core card + modules), Quick Card, Character Interview, Archetype Spark (pools as data)
     desk/           Writer's Desk: manuscripts, Send to Writer's Desk, chapters (Chapter Builder), scene cards, Scene Desk (TipTap prose editor, lazy-loaded; focus mode), plotlines and the Chapter Breakdown grid
-    world/          Enfield World Creator (its own app at /world): notebooks, indexes (table, gallery, list; custom columns; presets as data), world pages with rich text (/ commands, @links), pages inside pages, and the notebook tree
+    world/          Enfield World Creator (its own app at /world): notebooks, indexes (table, gallery, list; custom columns; presets as data), world pages with rich text (/ commands, @links), pages inside pages, the notebook tree, and notebook export (Markdown, print or PDF)
     search/         Ctrl+K search over all entries
   components/ui/    Icon, Menu, Dialog, TagInput, Toaster/toast (with Undo actions), EmptyState, Loading
   lib/firebase/     config from env, lazy Firebase client
