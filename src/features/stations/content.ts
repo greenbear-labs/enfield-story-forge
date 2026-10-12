@@ -15,7 +15,7 @@ export const shardsStation: StationContent = {
     {
       name: 'Create a Shard',
       icon: 'plus',
-      description: 'Capture a spark in seconds, with a type and an optional image.',
+      description: 'Capture a spark in seconds, with a type and tags. Also on + Shard everywhere.',
     },
     {
       name: 'The Shard Mines',

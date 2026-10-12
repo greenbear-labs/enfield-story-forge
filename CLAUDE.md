@@ -28,9 +28,12 @@ src/
     auth/           auth store, auth actions, landing and sign-in pages
     hub/            the Hub
     stations/       StationPage template, ToolCard, station content, Appendix
-  components/ui/    Icon, Menu, Toaster/toast, EmptyState
+    shards/         Story Shards: quick capture, library, shard page, Shard Mines, groups, Spark Prompts
+    search/         Ctrl+K search over all entries
+  components/ui/    Icon, Menu, Dialog, TagInput, Toaster/toast (with Undo actions), EmptyState, Loading
   lib/firebase/     config from env, lazy Firebase client
   lib/firestore/    path helpers, workspace bootstrap, sync status
+  lib/entries/      the entry engine: create/update/trash/links, live hooks, search, export
   data/types/       Entry, EntryBody, Link, Snapshot, Workspace, Section
   styles/           tokens.css (wireframe tokens), index.css (Tailwind + components)
 e2e/                Playwright smoke tests
@@ -44,6 +47,7 @@ firestore.rules, storage.rules, firebase.json   security rules (deploy with the 
 - **AI buttons are present but inactive** (`btn btn-ai`), with a placeholder message. No AI calls in v1.
 - **Offline-first.** Firestore writes go to the local cache immediately; don't block the UI on the server. Call `trackPendingWrites()` after writes so the sync indicator is honest.
 - **Data lives under `workspaces/{workspaceId}/...`** (see `src/lib/firestore/paths.ts`). The personal workspace id is the user's uid.
+- **Everything is an entry.** Use `src/lib/entries` (`createEntry`, `updateEntry`, `trashEntry`, `addLink`, and the `useEntries` / `useEntry` / `useLinks` hooks) rather than raw Firestore calls in features. Deleting is a soft delete (`deletedAt`), with an Undo toast. Links have deterministic ids (`from__kind__to`); a shard group's shards are `member` links.
 - **No screenplay formatting**, ever.
 - Keep the UI simple and calm, matching the v3 wireframe. Check phone width (390px): no horizontal page scroll.
 - Never ship auth bypasses or test-only hooks in `src/`.

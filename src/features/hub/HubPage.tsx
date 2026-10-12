@@ -1,12 +1,16 @@
 import { Link } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Icon, type IconName } from '../../components/ui/Icon';
 import { toast } from '../../components/ui/toast';
 import type { StationPath } from '../../app/navigation';
 import { WORLD_CREATOR_SOON } from '../../app/navigation';
-import type { Section } from '../../data/types';
+import { ENTRY_SECTION, type Entry, type Section } from '../../data/types';
+import { entryRoute, entryTypeName } from '../../lib/entries/entryLinks';
+import { useEntries } from '../../lib/entries/hooks';
+import { recentlyUpdatedFirst } from '../../lib/entries/model';
 import { useAuthStore } from '../auth/authStore';
+import { createShard } from '../shards/shardModel';
 
 interface JourneyStep {
   to: StationPath;
@@ -67,7 +71,17 @@ function greetingTime(d = new Date()): string {
 export function HubPage() {
   const user = useAuthStore((s) => s.user);
   const name = user?.displayName?.split(' ')[0] || user?.email?.split('@')[0] || 'writer';
+  const workspaceId = useAuthStore((s) => s.workspaceId);
   const [shard, setShard] = useState('');
+  const entries = useEntries();
+  const shardCount = entries.data?.filter((e) => e.type === 'shard').length;
+  const recent = useMemo(
+    () => [...(entries.data ?? [])].filter(entryRoute).sort(recentlyUpdatedFirst).slice(0, 5),
+    [entries.data],
+  );
+  const counts: Partial<Record<StationPath, string>> = shardCount
+    ? { '/shards': `${shardCount} ${shardCount === 1 ? 'shard' : 'shards'}` }
+    : {};
 
   return (
     <div data-sec="home" className="flex flex-col gap-[22px]">
@@ -100,7 +114,7 @@ export function HubPage() {
             </h3>
             <p className="text-[0.86rem] text-muted">{s.invite}</p>
             <span className="mt-auto flex items-center justify-between gap-1.5 pt-1.5 text-[0.8rem]">
-              <span className="text-muted">{s.count}</span>
+              <span className="text-muted">{counts[s.to] ?? s.count}</span>
               <span className="font-semibold text-accent">Enter →</span>
             </span>
           </Link>
@@ -156,7 +170,10 @@ export function HubPage() {
             data-sec="shard"
             onSubmit={(e) => {
               e.preventDefault();
-              toast('Saving shards comes with the Story Shards station.');
+              if (!shard.trim() || !workspaceId) return;
+              createShard(workspaceId, { text: shard, shardType: 'moment' });
+              setShard('');
+              toast('Shard saved to Story Shards.');
             }}
           >
             <label className="label" htmlFor="hub-shard">
@@ -180,7 +197,15 @@ export function HubPage() {
         <div className="grid grid-cols-[1.3fr_1fr] gap-3 max-[900px]:grid-cols-1">
           <div className="panel flex flex-col gap-2">
             <div className="label">Recent</div>
-            <EmptyState>Things you open or change will be listed here.</EmptyState>
+            {recent.length === 0 ? (
+              <EmptyState>Things you make or change will be listed here.</EmptyState>
+            ) : (
+              <ul className="flex flex-col gap-1">
+                {recent.map((e) => (
+                  <RecentItem key={e.id} entry={e} />
+                ))}
+              </ul>
+            )}
           </div>
           <div className="panel flex flex-col gap-2">
             <div className="label">Your stories</div>
@@ -189,5 +214,18 @@ export function HubPage() {
         </div>
       </section>
     </div>
+  );
+}
+
+function RecentItem({ entry }: { entry: Entry }) {
+  const route = entryRoute(entry);
+  if (!route) return null;
+  return (
+    <li data-sec={ENTRY_SECTION[entry.type]}>
+      <Link {...route} className="flex items-center gap-2 rounded-md px-1.5 py-1 hover:bg-sunken">
+        <span className="chip flex-none">{entryTypeName(entry.type)}</span>
+        <span className="min-w-0 flex-1 truncate">{entry.title || 'Untitled'}</span>
+      </Link>
+    </li>
   );
 }

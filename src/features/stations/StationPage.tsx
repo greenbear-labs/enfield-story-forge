@@ -23,17 +23,37 @@ export interface StationContent {
   library: { title: string; empty: string };
 }
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+/** A titled block on a station page. `actions` sit to the right of the title. */
+export function StationSection({
+  title,
+  actions,
+  children,
+}: {
+  title: string;
+  actions?: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <section className="flex flex-col gap-2.5">
-      <h2 className="text-[1.05rem]">{title}</h2>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-[1.05rem]">{title}</h2>
+        {actions}
+      </div>
       {children}
     </section>
   );
 }
 
+interface StationPageProps {
+  content: StationContent;
+  /** Handlers for the tools that are built, by tool name. */
+  toolActions?: Record<string, () => void>;
+  /** The live collections and library. Without it, their empty states are shown. */
+  children?: ReactNode;
+}
+
 /** The three-part page every station uses: header, tools, then collections and library. */
-export function StationPage({ content }: { content: StationContent }) {
+export function StationPage({ content, toolActions, children }: StationPageProps) {
   const { sec, icon, title, num, blurb, infoLabel, next, tools, collections, library } = content;
   const eyebrow = content.eyebrow ?? (num ? `Station ${num} of 4` : 'Companion workshop');
 
@@ -68,23 +88,26 @@ export function StationPage({ content }: { content: StationContent }) {
         )}
       </header>
 
-      <Section title="Tools">
+      <StationSection title="Tools">
         <div className="grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-3">
           {tools.map((tool) => (
-            <ToolCard key={tool.name} tool={tool} />
+            <ToolCard key={tool.name} tool={tool} onOpen={toolActions?.[tool.name]} />
           ))}
         </div>
-      </Section>
+      </StationSection>
 
-      {collections?.map((c) => (
-        <Section key={c.title} title={c.title}>
-          <EmptyState>{c.empty}</EmptyState>
-        </Section>
-      ))}
-
-      <Section title={library.title}>
-        <EmptyState>{library.empty}</EmptyState>
-      </Section>
+      {children ?? (
+        <>
+          {collections?.map((c) => (
+            <StationSection key={c.title} title={c.title}>
+              <EmptyState>{c.empty}</EmptyState>
+            </StationSection>
+          ))}
+          <StationSection title={library.title}>
+            <EmptyState>{library.empty}</EmptyState>
+          </StationSection>
+        </>
+      )}
     </div>
   );
 }

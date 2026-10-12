@@ -28,6 +28,8 @@ export function getFirebase(): FirebaseClient {
   const auth = getAuth(app);
   const db = initializeFirestore(app, {
     localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+    // Optional entry fields can be left undefined instead of being stripped by hand.
+    ignoreUndefinedProperties: true,
   });
   client = { app, auth, db };
   return client;
