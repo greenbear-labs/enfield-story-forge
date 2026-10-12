@@ -1,5 +1,5 @@
-import type { Entry, FieldValue } from '../../data/types';
-import { createEntry, updateEntry } from '../../lib/entries/entries';
+import type { Entry, FieldValue, Link } from '../../data/types';
+import { addLink, createEntry, removeLink, updateEntry } from '../../lib/entries/entries';
 import { byOrder, orderKey } from '../../lib/entries/model';
 import { chapterCount, outlineFormat, outlineStructure } from '../outlines/outlineModel';
 import { chapterFor } from '../outlines/structures';
@@ -118,4 +118,41 @@ export function manuscriptScenes(
   return childrenOf(chapters, bookId).flatMap((chapter, i) =>
     childrenOf(scenes, chapter.id).map((scene) => ({ scene, chapter, chapterNumber: i + 1 })),
   );
+}
+
+/** Brings a scene's `mention` links in line with who its prose mentions now. */
+export function syncMentions(
+  workspaceId: string,
+  sceneId: string,
+  before: string[],
+  after: string[],
+): void {
+  const now = new Set(after);
+  const was = new Set(before);
+  for (const id of now) if (!was.has(id)) addLink(workspaceId, sceneId, 'mention', id);
+  for (const id of was) if (!now.has(id)) removeLink(workspaceId, sceneId, 'mention', id);
+}
+
+/**
+ * The scenes an entry appears in, in reading order, book by book: where it's
+ * the point of view, or where a `mention` link points at it.
+ */
+export function appearances(
+  entryId: string,
+  scenes: Entry[] | undefined,
+  chapters: Entry[] | undefined,
+  books: Entry[] | undefined,
+  mentions: Link[] | undefined,
+): { scene: Entry; pov: boolean; chapterNumber: number }[] {
+  const mentioned = new Set(
+    (mentions ?? []).filter((l) => l.kind === 'mention' && l.toId === entryId).map((l) => l.fromId),
+  );
+  return (books ?? [])
+    .filter(onDesk)
+    .sort((a, b) => a.title.localeCompare(b.title))
+    .flatMap((book) => manuscriptScenes(chapters, scenes, book.id))
+    .flatMap(({ scene, chapterNumber }) => {
+      const pov = scenePov(scene) === entryId;
+      return pov || mentioned.has(scene.id) ? [{ scene, pov, chapterNumber }] : [];
+    });
 }

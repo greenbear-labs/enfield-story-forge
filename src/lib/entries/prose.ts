@@ -10,6 +10,7 @@ export interface ProseMark {
 export interface ProseNode {
   type: string;
   text?: string;
+  attrs?: Record<string, unknown>;
   marks?: ProseMark[];
   content?: ProseNode[];
 }
@@ -33,6 +34,8 @@ function inline(node: ProseNode, markdown: boolean): string {
     return `${lead}${out}${trail}`;
   }
   if (node.type === 'hardBreak') return markdown ? '  \n' : '\n';
+  // An @mention reads as the name itself.
+  if (node.type === 'mention') return typeof node.attrs?.label === 'string' ? node.attrs.label : '';
   return (node.content ?? []).map((n) => inline(n, markdown)).join('');
 }
 
@@ -62,4 +65,15 @@ export const proseToMarkdown = (doc: unknown): string =>
 /** Words in a piece of text. Scene breaks (* * *) don't count. */
 export function countWords(text: string): number {
   return text.split(/\s+/).filter((w) => /[\p{L}\p{N}]/u.test(w)).length;
+}
+
+/** The ids of the entries @mentioned in the prose, each once, in the order they first appear. */
+export function mentionIds(doc: unknown): string[] {
+  const out = new Set<string>();
+  const walk = (node: ProseNode) => {
+    if (node.type === 'mention' && typeof node.attrs?.id === 'string') out.add(node.attrs.id);
+    for (const child of node.content ?? []) if (isNode(child)) walk(child);
+  };
+  if (isNode(doc)) walk(doc);
+  return [...out];
 }

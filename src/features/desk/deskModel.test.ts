@@ -4,6 +4,7 @@ import { fakeShard } from '../../test/entries';
 import {
   beatsByChapter,
   childrenOf,
+  appearances,
   manuscriptScenes,
   move,
   sendToDesk,
@@ -84,6 +85,37 @@ describe('the Writer’s Desk', () => {
       ['s1', 1],
       ['s2', 1],
       ['s3', 2],
+    ]);
+  });
+
+  it('finds the scenes a character appears in, as POV or by mention', () => {
+    const book = fakeShard('', { id: 'b1', type: 'book', title: 'Salt', fields: { onDesk: true } });
+    const ch = (id: string, order: string) =>
+      fakeShard('', { id, type: 'chapter', parentId: 'b1', order });
+    const sc = (id: string, parentId: string, fields = {}) =>
+      fakeShard('', { id, type: 'scene', parentId, order: '1', fields });
+    const scenes = [
+      sc('s2', 'c2'),
+      sc('s1', 'c1', { pov: 'mira' }),
+      sc('s3', 'c2', { pov: 'tam' }),
+    ];
+    const mention = (fromId: string, toId: string) => ({
+      id: `${fromId}__mention__${toId}`,
+      workspaceId: 'u1',
+      fromId,
+      toId,
+      kind: 'mention' as const,
+    });
+    const rows = appearances(
+      'mira',
+      scenes,
+      [ch('c2', '2'), ch('c1', '1')],
+      [book],
+      [mention('s2', 'mira'), mention('s3', 'tam')],
+    );
+    expect(rows.map((r) => [r.scene.id, r.pov, r.chapterNumber])).toEqual([
+      ['s1', true, 1],
+      ['s2', false, 2],
     ]);
   });
 });

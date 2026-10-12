@@ -624,6 +624,13 @@
   .prose-page hr.ProseMirror-selectednode::after {
     color: var(--accent);
   }
+  /* An @mention: the name, softly marked in the Character Center's color. */
+  .prose-page .mention {
+    border-radius: 3px;
+    padding: 0 2px;
+    background: var(--sec-char-soft);
+    color: var(--sec-char);
+  }
   .prose-page p.is-editor-empty:first-child::before {
     content: attr(data-placeholder);
     float: left;

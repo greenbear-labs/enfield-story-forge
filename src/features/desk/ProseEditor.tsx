@@ -1,16 +1,22 @@
 import { Placeholder } from '@tiptap/extensions';
 import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import { useEffect, useRef } from 'react';
+import { countWords, mentionIds } from '../../lib/entries/prose';
 import { useDebouncedSave } from '../../lib/entries/useDebouncedSave';
-import { countWords } from '../../lib/entries/prose';
+import type { MentionItem } from './MentionList';
+import { proseMention } from './proseMention';
 
 export interface ProseSave {
   doc: Record<string, unknown>;
   words: number;
+  /** Ids of the entries @mentioned in the prose. */
+  mentions: string[];
 }
 
 /**
- * The prose editor: plain paragraphs, bold, italic, quotes, and scene breaks.
+ * The prose editor: plain paragraphs, bold, italic, quotes, scene breaks, and
+ * @mentions of the people in `mentionables`.
  * It saves a moment after you stop typing, and on the way out. Live updates
  * don't reset it, so keep one editor per scene (key it by the scene's id).
  */
@@ -19,13 +25,20 @@ export default function ProseEditor({
   onSave,
   onWords,
   label,
+  mentionables,
 }: {
   initial: Record<string, unknown> | null;
   onSave: (save: ProseSave) => void;
   onWords: (words: number) => void;
   label: string;
+  mentionables: MentionItem[];
 }) {
   const { schedule, flush } = useDebouncedSave(onSave, 800);
+  // The editor is built once, so it reads the latest cast through a ref.
+  const people = useRef(mentionables);
+  useEffect(() => {
+    people.current = mentionables;
+  });
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -40,7 +53,10 @@ export default function ProseEditor({
         underline: false,
         strike: false,
       }),
-      Placeholder.configure({ placeholder: 'Start writing…' }),
+      Placeholder.configure({ placeholder: 'Start writing… (type @ to mention someone)' }),
+      // The getter runs on keystrokes after "@", never during render.
+      // eslint-disable-next-line react-hooks/refs
+      proseMention(() => people.current),
     ],
     content: initial ?? '',
     editorProps: {
@@ -56,7 +72,8 @@ export default function ProseEditor({
     onUpdate: ({ editor }) => {
       const words = countWords(editor.getText({ blockSeparator: '\n\n' }));
       onWords(words);
-      schedule({ doc: editor.getJSON() as Record<string, unknown>, words });
+      const doc = editor.getJSON() as Record<string, unknown>;
+      schedule({ doc, words, mentions: mentionIds(doc) });
     },
     onBlur: flush,
   });
