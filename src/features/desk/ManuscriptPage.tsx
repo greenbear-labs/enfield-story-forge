@@ -84,6 +84,13 @@ function Manuscript({ book }: { book: Entry }) {
           >
             Compile and export
           </Link>
+          <Link
+            to="/desk/$bookId/health"
+            params={{ bookId: book.id }}
+            className="font-semibold text-accent"
+          >
+            Story health
+          </Link>
         </div>
         <BookTarget book={book} words={totalWords} />
       </header>
