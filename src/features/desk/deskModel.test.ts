@@ -117,5 +117,14 @@ describe('the Writer’s Desk', () => {
       ['s1', true, 1],
       ['s2', false, 2],
     ]);
+    // A place is in the scenes it's set in.
+    const set = appearances(
+      'vell',
+      scenes,
+      [ch('c2', '2'), ch('c1', '1')],
+      [book],
+      [{ ...mention('s3', 'vell'), kind: 'location' }],
+    );
+    expect(set.map((r) => [r.scene.id, r.setting])).toEqual([['s3', true]]);
   });
 });

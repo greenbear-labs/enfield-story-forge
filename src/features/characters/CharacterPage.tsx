@@ -205,7 +205,10 @@ function CharacterEditor({ character }: { character: Entry }) {
         </Module>
       </section>
 
-      <AppearsIn entryId={character.id} name={character.title || 'this character'} />
+      <AppearsIn
+        entryId={character.id}
+        empty={`Not in any scenes yet. Make ${character.title || 'this character'} a scene’s point of view, or type @ and their name while you write.`}
+      />
       <FromShards characterId={character.id} />
     </>
   );

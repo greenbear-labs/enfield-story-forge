@@ -96,7 +96,7 @@ export const SCENE_FIELDS = [
     placeholder: 'The scene in a sentence or two.',
     long: true,
   },
-  { key: 'location', label: 'Where', placeholder: 'e.g. The lighthouse, at night' },
+  { key: 'location', label: 'Where and when', placeholder: 'e.g. The lighthouse, at night' },
   { key: 'goal', label: 'Goal', placeholder: 'What the POV character wants in this scene' },
   { key: 'conflict', label: 'Conflict', placeholder: 'What gets in the way' },
   { key: 'outcome', label: 'Outcome', placeholder: 'Yes, no, yes-but, or no-and' },
@@ -135,24 +135,41 @@ export function syncMentions(
 
 /**
  * The scenes an entry appears in, in reading order, book by book: where it's
- * the point of view, or where a `mention` link points at it.
+ * the point of view, the scene's place (a `location` link), or @mentioned.
  */
 export function appearances(
   entryId: string,
   scenes: Entry[] | undefined,
   chapters: Entry[] | undefined,
   books: Entry[] | undefined,
-  mentions: Link[] | undefined,
-): { scene: Entry; pov: boolean; chapterNumber: number }[] {
-  const mentioned = new Set(
-    (mentions ?? []).filter((l) => l.kind === 'mention' && l.toId === entryId).map((l) => l.fromId),
-  );
+  links: Link[] | undefined,
+): { scene: Entry; pov: boolean; setting: boolean; chapterNumber: number }[] {
+  const to = (kind: Link['kind']) =>
+    new Set(
+      (links ?? []).filter((l) => l.kind === kind && l.toId === entryId).map((l) => l.fromId),
+    );
+  const mentioned = to('mention');
+  const settings = to('location');
   return (books ?? [])
     .filter(onDesk)
     .sort((a, b) => a.title.localeCompare(b.title))
     .flatMap((book) => manuscriptScenes(chapters, scenes, book.id))
     .flatMap(({ scene, chapterNumber }) => {
       const pov = scenePov(scene) === entryId;
-      return pov || mentioned.has(scene.id) ? [{ scene, pov, chapterNumber }] : [];
+      const setting = settings.has(scene.id);
+      return pov || setting || mentioned.has(scene.id)
+        ? [{ scene, pov, setting, chapterNumber }]
+        : [];
     });
+}
+
+/** Sets a scene's place (a World Creator page), or clears it with null. A scene has one place. */
+export function setScenePlace(
+  workspaceId: string,
+  sceneId: string,
+  current: string[],
+  placeId: string | null,
+): void {
+  for (const id of current) if (id !== placeId) removeLink(workspaceId, sceneId, 'location', id);
+  if (placeId && !current.includes(placeId)) addLink(workspaceId, sceneId, 'location', placeId);
 }

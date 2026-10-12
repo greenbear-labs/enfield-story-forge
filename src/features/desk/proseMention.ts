@@ -14,11 +14,16 @@ export function proseMention(
   return Mention.configure({
     HTMLAttributes: { class: 'mention' },
     renderText: ({ node }) => String(node.attrs.label ?? ''),
-    renderHTML: ({ options, node }) => [
-      'span',
-      options.HTMLAttributes,
-      String(node.attrs.label ?? ''),
-    ],
+    // A link to anything but a character (a place, an item) takes the World Creator's color.
+    renderHTML: ({ options, node }) => {
+      const kind = getItems().find((i) => i.id === node.attrs.id)?.kind;
+      const world = kind !== undefined && kind !== 'Character';
+      return [
+        'span',
+        world ? { ...options.HTMLAttributes, class: 'mention is-world' } : options.HTMLAttributes,
+        String(node.attrs.label ?? ''),
+      ];
+    },
     suggestion: {
       items: ({ query }) => matchItems(getItems(), query),
       render: suggestionPopup(popup),

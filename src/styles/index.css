@@ -631,6 +631,10 @@
     background: var(--sec-char-soft);
     color: var(--sec-char);
   }
+  .prose-page .mention.is-world {
+    background: var(--sec-world-soft);
+    color: var(--sec-world);
+  }
   /* A cast name typed without an @: offered as a mention. */
   .prose-page .name-hint {
     text-decoration: underline dotted var(--sec-char) 1.5px;
