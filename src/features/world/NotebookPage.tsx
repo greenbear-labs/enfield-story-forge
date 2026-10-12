@@ -11,19 +11,25 @@ import { useAutosaved } from '../../lib/entries/useAutosaved';
 import { useAuthStore } from '../auth/authStore';
 import { cardGrid } from '../shards/ShardCard';
 import { AddIndexDialog } from './AddIndexDialog';
-import { Breadcrumbs, EntryGate } from './WorldFrame';
+import { Breadcrumbs, EntryGate, NotebookLayout } from './WorldFrame';
 import { childrenOf, indexPreset, notebookDescription, trashAll, treeIds } from './worldModel';
 
 /** A notebook: its indexes, as cards. */
 export function NotebookPage({ notebookId }: { notebookId: string }) {
   const notebook = useEntry(notebookId);
+  const entries = useEntries();
   return (
-    <div className="mx-auto flex w-full max-w-[1000px] flex-col gap-4">
+    <NotebookLayout
+      notebookId={notebookId}
+      currentId={notebookId}
+      trail={[]}
+      entries={entries.data}
+    >
       <Breadcrumbs />
       <EntryGate live={notebook} noun="notebook">
         {(n) => <Notebook key={n.id} notebook={n} />}
       </EntryGate>
-    </div>
+    </NotebookLayout>
   );
 }
 

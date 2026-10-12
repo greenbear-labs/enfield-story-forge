@@ -6,9 +6,12 @@ import {
   columnsOf,
   displayValue,
   parseValue,
+  linkables,
+  pageKind,
   presetColumns,
   sortPages,
   summaryOf,
+  trailOf,
   treeIds,
 } from './worldModel';
 import { presetByKey } from './worldPresets';
@@ -87,5 +90,34 @@ describe('World Creator indexes', () => {
       fakeShard('', { id: 'p2', type: 'page', parentId: 'other' }),
     ];
     expect(treeIds(entries, 'n1')).toEqual(['n1', 'i1', 'p1']);
+  });
+});
+
+describe('the notebook tree', () => {
+  const entries = [
+    fakeShard('', { id: 'n1', type: 'notebook', title: 'Salt Isles' }),
+    fakeShard('', { id: 'i1', type: 'index', parentId: 'n1', fields: { item: 'place' } }),
+    fakeShard('', { id: 'p1', type: 'page', parentId: 'i1', title: 'Port Vell' }),
+    fakeShard('', { id: 'p2', type: 'page', parentId: 'p1', title: 'The Old Docks' }),
+    fakeShard('', { id: 'c1', type: 'character', title: 'Mira' }),
+    fakeShard('', { id: 'x', type: 'page', parentId: 'i1', title: ' ' }),
+  ];
+  const byId = new Map(entries.map((e) => [e.id, e]));
+
+  it('walks up from a page to its notebook', () => {
+    expect(trailOf(byId, entries[3]!).map((e) => e.id)).toEqual(['n1', 'i1', 'p1']);
+    expect(trailOf(byId, entries[0]!)).toEqual([]);
+  });
+
+  it('names a page by its index, or as a page inside a page', () => {
+    expect(pageKind(byId, entries[2]!)).toBe('Place');
+    expect(pageKind(byId, entries[3]!)).toBe('Page');
+  });
+
+  it('offers named pages and characters to link, but not the page itself', () => {
+    expect(linkables(entries, 'p1')).toEqual([
+      { id: 'c1', label: 'Mira', kind: 'Character' },
+      { id: 'p2', label: 'The Old Docks', kind: 'Page' },
+    ]);
   });
 });

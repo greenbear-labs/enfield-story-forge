@@ -751,6 +751,18 @@
     border: 0;
     border-top: 1px solid var(--line);
   }
+  /* An @link to another page or a character: click it to open. */
+  .rich-page .mention {
+    border-radius: 3px;
+    padding: 0 2px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 500;
+    cursor: pointer;
+  }
+  .rich-page .mention:hover {
+    text-decoration: underline;
+  }
   .rich-page p.is-editor-empty:first-child::before {
     content: attr(data-placeholder);
     float: left;

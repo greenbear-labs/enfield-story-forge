@@ -7,14 +7,14 @@ import { Menu } from '../../components/ui/Menu';
 import { toast } from '../../components/ui/toast';
 import type { Entry } from '../../data/types';
 import { updateEntry } from '../../lib/entries/entries';
-import { useEntries, useEntry } from '../../lib/entries/hooks';
+import { useEntries, useEntry, useEntryMap } from '../../lib/entries/hooks';
 import { matchesQuery } from '../../lib/entries/model';
 import { useAutosaved } from '../../lib/entries/useAutosaved';
 import { useAuthStore } from '../auth/authStore';
 import { cardGrid } from '../shards/ShardCard';
 import { ColumnDialog } from './ColumnDialog';
 import { PropField } from './PropField';
-import { Breadcrumbs, EntryGate } from './WorldFrame';
+import { Breadcrumbs, EntryGate, NotebookLayout } from './WorldFrame';
 import {
   INDEX_VIEWS,
   addColumn,
@@ -29,6 +29,7 @@ import {
   restoreColumn,
   sortPages,
   summaryOf,
+  trailOf,
   trashAll,
   treeIds,
   updateColumn,
@@ -39,21 +40,28 @@ import {
 /** An index: its pages as a table, a gallery, or a list. */
 export function IndexPage({ indexId }: { indexId: string }) {
   const index = useEntry(indexId);
-  const notebook = useEntry(index.data?.parentId ?? null);
+  const entries = useEntries();
+  const byId = useEntryMap(entries.data);
+  const trail = index.data ? trailOf(byId, index.data) : [];
   return (
-    <div className="flex w-full flex-col gap-4">
-      <Breadcrumbs notebook={notebook.data} />
+    <NotebookLayout
+      notebookId={index.data?.parentId ?? null}
+      currentId={indexId}
+      trail={trail}
+      entries={entries.data}
+    >
+      <Breadcrumbs trail={trail} />
       <EntryGate live={index} noun="index">
         {(i) => <Index key={i.id} index={i} />}
       </EntryGate>
-    </div>
+    </NotebookLayout>
   );
 }
 
 function Index({ index }: { index: Entry }) {
   const ws = useAuthStore((s) => s.workspaceId)!;
   const navigate = useNavigate();
-  const entries = useEntries('page');
+  const entries = useEntries();
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<PageSort>(null);
   const [focusId, setFocusId] = useState<string | null>(null);
@@ -66,7 +74,7 @@ function Index({ index }: { index: Entry }) {
   const columns = columnsOf(index);
 
   const all = useMemo(
-    () => (entries.data ?? []).filter((p) => p.parentId === index.id),
+    () => (entries.data ?? []).filter((p) => p.type === 'page' && p.parentId === index.id),
     [entries.data, index.id],
   );
   const pages = useMemo(
