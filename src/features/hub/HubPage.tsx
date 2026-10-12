@@ -7,7 +7,7 @@ import type { StationPath } from '../../app/navigation';
 import { WORLD_CREATOR_SOON } from '../../app/navigation';
 import { ENTRY_SECTION, type Entry, type Section } from '../../data/types';
 import { entryRoute, entryTypeName } from '../../lib/entries/entryLinks';
-import { useEntries } from '../../lib/entries/hooks';
+import { useEntries, useEntryMap } from '../../lib/entries/hooks';
 import { recentlyUpdatedFirst } from '../../lib/entries/model';
 import { useAuthStore } from '../auth/authStore';
 import { createShard } from '../shards/shardModel';
@@ -79,12 +79,26 @@ export function HubPage() {
   const conceptCount = countOf('concept');
   const characterCount = countOf('character');
   const outlineCount = countOf('book');
+  const books = useEntryMap(entries.data?.filter((e) => e.type === 'book'));
+  // The chapter or scene you touched last, as the chapter to go back to.
+  const lastChapter = useMemo(() => {
+    const live = entries.data ?? [];
+    const chapters = new Map(live.filter((e) => e.type === 'chapter').map((e) => [e.id, e]));
+    const recent = live
+      .filter((e) => e.type === 'chapter' || (e.type === 'scene' && chapters.has(e.parentId ?? '')))
+      .sort(recentlyUpdatedFirst)[0];
+    return recent?.type === 'scene' ? chapters.get(recent.parentId!) : recent;
+  }, [entries.data]);
+  const manuscriptCount =
+    entries.data?.filter((e) => e.type === 'book' && e.fields.onDesk === true).length ?? 0;
   const recent = useMemo(
     () => [...(entries.data ?? [])].filter(entryRoute).sort(recentlyUpdatedFirst).slice(0, 5),
     [entries.data],
   );
   const counts: Partial<Record<StationPath, string>> = {};
   if (shardCount) counts['/shards'] = `${shardCount} ${shardCount === 1 ? 'shard' : 'shards'}`;
+  if (manuscriptCount)
+    counts['/desk'] = `${manuscriptCount} ${manuscriptCount === 1 ? 'manuscript' : 'manuscripts'}`;
   if (outlineCount)
     counts['/outlines'] = `${outlineCount} ${outlineCount === 1 ? 'outline' : 'outlines'}`;
   if (conceptCount)
@@ -168,9 +182,26 @@ export function HubPage() {
         <div className="grid grid-cols-[1.3fr_1fr] gap-3 max-[900px]:grid-cols-1">
           <div className="panel flex flex-col gap-2.5 border-l-4 border-l-accent" data-sec="desk">
             <div className="label">Pick up where you left off</div>
-            <EmptyState>
-              Nothing in progress yet. When you start writing, it shows up here.
-            </EmptyState>
+            {lastChapter ? (
+              <Link
+                to="/desk/chapters/$chapterId"
+                params={{ chapterId: lastChapter.id }}
+                className="flex flex-col gap-0.5 rounded-md p-1.5 hover:bg-sunken"
+              >
+                <span className="font-display text-[1.1rem] font-semibold">
+                  {lastChapter.title || 'Untitled chapter'}
+                </span>
+                <span className="text-[0.85rem] text-muted">
+                  {[books.get(lastChapter.parentId ?? '')?.title, 'Resume →']
+                    .filter(Boolean)
+                    .join(' · ')}
+                </span>
+              </Link>
+            ) : (
+              <EmptyState>
+                Nothing in progress yet. When you start writing, it shows up here.
+              </EmptyState>
+            )}
           </div>
           <form
             className="panel flex flex-col gap-2"

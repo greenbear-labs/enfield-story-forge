@@ -10,6 +10,8 @@ export interface NewEntry {
   fields?: Record<string, FieldValue>;
   tags?: string[];
   status?: string;
+  /** Position among siblings. Defaults to creation time, so new entries go last. */
+  order?: string;
 }
 
 /** The stored fields of a new entry, minus timestamps (the data layer adds those). */
@@ -21,7 +23,7 @@ export function newEntryData(workspaceId: string, input: NewEntry, now = Date.no
     title: input.title?.trim() ?? '',
     icon: input.icon,
     parentId: input.parentId ?? null,
-    order: orderKey(now),
+    order: input.order ?? orderKey(now),
     fields: input.fields ?? {},
     modules: [],
     tags: normalizeTags(input.tags ?? []),
@@ -88,6 +90,10 @@ export function matchesQuery(entry: Pick<Entry, 'title' | 'fields' | 'tags'>, qu
 }
 
 const millis = (t: Entry['updatedAt'] | undefined) => (t ? t.toMillis() : Date.now());
+
+/** Sibling order: chapters in a book, scenes in a chapter. */
+export const byOrder = (a: Pick<Entry, 'order'>, b: Pick<Entry, 'order'>) =>
+  a.order < b.order ? -1 : a.order > b.order ? 1 : 0;
 
 export const newestFirst = (a: Entry, b: Entry) => millis(b.createdAt) - millis(a.createdAt);
 export const recentlyUpdatedFirst = (a: Entry, b: Entry) =>
