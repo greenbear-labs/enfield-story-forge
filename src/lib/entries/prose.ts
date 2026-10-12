@@ -102,3 +102,55 @@ export function mentionIds(doc: unknown): string[] {
   if (isNode(doc)) walk(doc);
   return [...out];
 }
+
+/** Escapes text for HTML and XML. */
+export const escapeXml = (text: string) =>
+  text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+function inlineHtml(node: ProseNode): string {
+  if (node.type === 'text') {
+    let out = escapeXml(node.text ?? '');
+    const marks = new Set((node.marks ?? []).map((m) => m.type));
+    if (marks.has('italic')) out = `<em>${out}</em>`;
+    if (marks.has('bold')) out = `<strong>${out}</strong>`;
+    return out;
+  }
+  if (node.type === 'hardBreak') return '<br/>';
+  if (node.type === 'mention')
+    return escapeXml(typeof node.attrs?.label === 'string' ? node.attrs.label : '');
+  return (node.content ?? []).filter(isNode).map(inlineHtml).join('');
+}
+
+function blockHtml(node: ProseNode): string {
+  const inner = () => (node.content ?? []).filter(isNode).map(inlineHtml).join('');
+  const nested = () => (node.content ?? []).filter(isNode).map(blockHtml).join('');
+  switch (node.type) {
+    case 'paragraph':
+      return `<p>${inner()}</p>`;
+    case 'heading': {
+      const level = Math.min(6, headingLevel(node) + 1);
+      return `<h${level}>${inner()}</h${level}>`;
+    }
+    case 'bulletList':
+      return `<ul>${nested()}</ul>`;
+    case 'orderedList':
+      return `<ol>${nested()}</ol>`;
+    case 'listItem':
+      return `<li>${nested()}</li>`;
+    case 'blockquote':
+      return `<blockquote>${nested()}</blockquote>`;
+    case 'horizontalRule':
+      return '<hr/>';
+    default:
+      return '';
+  }
+}
+
+/**
+ * The prose as XHTML (for EPUB): paragraphs, bold, italic, quotes, lists, and
+ * scene breaks. Headings move down one level, under the chapter's own.
+ */
+export const proseToHtml = (doc: unknown): string => blocks(doc).map(blockHtml).join('\n');
+
+/** The top-level blocks of a piece of prose, for exporters that walk it themselves. */
+export const proseBlocks = blocks;

@@ -23,6 +23,7 @@ import {
   type Compiled,
   type CompileSettings,
 } from './compile';
+import { docxBlob, epubBlob } from './bookFiles';
 import { childrenOf } from './deskModel';
 
 /** Put a manuscript together: title page, front and back matter, chapters; then export it. */
@@ -80,7 +81,7 @@ function Compiler({ book }: { book: Entry }) {
             Put the book together as one manuscript, then download it or save it as a PDF.
           </p>
         </header>
-        <Exports compiled={compiled} />
+        <Exports compiled={compiled} bookId={book.id} />
         <TitlePage book={book} settings={settings} />
         <Look book={book} settings={settings} />
         <Chapters book={book} chapters={chapters} settings={settings} />
@@ -98,7 +99,7 @@ function Compiler({ book }: { book: Entry }) {
   );
 }
 
-function Exports({ compiled }: { compiled: Compiled | null }) {
+function Exports({ compiled, bookId }: { compiled: Compiled | null; bookId: string }) {
   return (
     <section className="panel flex flex-col gap-2.5">
       <h2 className="text-[1.05rem]">Export</h2>
@@ -132,9 +133,32 @@ function Exports({ compiled }: { compiled: Compiled | null }) {
         >
           Markdown
         </button>
+        <button
+          type="button"
+          className="btn"
+          disabled={!compiled}
+          onClick={() =>
+            compiled && downloadFile(manuscriptFileName(compiled, 'docx'), docxBlob(compiled), '')
+          }
+        >
+          Word (DOCX)
+        </button>
+        <button
+          type="button"
+          className="btn"
+          disabled={!compiled}
+          onClick={() =>
+            compiled &&
+            downloadFile(manuscriptFileName(compiled, 'epub'), epubBlob(compiled, bookId), '')
+          }
+        >
+          EPUB
+        </button>
       </div>
       <p className="text-[0.8rem] text-muted">
-        For a PDF, pick “Save as PDF” as the printer. Each chapter starts on a new page.
+        For a PDF, pick “Save as PDF” as the printer. Each chapter starts on a new page. The Word
+        file is in standard manuscript format, ready to send to an agent or editor. The EPUB opens
+        in e-readers like Apple Books.
       </p>
     </section>
   );
