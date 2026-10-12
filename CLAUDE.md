@@ -33,7 +33,7 @@ src/
     concepts/       Concepts: Concept Bank, Concept Generator (option pools as data), the Mashup, concept page, shards → concept
     outlines/       Outline Builder: New Outline, Story Spine, Beat Board, structure library (data), series
     characters/     Character Center: the cast (filtered by story), character page (core card + modules), Quick Card, Character Interview, Archetype Spark (pools as data)
-    desk/           Writer's Desk: manuscripts, Send to Writer's Desk, chapters (Chapter Builder), scene cards, Scene Desk (TipTap prose editor, lazy-loaded; focus mode), plotlines and the Chapter Breakdown grid
+    desk/           Writer's Desk: manuscripts, Send to Writer's Desk, chapters (Chapter Builder), scene cards, Scene Desk (TipTap prose editor, lazy-loaded; focus mode), plotlines and the Chapter Breakdown grid, Compile (compile.ts: one manuscript from a book; settings in the book's `fields.compile`; exports work from its `Compiled` result)
     world/          Enfield World Creator (its own app at /world): notebooks, indexes (table, gallery, list; custom columns; presets as data), world pages with rich text (/ commands, @links), pages inside pages, the notebook tree, and notebook export (Markdown, print or PDF)
     images/         images on entries: the gallery (EntryGallery), card covers, avatars and thumbnails
     search/         Ctrl+K search over all entries

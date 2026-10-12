@@ -864,6 +864,111 @@
     }
   }
 
+  /* ----- Compiled manuscript ----- */
+  .manuscript {
+    padding: 48px 56px;
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    line-height: 1.65;
+  }
+  @media (max-width: 640px) {
+    .manuscript {
+      padding: 24px 18px;
+    }
+  }
+  .manuscript .ms-title-page {
+    padding: 12vh 0;
+    text-align: center;
+  }
+  .manuscript .ms-title-page h1 {
+    font-size: 2.2rem;
+    line-height: 1.2;
+  }
+  .manuscript .ms-subtitle {
+    margin-top: 0.6em;
+    font-size: 1.2rem;
+    font-style: italic;
+  }
+  .manuscript .ms-author {
+    margin-top: 3em;
+    font-size: 1.15rem;
+  }
+  .manuscript .ms-matter {
+    padding: 8vh 0;
+    text-align: center;
+    font-style: italic;
+  }
+  .manuscript .ms-matter p + p {
+    margin-top: 0.6em;
+  }
+  .manuscript .ms-source {
+    font-style: normal;
+  }
+  .manuscript .ms-chapter {
+    margin-top: 4em;
+  }
+  .manuscript .ms-chapter-head {
+    margin-bottom: 2em;
+    text-align: center;
+  }
+  .manuscript .ms-chapter-head h2 {
+    font-size: 1.5rem;
+  }
+  .manuscript .ms-chapter-head p {
+    margin-top: 0.3em;
+    font-style: italic;
+  }
+  /* Book paragraphs: indented, no gaps, except the first of each scene. */
+  .manuscript .rich-page > * + * {
+    margin-top: 0;
+  }
+  .manuscript .rich-page p {
+    text-indent: 1.5em;
+  }
+  .manuscript .rich-page > p:first-child,
+  .manuscript .rich-page > :not(p) + p {
+    text-indent: 0;
+  }
+  .manuscript .rich-page .mention {
+    padding: 0;
+    background: none;
+    color: inherit;
+    font-weight: inherit;
+    cursor: text;
+  }
+  .manuscript .ms-back p + p {
+    margin-top: 0.6em;
+  }
+  .manuscript .ms-break {
+    margin: 1.2em 0;
+    text-align: center;
+  }
+  .manuscript .ms-empty {
+    color: var(--muted);
+    font-style: italic;
+  }
+  @media print {
+    @page {
+      margin: 1in;
+    }
+    .manuscript {
+      padding: 0;
+      color: #000;
+      font-size: 12pt;
+    }
+    .manuscript .ms-page {
+      break-after: page;
+    }
+    .manuscript .ms-chapter {
+      margin-top: 0;
+      padding-top: 2in;
+      break-before: page;
+    }
+    .manuscript .ms-scene {
+      break-inside: auto;
+    }
+  }
+
   /* ----- Chapter Breakdown grid ----- */
   .breakdown {
     border-collapse: separate;

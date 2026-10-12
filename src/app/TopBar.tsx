@@ -9,7 +9,7 @@ import { ThemeToggle } from './ThemeToggle';
 
 export function TopBar() {
   return (
-    <header className="sticky top-0 z-20 border-b border-line bg-surface">
+    <header className="no-print sticky top-0 z-20 border-b border-line bg-surface">
       <div className="flex items-center gap-2.5 px-5 py-2 max-sm:gap-1.5 max-sm:px-4">
         <AppSwitcher current="forge" />
         <SearchButton />
