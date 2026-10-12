@@ -37,6 +37,8 @@ export const ENTRY_SECTION: Record<EntryType, Section> = {
 export const LINK_KINDS = [
   'mention',
   'member',
+  /** Where a concept came from: a concept → a shard or shard group. */
+  'source',
   'appears_in',
   'pov',
   'location',

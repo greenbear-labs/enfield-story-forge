@@ -12,6 +12,7 @@ export function toMarkdown(entries: Entry[], links: Link[], exportedAt = new Dat
   const byId = new Map(live.map((e) => [e.id, e]));
   const shards = live.filter((e) => e.type === 'shard').sort(newestFirst);
   const groups = live.filter((e) => e.type === 'shard_group').sort(newestFirst);
+  const concepts = live.filter((e) => e.type === 'concept').sort(newestFirst);
 
   const out = [
     `# Story Forge export`,
@@ -19,6 +20,16 @@ export function toMarkdown(entries: Entry[], links: Link[], exportedAt = new Dat
     `Exported ${exportedAt.toISOString().slice(0, 10)}.`,
     '',
   ];
+
+  out.push('## Concepts', '');
+  if (concepts.length === 0) out.push('None yet.', '');
+  for (const c of concepts) {
+    out.push(`### ${c.title || 'Untitled concept'}`, '');
+    if (text(c.fields.logline)) out.push(`> ${text(c.fields.logline)}`, '');
+    const meta = [c.status, text(c.fields.genre)].filter(Boolean).join(' · ');
+    if (meta) out.push(`*${meta}*`, '');
+    if (text(c.fields.notes)) out.push(text(c.fields.notes), '');
+  }
 
   out.push('## Shard groups', '');
   if (groups.length === 0) out.push('None yet.', '');
