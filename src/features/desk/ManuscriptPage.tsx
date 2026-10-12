@@ -68,6 +68,13 @@ function Manuscript({ book }: { book: Entry }) {
           >
             Open the outline
           </Link>
+          <Link
+            to="/desk/$bookId/breakdown"
+            params={{ bookId: book.id }}
+            className="font-semibold text-accent"
+          >
+            Chapter Breakdown
+          </Link>
         </div>
       </header>
 

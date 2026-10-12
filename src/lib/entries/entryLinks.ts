@@ -2,7 +2,7 @@ import type { Entry } from '../../data/types';
 
 /** Where an entry opens in the app, for entry types that have a page so far. */
 export function entryRoute(
-  entry: Pick<Entry, 'id' | 'type'>,
+  entry: Pick<Entry, 'id' | 'type'> & { parentId?: string | null },
 ):
   | { to: '/shards/$shardId'; params: { shardId: string } }
   | { to: '/shards/groups/$groupId'; params: { groupId: string } }
@@ -11,6 +11,7 @@ export function entryRoute(
   | { to: '/outlines/$outlineId'; params: { outlineId: string } }
   | { to: '/desk/chapters/$chapterId'; params: { chapterId: string } }
   | { to: '/desk/scenes/$sceneId'; params: { sceneId: string } }
+  | { to: '/desk/$bookId/breakdown'; params: { bookId: string } }
   | null {
   switch (entry.type) {
     case 'shard':
@@ -25,6 +26,10 @@ export function entryRoute(
       return { to: '/desk/chapters/$chapterId', params: { chapterId: entry.id } };
     case 'scene':
       return { to: '/desk/scenes/$sceneId', params: { sceneId: entry.id } };
+    case 'plotline':
+      return entry.parentId
+        ? { to: '/desk/$bookId/breakdown', params: { bookId: entry.parentId } }
+        : null;
     case 'character':
       return { to: '/characters/$characterId', params: { characterId: entry.id } };
     default:
@@ -40,6 +45,7 @@ const TYPE_NAMES: Partial<Record<Entry['type'], string>> = {
   book: 'Outline',
   chapter: 'Chapter',
   scene: 'Scene',
+  plotline: 'Plotline',
   series: 'Series',
   page: 'World page',
 };

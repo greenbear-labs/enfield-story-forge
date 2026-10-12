@@ -25,6 +25,7 @@ import { ShardsStationPage } from '../features/shards/ShardsStationPage';
 import { NewOutlinePage } from '../features/outlines/NewOutlinePage';
 import { OutlinePage } from '../features/outlines/OutlinePage';
 import { OutlinesStationPage } from '../features/outlines/OutlinesStationPage';
+import { BreakdownPage } from '../features/desk/BreakdownPage';
 import { ChapterPage } from '../features/desk/ChapterPage';
 import { DeskStationPage } from '../features/desk/DeskStationPage';
 import { ManuscriptPage } from '../features/desk/ManuscriptPage';
@@ -180,6 +181,14 @@ const manuscriptRoute = createRoute({
     return <ManuscriptPage bookId={bookId} />;
   },
 });
+const breakdownRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/desk/$bookId/breakdown',
+  component: function BreakdownRouteComponent() {
+    const { bookId } = breakdownRoute.useParams();
+    return <BreakdownPage key={bookId} bookId={bookId} />;
+  },
+});
 const chapterRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/desk/chapters/$chapterId',
@@ -251,6 +260,7 @@ const routeTree = rootRoute.addChildren([
     outlineRoute,
     deskRoute,
     manuscriptRoute,
+    breakdownRoute,
     chapterRoute,
     sceneRoute,
     charactersRoute,

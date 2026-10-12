@@ -57,9 +57,15 @@ describe('toMarkdown', () => {
       type: 'doc',
       content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Fog, and bells.' }] }],
     };
-    const md = toMarkdown([s2, c2, s1, c1, book], [], new Date(), [{ id: s1.id, doc }]);
+    const plot = fakeShard('', {
+      type: 'plotline',
+      title: 'The letter',
+      parentId: book.id,
+      fields: { mice: 'idea' },
+    });
+    const md = toMarkdown([s2, c2, s1, c1, book, plot], [], new Date(), [{ id: s1.id, doc }]);
     expect(md).toContain(
-      '## Manuscripts\n\n### Salt Key\n\n#### Chapter 1\n\n##### The dock\n\nFog, and bells.\n\n#### Chapter 2\n\n##### The letter\n\n*Not written yet. Mira reads it.*',
+      '## Manuscripts\n\n### Salt Key\n\n*Plotlines: The letter (idea)*\n\n#### Chapter 1\n\n##### The dock\n\nFog, and bells.\n\n#### Chapter 2\n\n##### The letter\n\n*Not written yet. Mira reads it.*',
     );
   });
 });
