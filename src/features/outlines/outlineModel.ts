@@ -146,6 +146,25 @@ export const outlineStructure = (e: Entry) => structureByKey(str(e.fields.struct
 export const spineText = (e: Entry, slot: string) => str(map(e.fields.spine)[slot]);
 export const protagonistId = (e: Entry) => str(e.fields.protagonistId) || null;
 
+/** The structure shown alongside, or null. */
+export const outlineOverlay = (e: Entry) => {
+  const key = str(e.fields.overlay);
+  return key && key !== str(e.fields.structure) ? structureByKey(key) : null;
+};
+
+/** How many chapters to spread the beats across, or null when not set. */
+export function chapterCount(e: Entry): number | null {
+  const n = e.fields.chapters;
+  return typeof n === 'number' && Number.isInteger(n) && n > 0 ? n : null;
+}
+
+/** Other structures this outline has notes in. */
+export function structuresWithNotes(e: Entry): string[] {
+  return Object.entries(map(e.fields.beatNotes))
+    .filter(([, notes]) => Object.values(map(notes)).some((v) => str(v).trim()))
+    .map(([key]) => key);
+}
+
 /** A beat's note, for a given structure (notes for every structure are kept). */
 export const beatNote = (e: Entry, structure: string, beat: string) =>
   str(map(map(e.fields.beatNotes)[structure])[beat]);

@@ -493,3 +493,24 @@ const BY_KEY = new Map(STRUCTURES.map((s) => [s.key, s]));
 /** A structure by key, falling back to the Monomyth. */
 export const structureByKey = (key: string | undefined): Structure =>
   BY_KEY.get(key ?? '') ?? BY_KEY.get(DEFAULT_STRUCTURE)!;
+
+/**
+ * Lines up a second structure with the first: each overlay beat goes to the
+ * beat nearest it by position. Returns the overlay beats by the first's beat key.
+ */
+export function alignBeats(base: Beat[], overlay: Beat[]): Map<string, Beat[]> {
+  const out = new Map<string, Beat[]>(base.map((b) => [b.key, []]));
+  if (base.length === 0) return out;
+  for (const o of overlay) {
+    let nearest = base[0]!;
+    for (const b of base) {
+      if (Math.abs(b.position - o.position) < Math.abs(nearest.position - o.position)) nearest = b;
+    }
+    out.get(nearest.key)!.push(o);
+  }
+  return out;
+}
+
+/** Which of `chapters` chapters a beat at `position` falls in, counting from 1. */
+export const chapterFor = (position: number, chapters: number) =>
+  Math.min(chapters, Math.max(1, Math.ceil(position * chapters)));

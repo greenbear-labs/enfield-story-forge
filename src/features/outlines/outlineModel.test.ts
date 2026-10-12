@@ -3,14 +3,17 @@ import { fakeShard, ts } from '../../test/entries';
 import {
   beatNote,
   beatsFilled,
+  chapterCount,
   groupBySeries,
+  outlineOverlay,
   outlineStructure,
   outlineSummary,
   spineFor,
   SPINE_SLOTS,
   START_METHODS,
+  structuresWithNotes,
 } from './outlineModel';
-import { STRUCTURES } from './structures';
+import { alignBeats, chapterFor, structureByKey, STRUCTURES } from './structures';
 
 const book = (title: string, opts: Parameters<typeof fakeShard>[1] = {}) =>
   fakeShard('', { type: 'book', title, ...opts });
@@ -70,5 +73,44 @@ describe('outlines', () => {
       ['Tides', ['Two', 'One']],
       [null, ['Loose']],
     ]);
+  });
+});
+
+describe('overlay and chapters', () => {
+  it('puts each overlay beat beside the nearest beat', () => {
+    const three = structureByKey('three-act').beats;
+    const cat = structureByKey('save-the-cat').beats;
+    const aligned = alignBeats(three, cat);
+    expect([...aligned.values()].flat()).toHaveLength(cat.length);
+    expect(aligned.get('midpoint')!.map((b) => b.key)).toEqual(['midpoint', 'bad-guys']);
+    expect(aligned.get('climax')!.map((b) => b.key)).toContain('break-three');
+  });
+
+  it('places beats in chapters', () => {
+    expect(chapterFor(0.5, 36)).toBe(18);
+    expect(chapterFor(0.01, 36)).toBe(1);
+    expect(chapterFor(0.99, 10)).toBe(10);
+  });
+
+  it('reads the overlay, chapter count, and structures with notes', () => {
+    const b = book('x', {
+      fields: {
+        structure: 'monomyth',
+        overlay: 'story-circle',
+        chapters: 30,
+        beatNotes: {
+          monomyth: { call: 'A' },
+          'three-act': { setup: ' ' },
+          vogler: { ordeal: 'B' },
+        },
+      },
+    });
+    expect(outlineOverlay(b)?.key).toBe('story-circle');
+    expect(chapterCount(b)).toBe(30);
+    expect(structuresWithNotes(b)).toEqual(['monomyth', 'vogler']);
+    expect(outlineOverlay(book('y', { fields: { structure: 'vogler', overlay: 'vogler' } }))).toBe(
+      null,
+    );
+    expect(chapterCount(book('z', { fields: { chapters: 0 } }))).toBe(null);
   });
 });
