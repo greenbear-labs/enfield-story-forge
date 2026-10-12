@@ -35,6 +35,3 @@ export const APPENDIX_NAV: NavItem = {
   sec: 'learn',
   icon: 'info',
 };
-
-export const WORLD_CREATOR_SOON =
-  'Enfield World Creator is its own app. It arrives in a later phase.';

@@ -30,7 +30,12 @@ import { ChapterPage } from '../features/desk/ChapterPage';
 import { DeskStationPage } from '../features/desk/DeskStationPage';
 import { ManuscriptPage } from '../features/desk/ManuscriptPage';
 import { ScenePage } from '../features/desk/ScenePage';
+import { IndexPage } from '../features/world/IndexPage';
+import { NotebookPage } from '../features/world/NotebookPage';
+import { WorldHomePage } from '../features/world/WorldHomePage';
+import { WorldPagePage } from '../features/world/WorldPagePage';
 import { AppShell } from './AppShell';
+import { WorldShell } from './WorldShell';
 
 const optionalString = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
 
@@ -73,16 +78,26 @@ const signInRoute = createRoute({
 });
 
 /** Everything inside the studio needs a signed-in user. */
+const requireUser = async ({ location }: { location: { href: string } }) => {
+  const auth = await authReady();
+  if (!auth.user) {
+    throw redirect({ to: '/sign-in', search: { redirect: location.href } });
+  }
+};
+
 const appRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: 'app',
-  beforeLoad: async ({ location }) => {
-    const auth = await authReady();
-    if (!auth.user) {
-      throw redirect({ to: '/sign-in', search: { redirect: location.href } });
-    }
-  },
+  beforeLoad: requireUser,
   component: AppShell,
+});
+
+/** Enfield World Creator: its own app, with its own shell. */
+const worldRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  id: 'world',
+  beforeLoad: requireUser,
+  component: WorldShell,
 });
 
 const hubRoute = createRoute({ getParentRoute: () => appRoute, path: '/hub', component: HubPage });
@@ -242,6 +257,36 @@ const appendixRoute = createRoute({
   },
 });
 
+const worldHomeRoute = createRoute({
+  getParentRoute: () => worldRoute,
+  path: '/world',
+  component: WorldHomePage,
+});
+const notebookRoute = createRoute({
+  getParentRoute: () => worldRoute,
+  path: '/world/$notebookId',
+  component: function NotebookRouteComponent() {
+    const { notebookId } = notebookRoute.useParams();
+    return <NotebookPage key={notebookId} notebookId={notebookId} />;
+  },
+});
+const indexRoute = createRoute({
+  getParentRoute: () => worldRoute,
+  path: '/world/index/$indexId',
+  component: function IndexRouteComponent() {
+    const { indexId } = indexRoute.useParams();
+    return <IndexPage key={indexId} indexId={indexId} />;
+  },
+});
+const worldPageRoute = createRoute({
+  getParentRoute: () => worldRoute,
+  path: '/world/pages/$pageId',
+  component: function WorldPageRouteComponent() {
+    const { pageId } = worldPageRoute.useParams();
+    return <WorldPagePage key={pageId} pageId={pageId} />;
+  },
+});
+
 const routeTree = rootRoute.addChildren([
   landingRoute,
   signInRoute,
@@ -268,6 +313,7 @@ const routeTree = rootRoute.addChildren([
     characterRoute,
     appendixRoute,
   ]),
+  worldRoute.addChildren([worldHomeRoute, notebookRoute, indexRoute, worldPageRoute]),
 ]);
 
 export const router = createRouter({
