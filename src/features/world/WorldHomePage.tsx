@@ -4,6 +4,7 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { Loading } from '../../components/ui/Loading';
 import { useEntries } from '../../lib/entries/hooks';
 import { recentlyUpdatedFirst } from '../../lib/entries/model';
+import { InfoLink } from '../appendix/InfoLink';
 import { cardGrid } from '../shards/ShardCard';
 import { NewNotebookDialog } from './NewNotebookDialog';
 import { notebookDescription } from './worldModel';
@@ -41,6 +42,7 @@ export function WorldHomePage() {
             game campaign, or research for a book. Each index is a table, a gallery, or a list, and
             every entry is a full page.
           </p>
+          <InfoLink topic="How the World Creator works" />
         </div>
         <button type="button" className="btn btn-primary" onClick={() => setCreating(true)}>
           + New notebook
