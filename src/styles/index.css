@@ -546,4 +546,29 @@
     color: var(--on-accent);
     font-weight: 600;
   }
+
+  /* ----- The Mashup ----- */
+  .mash-grid {
+    display: grid;
+    grid-template-columns: 90px 1fr 1fr;
+    gap: 8px;
+    align-items: stretch;
+  }
+  .mash-grid .mash-own {
+    grid-column: 2 / -1;
+  }
+  .gen-box:disabled {
+    cursor: default;
+  }
+  @media (max-width: 640px) {
+    .mash-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .mash-grid > .label {
+      grid-column: 1 / -1;
+    }
+    .mash-grid .mash-own {
+      grid-column: 1 / -1;
+    }
+  }
 }

@@ -182,67 +182,89 @@ function Sources({ conceptId }: { conceptId: string }) {
   const members = useLinks({ kind: 'member' });
   const shards = useEntries('shard');
   const groups = useEntries('shard_group');
+  const concepts = useEntries('concept');
   const shardsById = useEntryMap(shards.data);
   const groupsById = useEntryMap(groups.data);
+  const conceptsById = useEntryMap(concepts.data);
 
   const sourceIds = new Set((links.data ?? []).map((l) => l.toId));
   const sourceGroups = [...sourceIds].flatMap((id) => groupsById.get(id) ?? []);
+  const sourceConcepts = [...sourceIds].flatMap((id) => conceptsById.get(id) ?? []);
   const viaGroups = new Set(
     (members.data ?? []).filter((l) => sourceIds.has(l.fromId)).map((l) => l.toId),
   );
   const sourceShards = [...new Set([...sourceIds, ...viaGroups])].flatMap(
     (id) => shardsById.get(id) ?? [],
   );
-  const sources = [...sourceGroups, ...sourceShards];
+  const sources = [...sourceConcepts, ...sourceGroups, ...sourceShards];
 
   if (sources.length === 0) return null;
   return (
-    <section data-sec="shard" className="flex flex-col gap-2.5">
-      <div className="flex flex-wrap items-center gap-2">
-        <h2 className="text-[1.05rem]">From your shards</h2>
-        {sourceGroups.map((g) => (
-          <Link
-            key={g.id}
-            to="/shards/groups/$groupId"
-            params={{ groupId: g.id }}
-            className="chip hover:underline"
-          >
-            {g.title || 'Untitled group'}
-          </Link>
-        ))}
-      </div>
-      {sourceShards.length > 0 && (
-        <div className={cardGrid}>
-          {sourceShards.map((s) => (
-            <ShardCard
-              key={s.id}
-              shard={s}
-              action={
-                <span className="flex gap-1">
-                  <Link
-                    to="/shards/$shardId"
-                    params={{ shardId: s.id }}
-                    className="btn btn-ghost btn-small"
-                  >
-                    Open
-                  </Link>
-                  {sourceIds.has(s.id) && (
-                    <button
-                      type="button"
-                      className="btn btn-ghost btn-small"
-                      aria-label="Unlink from this concept"
-                      title="Unlink from this concept"
-                      onClick={() => removeLink(ws, conceptId, 'source', s.id)}
-                    >
-                      <Icon name="close" size={14} />
-                    </button>
-                  )}
-                </span>
-              }
-            />
+    <>
+      {sourceConcepts.length > 0 && (
+        <section className="flex flex-wrap items-center gap-2">
+          <h2 className="text-[1.05rem]">Mashed up from</h2>
+          {sourceConcepts.map((c) => (
+            <Link
+              key={c.id}
+              to="/concepts/$conceptId"
+              params={{ conceptId: c.id }}
+              className="chip hover:underline"
+            >
+              {c.title || 'Untitled concept'}
+            </Link>
           ))}
-        </div>
+        </section>
       )}
-    </section>
+      {sourceGroups.length + sourceShards.length > 0 && (
+        <section data-sec="shard" className="flex flex-col gap-2.5">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-[1.05rem]">From your shards</h2>
+            {sourceGroups.map((g) => (
+              <Link
+                key={g.id}
+                to="/shards/groups/$groupId"
+                params={{ groupId: g.id }}
+                className="chip hover:underline"
+              >
+                {g.title || 'Untitled group'}
+              </Link>
+            ))}
+          </div>
+          {sourceShards.length > 0 && (
+            <div className={cardGrid}>
+              {sourceShards.map((s) => (
+                <ShardCard
+                  key={s.id}
+                  shard={s}
+                  action={
+                    <span className="flex gap-1">
+                      <Link
+                        to="/shards/$shardId"
+                        params={{ shardId: s.id }}
+                        className="btn btn-ghost btn-small"
+                      >
+                        Open
+                      </Link>
+                      {sourceIds.has(s.id) && (
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-small"
+                          aria-label="Unlink from this concept"
+                          title="Unlink from this concept"
+                          onClick={() => removeLink(ws, conceptId, 'source', s.id)}
+                        >
+                          <Icon name="close" size={14} />
+                        </button>
+                      )}
+                    </span>
+                  }
+                />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+    </>
   );
 }

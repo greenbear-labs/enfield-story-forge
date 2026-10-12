@@ -26,6 +26,7 @@ export function ConceptsStationPage() {
       content={conceptsStation}
       toolActions={{
         'Concept Generator': () => void navigate({ to: '/concepts/generator' }),
+        'The Mashup': () => void navigate({ to: '/concepts/mashup' }),
         'From the Shard Mines': () => setMinesOpen(true),
       }}
     >

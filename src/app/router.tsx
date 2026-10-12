@@ -14,6 +14,7 @@ import { AppendixPage } from '../features/stations/AppendixPage';
 import { ConceptGeneratorPage } from '../features/concepts/ConceptGeneratorPage';
 import { ConceptPage } from '../features/concepts/ConceptPage';
 import { ConceptsStationPage } from '../features/concepts/ConceptsStationPage';
+import { MashupPage } from '../features/concepts/MashupPage';
 import { ShardGroupPage } from '../features/shards/ShardGroupPage';
 import { ShardMinesPage } from '../features/shards/ShardMinesPage';
 import { ShardPage } from '../features/shards/ShardPage';
@@ -117,6 +118,11 @@ const conceptGeneratorRoute = createRoute({
   path: '/concepts/generator',
   component: ConceptGeneratorPage,
 });
+const mashupRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/concepts/mashup',
+  component: MashupPage,
+});
 const conceptRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/concepts/$conceptId',
@@ -164,6 +170,7 @@ const routeTree = rootRoute.addChildren([
     shardRoute,
     conceptsRoute,
     conceptGeneratorRoute,
+    mashupRoute,
     conceptRoute,
     outlinesRoute,
     deskRoute,

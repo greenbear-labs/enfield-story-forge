@@ -29,7 +29,7 @@ src/
     hub/            the Hub
     stations/       StationPage template, ToolCard, station content, Appendix
     shards/         Story Shards: quick capture, library, shard page, Shard Mines, groups, Spark Prompts
-    concepts/       Concepts: Concept Bank, Concept Generator (option pools as data), concept page, shards → concept
+    concepts/       Concepts: Concept Bank, Concept Generator (option pools as data), the Mashup, concept page, shards → concept
     search/         Ctrl+K search over all entries
   components/ui/    Icon, Menu, Dialog, TagInput, Toaster/toast (with Undo actions), EmptyState, Loading
   lib/firebase/     config from env, lazy Firebase client
