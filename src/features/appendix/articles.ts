@@ -19,6 +19,7 @@ export const ARTICLE_GROUPS = [
   'Story structure',
   'Characters',
   'Writing',
+  'Worlds',
 ] as const;
 
 export const ARTICLES: Article[] = [
@@ -36,7 +37,7 @@ export const ARTICLES: Article[] = [
 - **Writer's Desk:** break the outline into chapters and scenes, then write.
 
 ## The companion workshops
-The **Character Center** holds your cast, and every station can use it. The **World Creator** (coming later) holds the places, peoples, and things of your world.
+The **Character Center** holds your cast, and every station can use it. The **World Creator** holds the places, peoples, and things of your world. It opens as its own app; read [[How the World Creator works]].
 
 ## Start anywhere
 You never have to go in order. Some writers start with a shard, some with a character, some with a theme and an ending. Everything links up later, and you can always go back a station.
@@ -361,6 +362,68 @@ Threads nest like brackets: the last one opened is usually the first one closed.
 2. Tag each scene with the plotlines it moves forward, from the grid or the Scene Desk.
 3. Read across a row. A thread that **goes quiet** for several chapters may be forgotten by the reader; give it a scene, or let it end.
 4. Read down a column. A chapter where every thread is crowded together may need to be split.`,
+  },
+  {
+    title: 'How the World Creator works',
+    group: 'Worlds',
+    sec: 'world',
+    summary: 'Notebooks, indexes, and pages: a place for everything in your world.',
+    body: `The World Creator is a separate Enfield app for keeping indexes of anything. It shares your account and your library with Story Forge, and the app switcher in the top corner moves you between the two.
+
+## Notebooks, indexes, and pages
+- A **notebook** holds one world, one campaign, or one research project.
+- An **index** holds one kind of thing: places, peoples, ships, spells. Show it as a table, a gallery, or a list.
+- A **page** is one entry in an index. It has a value for each of the index's columns, plus room to write as much as you like. Pages can hold pages of their own, like the districts of a city.
+
+## Columns
+Every index starts with a few columns, and you can add your own: text, a number, a choice from a list, tags, or a checkbox. Click a column's name to sort by it, rename it, move it, or remove it.
+
+## Writing on a page
+Type **/** for headings, lists, quotes, and dividers. Type **@** to link another page or a character; a click on a link opens it. Each page shows what links to it.
+
+## Using it in your stories
+Pages in a **Places** index can be picked as a scene's place on the Writer's Desk. Any page can be @mentioned in a scene, and every page lists the scenes that use it under "Used in Story Forge". For ideas on what to fill in, read [[Building a world that feels lived in]].`,
+  },
+  {
+    title: 'Building a world that feels lived in',
+    group: 'Worlds',
+    sec: 'world',
+    summary: 'Start from the story, build what the scenes need, and leave room for mystery.',
+    body: `Worldbuilding can swallow years. The worlds readers love feel deep because of a few well-chosen details, not because the author wrote down everything.
+
+## Build for the story
+Start with the places your scenes happen in and the people your characters meet. Add a page when a scene needs it. A city's tax system can wait until someone has to pay it.
+
+## Ask what it costs
+Every rule of the world should have a price. Magic that costs nothing solves every problem. Brandon Sanderson's laws of magic say it well: limits are more interesting than powers, and the reader should understand a power before it solves a problem.
+
+## Give things a history
+A ruin, a grudge, a holiday, a saying. Ask of each place and people: what happened here, who remembers it, and who would rather forget? The **History** index is for these.
+
+## Let people disagree
+Real cultures argue about their own past. When two factions tell the story of the same war differently, your world gets depth for free.
+
+## Leave gaps
+Hint at more than you show. A name on a map that no one visits makes the map feel bigger. Tolkien wrote that part of his books' pull was the glimpse of a large history in the background, like the towers of a distant city seen through mist.
+
+## Keep it in one place
+When a detail appears in a scene, @mention its page. Later you'll know exactly which chapters you have to change if you change it.`,
+  },
+  {
+    title: 'Notebooks beyond stories',
+    group: 'Worlds',
+    sec: 'world',
+    summary: 'Game campaigns, research, and anything else that wants an index.',
+    body: `A notebook doesn't have to be a story world. Anything that is a set of similar things with details fits.
+
+## A game campaign
+Start a notebook as **A game campaign** for indexes of sessions, the people the players meet, places, a bestiary, and loot. Keep a page per session with what happened, and @mention the people and places in it, so each one lists the sessions they appeared in.
+
+## Research for a book
+Start a notebook as **Research notes** for indexes of sources and topics. Put the author and a link in a source's columns, and your notes on its page. A topic page can @mention the sources it draws on.
+
+## Anything else
+Recipes, a reading list, a garden plan. Start with a blank notebook, add an index, and give it the columns you need. Read [[How the World Creator works]] for the basics.`,
   },
 ];
 
