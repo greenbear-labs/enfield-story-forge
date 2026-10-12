@@ -77,6 +77,7 @@ export function HubPage() {
   const countOf = (type: Entry['type']) => entries.data?.filter((e) => e.type === type).length ?? 0;
   const shardCount = countOf('shard');
   const conceptCount = countOf('concept');
+  const characterCount = countOf('character');
   const recent = useMemo(
     () => [...(entries.data ?? [])].filter(entryRoute).sort(recentlyUpdatedFirst).slice(0, 5),
     [entries.data],
@@ -138,7 +139,7 @@ export function HubPage() {
               Your cast, and tools to discover new people. Every station uses it.
             </p>
           </span>
-          <span className="font-mono text-muted">0</span>
+          <span className="font-mono text-muted">{characterCount}</span>
         </Link>
         <button
           type="button"

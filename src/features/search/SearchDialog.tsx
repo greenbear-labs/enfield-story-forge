@@ -51,7 +51,7 @@ export function SearchDialog({ onClose }: { onClose: () => void }) {
       <input
         type="search"
         className="txt"
-        placeholder="Search shards, groups, concepts, and #tags"
+        placeholder="Search shards, concepts, characters, and #tags"
         aria-label="Search everything"
         aria-controls="search-results"
         value={query}

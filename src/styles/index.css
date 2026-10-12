@@ -547,6 +547,25 @@
     font-weight: 600;
   }
 
+  /* ----- Character modules: collapsed until opened ----- */
+  .module > summary::-webkit-details-marker {
+    display: none;
+  }
+  .module > summary::after {
+    content: '';
+    flex: none;
+    width: 8px;
+    height: 8px;
+    margin-right: 4px;
+    border-right: 2px solid var(--muted);
+    border-bottom: 2px solid var(--muted);
+    transform: rotate(-45deg);
+    transition: transform 0.15s;
+  }
+  .module[open] > summary::after {
+    transform: rotate(45deg);
+  }
+
   /* ----- The Mashup ----- */
   .mash-grid {
     display: grid;

@@ -10,6 +10,7 @@ import { restoreEntry, trashEntry, updateEntry } from '../../lib/entries/entries
 import { useEntries, useEntry, useLinks } from '../../lib/entries/hooks';
 import { useDebouncedSave } from '../../lib/entries/useDebouncedSave';
 import { useAuthStore } from '../auth/authStore';
+import { createCharacter } from '../characters/characterModel';
 import { addToCart, useMineCart } from './mineCart';
 import { saveShardText, shardText, shardType } from './shardModel';
 import { ShardTypePicker } from './ShardTypePicker';
@@ -138,6 +139,25 @@ function ShardEditor({ shard }: { shard: Entry }) {
           <Icon name="mine" size={16} />
           {inCart ? 'In the mine cart' : 'Add to the mine cart'}
         </button>
+        {shardType(shard) === 'character' && (
+          <button
+            type="button"
+            data-sec="char"
+            className="btn text-accent"
+            onClick={() => {
+              flush();
+              const id = createCharacter(ws, {
+                notes: text,
+                sourceIds: [shard.id],
+              });
+              toast('Added to the cast. Give them a name.');
+              void navigate({ to: '/characters/$characterId', params: { characterId: id } });
+            }}
+          >
+            <Icon name="char" size={16} />
+            Make a character
+          </button>
+        )}
         <button
           type="button"
           className="btn btn-ai"

@@ -1,5 +1,4 @@
 import { Link, useNavigate } from '@tanstack/react-router';
-import { useState } from 'react';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Icon } from '../../components/ui/Icon';
 import { Loading } from '../../components/ui/Loading';
@@ -7,7 +6,7 @@ import { toast } from '../../components/ui/toast';
 import type { Entry } from '../../data/types';
 import { removeLink, restoreEntry, trashEntry, updateEntry } from '../../lib/entries/entries';
 import { useEntries, useEntry, useEntryMap, useLinks } from '../../lib/entries/hooks';
-import { useDebouncedSave } from '../../lib/entries/useDebouncedSave';
+import { useAutosaved } from '../../lib/entries/useAutosaved';
 import { useAuthStore } from '../auth/authStore';
 import { ShardCard, cardGrid } from '../shards/ShardCard';
 import {
@@ -53,21 +52,6 @@ export function ConceptPage({ conceptId }: { conceptId: string }) {
       )}
     </div>
   );
-}
-
-/** A text field that saves itself a moment after you stop typing. */
-function useAutosaved(initial: string, save: (value: string) => void) {
-  const [value, setValue] = useState(initial);
-  const { schedule, flush } = useDebouncedSave(save);
-  const props = {
-    value,
-    onChange: (e: { target: { value: string } }) => {
-      setValue(e.target.value);
-      schedule(e.target.value);
-    },
-    onBlur: flush,
-  };
-  return { props, flush };
 }
 
 function ConceptEditor({ concept }: { concept: Entry }) {
