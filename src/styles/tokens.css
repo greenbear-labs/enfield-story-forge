@@ -1,0 +1,123 @@
+/*
+ * Design tokens from the approved v3 wireframe.
+ * Section colors: each workshop (and each entry type) owns one accent. Set
+ * data-sec="shard" (etc.) on any element and --accent / --accent-soft follow.
+ * Theme: follows the system unless <html data-theme="light|dark"> is set.
+ */
+:root {
+  --bg: #f5f7f5;
+  --surface: #ffffff;
+  --sunken: #edf1ee;
+  --ink: #1c2320;
+  --muted: #56625c;
+  --line: #dae0dc;
+  --on-accent: #ffffff;
+  --brand: #2e6a4e;
+  --brand-soft: #e2eee7;
+  --sec-world: #1d7470;
+  --sec-world-soft: #dcefee;
+  --sec-char: #9a3f6b;
+  --sec-char-soft: #f5e3ec;
+  --sec-shard: #9a600c;
+  --sec-shard-soft: #f6e9d2;
+  --sec-concept: #6a4fb3;
+  --sec-concept-soft: #e9e4f7;
+  --sec-story: #2e5f9e;
+  --sec-story-soft: #e1eaf6;
+  --sec-desk: #466b25;
+  --sec-desk-soft: #e6eedb;
+  --sec-learn: #6e5a45;
+  --sec-learn-soft: #efe8e0;
+  --accent: var(--brand);
+  --accent-soft: var(--brand-soft);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #121614;
+    --surface: #1a201d;
+    --sunken: #151a17;
+    --ink: #e4e9e6;
+    --muted: #9ca8a2;
+    --line: #2b332f;
+    --on-accent: #0f1714;
+    --brand: #74c49b;
+    --brand-soft: #1f3229;
+    --sec-world: #5cc3be;
+    --sec-world-soft: #16302e;
+    --sec-char: #e28ab4;
+    --sec-char-soft: #35202b;
+    --sec-shard: #e3a94f;
+    --sec-shard-soft: #33291a;
+    --sec-concept: #a897ec;
+    --sec-concept-soft: #262140;
+    --sec-story: #86ade6;
+    --sec-story-soft: #1c2738;
+    --sec-desk: #a5cf7f;
+    --sec-desk-soft: #24301a;
+    --sec-learn: #c9b59e;
+    --sec-learn-soft: #2d2721;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #121614;
+  --surface: #1a201d;
+  --sunken: #151a17;
+  --ink: #e4e9e6;
+  --muted: #9ca8a2;
+  --line: #2b332f;
+  --on-accent: #0f1714;
+  --brand: #74c49b;
+  --brand-soft: #1f3229;
+  --sec-world: #5cc3be;
+  --sec-world-soft: #16302e;
+  --sec-char: #e28ab4;
+  --sec-char-soft: #35202b;
+  --sec-shard: #e3a94f;
+  --sec-shard-soft: #33291a;
+  --sec-concept: #a897ec;
+  --sec-concept-soft: #262140;
+  --sec-story: #86ade6;
+  --sec-story-soft: #1c2738;
+  --sec-desk: #a5cf7f;
+  --sec-desk-soft: #24301a;
+  --sec-learn: #c9b59e;
+  --sec-learn-soft: #2d2721;
+  color-scheme: dark;
+}
+
+[data-sec='home'] {
+  --accent: var(--brand);
+  --accent-soft: var(--brand-soft);
+}
+[data-sec='world'] {
+  --accent: var(--sec-world);
+  --accent-soft: var(--sec-world-soft);
+}
+[data-sec='char'] {
+  --accent: var(--sec-char);
+  --accent-soft: var(--sec-char-soft);
+}
+[data-sec='shard'] {
+  --accent: var(--sec-shard);
+  --accent-soft: var(--sec-shard-soft);
+}
+[data-sec='concept'] {
+  --accent: var(--sec-concept);
+  --accent-soft: var(--sec-concept-soft);
+}
+[data-sec='story'] {
+  --accent: var(--sec-story);
+  --accent-soft: var(--sec-story-soft);
+}
+[data-sec='desk'] {
+  --accent: var(--sec-desk);
+  --accent-soft: var(--sec-desk-soft);
+}
+[data-sec='learn'] {
+  --accent: var(--sec-learn);
+  --accent-soft: var(--sec-learn-soft);
+}

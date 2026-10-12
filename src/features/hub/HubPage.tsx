@@ -1,0 +1,193 @@
+import { Link } from '@tanstack/react-router';
+import { useState } from 'react';
+import { EmptyState } from '../../components/ui/EmptyState';
+import { Icon, type IconName } from '../../components/ui/Icon';
+import { toast } from '../../components/ui/toast';
+import type { StationPath } from '../../app/navigation';
+import { WORLD_CREATOR_SOON } from '../../app/navigation';
+import type { Section } from '../../data/types';
+import { useAuthStore } from '../auth/authStore';
+
+interface JourneyStep {
+  to: StationPath;
+  sec: Section;
+  num: number;
+  title: string;
+  icon: IconName;
+  invite: string;
+  count: string;
+}
+
+const JOURNEY: JourneyStep[] = [
+  {
+    to: '/shards',
+    sec: 'shard',
+    num: 1,
+    title: 'Story Shards',
+    icon: 'shard',
+    invite: 'Start by saving your story shards: a place, a person, a moment.',
+    count: 'No shards yet',
+  },
+  {
+    to: '/concepts',
+    sec: 'concept',
+    num: 2,
+    title: 'Concepts',
+    icon: 'concept',
+    invite: 'Turn sparks into story ideas you could pitch in one sentence.',
+    count: 'No concepts yet',
+  },
+  {
+    to: '/outlines',
+    sec: 'story',
+    num: 3,
+    title: 'Outline Builder',
+    icon: 'outline',
+    invite: 'Pick a structure and build the skeleton of your story.',
+    count: 'No outlines yet',
+  },
+  {
+    to: '/desk',
+    sec: 'desk',
+    num: 4,
+    title: 'Writer’s Desk',
+    icon: 'desk',
+    invite: 'Break it into chapters and scenes, then write.',
+    count: 'No words yet',
+  },
+];
+
+function greetingTime(d = new Date()): string {
+  const day = d.toLocaleDateString(undefined, { weekday: 'long' });
+  const h = d.getHours();
+  const part = h < 12 ? 'morning' : h < 18 ? 'afternoon' : 'evening';
+  return `${day} ${part}`;
+}
+
+export function HubPage() {
+  const user = useAuthStore((s) => s.user);
+  const name = user?.displayName?.split(' ')[0] || user?.email?.split('@')[0] || 'writer';
+  const [shard, setShard] = useState('');
+
+  return (
+    <div data-sec="home" className="flex flex-col gap-[22px]">
+      <section className="flex flex-wrap items-center justify-between gap-2.5">
+        <div>
+          <div className="label">{greetingTime()}</div>
+          <h1 className="text-[2rem] max-sm:text-[1.6rem]">Welcome, {name}.</h1>
+          <p className="text-muted">
+            Every story moves through four stations. Start at any of them.
+          </p>
+        </div>
+        <Link
+          to="/appendix"
+          search={{ topic: 'How Story Forge works' }}
+          className="inline-flex items-center gap-1 text-[0.82rem] font-semibold text-accent"
+        >
+          <Icon name="info" size={16} /> How Story Forge works
+        </Link>
+      </section>
+
+      <section className="journey" aria-label="The journey">
+        {JOURNEY.map((s) => (
+          <Link key={s.to} to={s.to} data-sec={s.sec} className="jstep">
+            <span className="font-mono text-[0.75rem] font-medium text-accent">
+              STATION {s.num}
+            </span>
+            <h3 className="flex items-center gap-2 text-[1.15rem]">
+              <Icon name={s.icon} className="text-accent" />
+              {s.title}
+            </h3>
+            <p className="text-[0.86rem] text-muted">{s.invite}</p>
+            <span className="mt-auto flex items-center justify-between gap-1.5 pt-1.5 text-[0.8rem]">
+              <span className="text-muted">{s.count}</span>
+              <span className="font-semibold text-accent">Enter →</span>
+            </span>
+          </Link>
+        ))}
+      </section>
+
+      <section
+        className="grid grid-cols-2 gap-3 max-[900px]:grid-cols-1"
+        aria-label="Companion workshops"
+      >
+        <Link to="/characters" data-sec="char" className="comp">
+          <span className="badge">
+            <Icon name="char" />
+          </span>
+          <span>
+            <h3>Character Center</h3>
+            <p className="text-[0.85rem] text-muted">
+              Your cast, and tools to discover new people. Every station uses it.
+            </p>
+          </span>
+          <span className="font-mono text-muted">0</span>
+        </Link>
+        <button
+          type="button"
+          data-sec="world"
+          className="comp"
+          onClick={() => toast(WORLD_CREATOR_SOON)}
+        >
+          <span className="badge">
+            <Icon name="world" />
+          </span>
+          <span>
+            <h3>Enfield World Creator ↗</h3>
+            <p className="text-[0.85rem] text-muted">
+              Indexes of peoples, places, items, and magic. Opens as its own app.
+            </p>
+          </span>
+          <span className="chip">Soon</span>
+        </button>
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-[1.05rem]">Quick access</h2>
+        <div className="grid grid-cols-[1.3fr_1fr] gap-3 max-[900px]:grid-cols-1">
+          <div className="panel flex flex-col gap-2.5 border-l-4 border-l-accent" data-sec="desk">
+            <div className="label">Pick up where you left off</div>
+            <EmptyState>
+              Nothing in progress yet. When you start writing, it shows up here.
+            </EmptyState>
+          </div>
+          <form
+            className="panel flex flex-col gap-2"
+            data-sec="shard"
+            onSubmit={(e) => {
+              e.preventDefault();
+              toast('Saving shards comes with the Story Shards station.');
+            }}
+          >
+            <label className="label" htmlFor="hub-shard">
+              Quick shard
+            </label>
+            <textarea
+              id="hub-shard"
+              className="txt min-h-16"
+              placeholder="A spark of an idea… (it goes straight to Story Shards)"
+              value={shard}
+              onChange={(e) => setShard(e.target.value)}
+            />
+            <div className="flex flex-wrap items-center gap-2">
+              <button type="submit" className="btn btn-primary btn-small" disabled={!shard.trim()}>
+                Save shard
+              </button>
+              <span className="text-[0.78rem] text-muted">or press + Shard anywhere</span>
+            </div>
+          </form>
+        </div>
+        <div className="grid grid-cols-[1.3fr_1fr] gap-3 max-[900px]:grid-cols-1">
+          <div className="panel flex flex-col gap-2">
+            <div className="label">Recent</div>
+            <EmptyState>Things you open or change will be listed here.</EmptyState>
+          </div>
+          <div className="panel flex flex-col gap-2">
+            <div className="label">Your stories</div>
+            <EmptyState>No stories yet. They begin as shards and concepts.</EmptyState>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
