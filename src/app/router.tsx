@@ -224,7 +224,14 @@ const sceneRoute = createRoute({
 const charactersRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/characters',
-  component: CharactersStationPage,
+  // story: show one story's cast ("none" for characters in no story yet).
+  validateSearch: (search: Record<string, unknown>): { story?: string } => ({
+    story: optionalString(search.story),
+  }),
+  component: function CharactersRouteComponent() {
+    const { story } = charactersRoute.useSearch();
+    return <CharactersStationPage story={story ?? null} />;
+  },
 });
 const characterInterviewRoute = createRoute({
   getParentRoute: () => appRoute,

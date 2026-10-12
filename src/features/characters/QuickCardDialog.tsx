@@ -3,11 +3,19 @@ import { useState, type FormEvent } from 'react';
 import { Dialog } from '../../components/ui/Dialog';
 import { toast } from '../../components/ui/toast';
 import { useAuthStore } from '../auth/authStore';
+import { addToCast } from './castModel';
 import { createCharacter } from './characterModel';
 import { RoleInput } from './RoleInput';
 
 /** The core card in under a minute: name, role, want, need. */
-export function QuickCardDialog({ onClose }: { onClose: () => void }) {
+export function QuickCardDialog({
+  onClose,
+  storyId = null,
+}: {
+  onClose: () => void;
+  /** Adds them to this story's cast too. */
+  storyId?: string | null;
+}) {
   const ws = useAuthStore((s) => s.workspaceId);
   const navigate = useNavigate();
   const [name, setName] = useState('');
@@ -19,6 +27,7 @@ export function QuickCardDialog({ onClose }: { onClose: () => void }) {
     e?.preventDefault();
     if (!ws || !name.trim()) return;
     const id = createCharacter(ws, { name, values: { role, want, need } });
+    if (storyId) addToCast(ws, id, storyId);
     onClose();
     toast(`${name.trim()} joined the cast.`, {
       action: {
