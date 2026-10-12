@@ -9,7 +9,7 @@ import {
   type QueryConstraint,
 } from 'firebase/firestore';
 import { useEffect, useMemo, useState } from 'react';
-import type { Entry, EntryBody, EntryType, Link, LinkKind } from '../../data/types';
+import type { Entry, EntryBody, EntryType, Link, LinkKind, Snapshot } from '../../data/types';
 import { useAuthStore } from '../../features/auth/authStore';
 import { getFirebase } from '../firebase/client';
 import { paths } from '../firestore/paths';
@@ -108,6 +108,24 @@ export function useBody(entryId: string | null): Live<EntryBody | null> {
         (snap) => onData(snap.exists() ? (snap.data() as EntryBody) : null),
         onError,
       ),
+  );
+}
+
+/** An entry's snapshots, newest first. */
+export function useSnapshots(entryId: string | null): Live<Snapshot[]> {
+  const ws = useWorkspaceId();
+  const live = useQueryListener<Snapshot>(
+    ws && entryId ? `snapshots:${ws}:${entryId}` : null,
+    () => query(collection(getFirebase().db, paths.snapshots(ws!, entryId!))),
+    (snap) => ({ ...snap.data({ serverTimestamps: 'estimate' }), id: snap.id }) as Snapshot,
+  );
+  const { data, error } = live;
+  return useMemo(
+    () => ({
+      error,
+      data: data && [...data].sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis()),
+    }),
+    [data, error],
   );
 }
 

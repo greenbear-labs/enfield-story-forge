@@ -9,8 +9,9 @@ import { useBody, useEntries, useEntry, useLinks } from '../../lib/entries/hooks
 import { useAutosaved } from '../../lib/entries/useAutosaved';
 import { useAuthStore } from '../auth/authStore';
 import { manuscriptScenes, sceneText, syncMentions, words } from './deskModel';
-import type { ProseSave } from './ProseEditor';
+import type { ProseHandle, ProseSave } from './ProseEditor';
 import { SceneSetup } from './SceneSetup';
+import { SnapshotsPanel } from './SnapshotsPanel';
 
 // The editor is the biggest piece of the app, so it loads only when you write.
 const ProseEditor = lazy(() => import('./ProseEditor'));
@@ -76,6 +77,7 @@ function SceneDesk({ scene }: { scene: Entry }) {
 
   const [count, setCount] = useState(words(scene));
   const [focus, setFocus] = useState(false);
+  const prose = useRef<ProseHandle>(null);
   const title = useAutosaved(scene.title, (v) =>
     updateEntry(ws, scene.id, { title: v.trim() || 'Untitled scene' }),
   );
@@ -187,6 +189,7 @@ function SceneDesk({ scene }: { scene: Entry }) {
                 onWords={setCount}
                 label={`${scene.title || 'Untitled scene'}: the prose`}
                 mentionables={mentionables}
+                ref={prose}
               />
             </Suspense>
           )}
@@ -224,6 +227,7 @@ function SceneDesk({ scene }: { scene: Entry }) {
             </p>
           )}
           <SceneSetup scene={scene} narrow />
+          <SnapshotsPanel sceneId={scene.id} editor={prose} />
         </aside>
       )}
     </div>
