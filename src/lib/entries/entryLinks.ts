@@ -2,7 +2,7 @@ import type { Entry } from '../../data/types';
 
 /** Where an entry opens in the app, for entry types that have a page so far. */
 export function entryRoute(
-  entry: Pick<Entry, 'id' | 'type'> & { parentId?: string | null },
+  entry: Pick<Entry, 'id' | 'type'>,
 ):
   | { to: '/shards/$shardId'; params: { shardId: string } }
   | { to: '/shards/groups/$groupId'; params: { groupId: string } }
@@ -10,6 +10,7 @@ export function entryRoute(
   | { to: '/characters/$characterId'; params: { characterId: string } }
   | { to: '/outlines/$outlineId'; params: { outlineId: string } }
   | { to: '/desk/chapters/$chapterId'; params: { chapterId: string } }
+  | { to: '/desk/scenes/$sceneId'; params: { sceneId: string } }
   | null {
   switch (entry.type) {
     case 'shard':
@@ -23,9 +24,7 @@ export function entryRoute(
     case 'chapter':
       return { to: '/desk/chapters/$chapterId', params: { chapterId: entry.id } };
     case 'scene':
-      return entry.parentId
-        ? { to: '/desk/chapters/$chapterId', params: { chapterId: entry.parentId } }
-        : null;
+      return { to: '/desk/scenes/$sceneId', params: { sceneId: entry.id } };
     case 'character':
       return { to: '/characters/$characterId', params: { characterId: entry.id } };
     default:

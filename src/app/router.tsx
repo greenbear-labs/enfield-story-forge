@@ -28,6 +28,7 @@ import { OutlinesStationPage } from '../features/outlines/OutlinesStationPage';
 import { ChapterPage } from '../features/desk/ChapterPage';
 import { DeskStationPage } from '../features/desk/DeskStationPage';
 import { ManuscriptPage } from '../features/desk/ManuscriptPage';
+import { ScenePage } from '../features/desk/ScenePage';
 import { AppShell } from './AppShell';
 
 const optionalString = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
@@ -187,6 +188,14 @@ const chapterRoute = createRoute({
     return <ChapterPage key={chapterId} chapterId={chapterId} />;
   },
 });
+const sceneRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/desk/scenes/$sceneId',
+  component: function SceneRouteComponent() {
+    const { sceneId } = sceneRoute.useParams();
+    return <ScenePage key={sceneId} sceneId={sceneId} />;
+  },
+});
 const charactersRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/characters',
@@ -243,6 +252,7 @@ const routeTree = rootRoute.addChildren([
     deskRoute,
     manuscriptRoute,
     chapterRoute,
+    sceneRoute,
     charactersRoute,
     characterInterviewRoute,
     characterRoute,

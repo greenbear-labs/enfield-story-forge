@@ -590,4 +590,45 @@
       grid-column: 1 / -1;
     }
   }
+
+  /* ----- Scene Desk: the prose page ----- */
+  .prose-page {
+    min-height: 60vh;
+    outline: none;
+    font-family: var(--font-display);
+    font-size: 1.08rem;
+    line-height: 1.75;
+    overflow-wrap: anywhere;
+  }
+  .prose-page p {
+    margin: 0 0 0.9em;
+  }
+  .prose-page blockquote {
+    margin: 0 0 0.9em;
+    padding-left: 1em;
+    border-left: 3px solid var(--accent-soft);
+    font-style: italic;
+  }
+  .prose-page hr {
+    height: auto;
+    overflow: visible;
+    border: 0;
+    margin: 1.4em 0;
+    text-align: center;
+  }
+  .prose-page hr::after {
+    content: '* * *';
+    color: var(--muted);
+    letter-spacing: 0.4em;
+  }
+  .prose-page hr.ProseMirror-selectednode::after {
+    color: var(--accent);
+  }
+  .prose-page p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    color: var(--muted);
+    pointer-events: none;
+  }
 }

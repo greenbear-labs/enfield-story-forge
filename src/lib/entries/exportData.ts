@@ -4,12 +4,27 @@ import { getFirebase } from '../firebase/client';
 import { paths } from '../firestore/paths';
 import { characterSummary } from '../../features/characters/characterModel';
 import { outlineStructure, outlineSummary } from '../../features/outlines/outlineModel';
-import { newestFirst } from './model';
+import { byOrder, newestFirst } from './model';
+import { proseToMarkdown } from './prose';
 
 const text = (v: unknown) => (typeof v === 'string' ? v : '');
 
-/** Outlines, concepts, characters, shard groups, and shards as a readable Markdown file. Trashed entries are left out. */
-export function toMarkdown(entries: Entry[], links: Link[], exportedAt = new Date()): string {
+/** A body document as the export reads it. */
+export interface BodyRow {
+  id: string;
+  doc?: unknown;
+}
+
+/**
+ * Manuscripts (with their prose), outlines, concepts, characters, shard
+ * groups, and shards as a readable Markdown file. Trashed entries are left out.
+ */
+export function toMarkdown(
+  entries: Entry[],
+  links: Link[],
+  exportedAt = new Date(),
+  bodies: BodyRow[] = [],
+): string {
   const live = entries.filter((e) => !e.deletedAt);
   const byId = new Map(live.map((e) => [e.id, e]));
   const shards = live.filter((e) => e.type === 'shard').sort(newestFirst);
@@ -25,6 +40,27 @@ export function toMarkdown(entries: Entry[], links: Link[], exportedAt = new Dat
     `Exported ${exportedAt.toISOString().slice(0, 10)}.`,
     '',
   ];
+
+  const prose = new Map(bodies.map((b) => [b.id, proseToMarkdown(b.doc)]));
+  const childrenOf = (parentId: string, type: Entry['type']) =>
+    live.filter((e) => e.type === type && e.parentId === parentId).sort(byOrder);
+  const manuscripts = live
+    .filter((e) => e.type === 'book' && e.fields.onDesk === true)
+    .sort(newestFirst);
+  if (manuscripts.length) out.push('## Manuscripts', '');
+  for (const book of manuscripts) {
+    out.push(`### ${book.title || 'Untitled story'}`, '');
+    for (const chapter of childrenOf(book.id, 'chapter')) {
+      out.push(`#### ${chapter.title || 'Untitled chapter'}`, '');
+      for (const scene of childrenOf(chapter.id, 'scene')) {
+        out.push(`##### ${scene.title || 'Untitled scene'}`, '');
+        const written = prose.get(scene.id);
+        const summary = text(scene.fields.summary).replace(/\n+/g, ' ');
+        if (written) out.push(written, '');
+        else out.push(`*Not written yet.${summary ? ` ${summary}` : ''}*`, '');
+      }
+    }
+  }
 
   out.push('## Outlines', '');
   const outlines = live.filter((e) => e.type === 'book').sort(newestFirst);
@@ -141,6 +177,10 @@ export async function exportJson(workspaceId: string): Promise<void> {
 }
 
 export async function exportMarkdown(workspaceId: string): Promise<void> {
-  const { entries, links } = await readAll(workspaceId);
-  download(`story-forge-${stamp()}.md`, toMarkdown(entries, links), 'text/markdown');
+  const { entries, links, bodies } = await readAll(workspaceId);
+  download(
+    `story-forge-${stamp()}.md`,
+    toMarkdown(entries, links, new Date(), bodies as BodyRow[]),
+    'text/markdown',
+  );
 }

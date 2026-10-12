@@ -20,6 +20,16 @@ export function DeskStationPage() {
     [books.data],
   );
   const latest: Entry | undefined = manuscripts[0];
+  const chapters = useEntries('chapter');
+  const scenes = useEntries('scene');
+  // The scene you worked on last, in a manuscript that's still here.
+  const lastScene = useMemo(() => {
+    const live = new Set(manuscripts.map((b) => b.id));
+    const parents = new Map((chapters.data ?? []).map((c) => [c.id, c.parentId ?? '']));
+    return (scenes.data ?? [])
+      .filter((s) => live.has(parents.get(s.parentId ?? '') ?? ''))
+      .sort(recentlyUpdatedFirst)[0];
+  }, [manuscripts, chapters.data, scenes.data]);
 
   return (
     <StationPage
@@ -29,6 +39,12 @@ export function DeskStationPage() {
           latest
             ? void navigate({ to: '/desk/$bookId', params: { bookId: latest.id } })
             : void navigate({ to: '/outlines' }),
+        'Scene Desk': () =>
+          lastScene
+            ? void navigate({ to: '/desk/scenes/$sceneId', params: { sceneId: lastScene.id } })
+            : latest
+              ? void navigate({ to: '/desk/$bookId', params: { bookId: latest.id } })
+              : void navigate({ to: '/outlines' }),
       }}
     >
       <Library manuscripts={manuscripts} loading={books.data === undefined} error={!!books.error} />

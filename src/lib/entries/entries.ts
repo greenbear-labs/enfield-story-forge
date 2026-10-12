@@ -39,7 +39,18 @@ export function createEntry(workspaceId: string, input: NewEntry): string {
 }
 
 export type EntryChanges = Partial<
-  Pick<Entry, 'title' | 'icon' | 'template' | 'parentId' | 'order' | 'tags' | 'status' | 'fields'>
+  Pick<
+    Entry,
+    | 'title'
+    | 'icon'
+    | 'template'
+    | 'parentId'
+    | 'order'
+    | 'tags'
+    | 'status'
+    | 'fields'
+    | 'wordCount'
+  >
 >;
 
 /** Pass as a value in `fieldChanges` to remove that field. */
@@ -100,5 +111,22 @@ export function removeLink(
   fireAndTrack(
     deleteDoc(doc(db, paths.link(workspaceId, linkId(fromId, kind, toId)))),
     'unlink the entries',
+  );
+}
+
+/** Saves an entry's rich text body (TipTap JSON), which lives apart from the entry. */
+export function saveBody(
+  workspaceId: string,
+  entryId: string,
+  body: Record<string, unknown>,
+): void {
+  const { db } = getFirebase();
+  fireAndTrack(
+    setDoc(doc(db, paths.body(workspaceId, entryId)), {
+      entryId,
+      doc: body,
+      updatedAt: serverTimestamp(),
+    }),
+    'save the writing',
   );
 }
