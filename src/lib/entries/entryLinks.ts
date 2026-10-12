@@ -12,6 +12,9 @@ export function entryRoute(
   | { to: '/desk/chapters/$chapterId'; params: { chapterId: string } }
   | { to: '/desk/scenes/$sceneId'; params: { sceneId: string } }
   | { to: '/desk/$bookId/breakdown'; params: { bookId: string } }
+  | { to: '/world/$notebookId'; params: { notebookId: string } }
+  | { to: '/world/index/$indexId'; params: { indexId: string } }
+  | { to: '/world/pages/$pageId'; params: { pageId: string } }
   | null {
   switch (entry.type) {
     case 'shard':
@@ -32,6 +35,12 @@ export function entryRoute(
         : null;
     case 'character':
       return { to: '/characters/$characterId', params: { characterId: entry.id } };
+    case 'notebook':
+      return { to: '/world/$notebookId', params: { notebookId: entry.id } };
+    case 'index':
+      return { to: '/world/index/$indexId', params: { indexId: entry.id } };
+    case 'page':
+      return { to: '/world/pages/$pageId', params: { pageId: entry.id } };
     default:
       return null;
   }
@@ -47,6 +56,8 @@ const TYPE_NAMES: Partial<Record<Entry['type'], string>> = {
   scene: 'Scene',
   plotline: 'Plotline',
   series: 'Series',
+  notebook: 'Notebook',
+  index: 'Index',
   page: 'World page',
 };
 

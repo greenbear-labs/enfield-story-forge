@@ -3,6 +3,9 @@ import type { Section } from './section';
 
 /** Every kind of thing a writer makes. See v1-spec-and-data-model.md, section 3. */
 export const ENTRY_TYPES = [
+  /** World Creator: a notebook holds indexes; an index holds pages. */
+  'notebook',
+  'index',
   'page',
   'character',
   'shard',
@@ -20,6 +23,8 @@ export type EntryType = (typeof ENTRY_TYPES)[number];
 
 /** Section colors follow the entry type, everywhere an entry is shown. */
 export const ENTRY_SECTION: Record<EntryType, Section> = {
+  notebook: 'world',
+  index: 'world',
   page: 'world',
   character: 'char',
   shard: 'shard',

@@ -4,7 +4,6 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { Icon, type IconName } from '../../components/ui/Icon';
 import { toast } from '../../components/ui/toast';
 import type { StationPath } from '../../app/navigation';
-import { WORLD_CREATOR_SOON } from '../../app/navigation';
 import { ENTRY_SECTION, type Entry, type Section } from '../../data/types';
 import { entryRoute, entryTypeName } from '../../lib/entries/entryLinks';
 import { useEntries, useEntryMap } from '../../lib/entries/hooks';
@@ -78,6 +77,7 @@ export function HubPage() {
   const shardCount = countOf('shard');
   const conceptCount = countOf('concept');
   const characterCount = countOf('character');
+  const notebookCount = countOf('notebook');
   const outlineCount = countOf('book');
   const books = useEntryMap(entries.data?.filter((e) => e.type === 'book'));
   // The chapter or scene you touched last, to go back to.
@@ -160,12 +160,7 @@ export function HubPage() {
           </span>
           <span className="font-mono text-muted">{characterCount}</span>
         </Link>
-        <button
-          type="button"
-          data-sec="world"
-          className="comp"
-          onClick={() => toast(WORLD_CREATOR_SOON)}
-        >
+        <Link to="/world" data-sec="world" className="comp">
           <span className="badge">
             <Icon name="world" />
           </span>
@@ -175,8 +170,8 @@ export function HubPage() {
               Indexes of peoples, places, items, and magic. Opens as its own app.
             </p>
           </span>
-          <span className="chip">Soon</span>
-        </button>
+          <span className="font-mono text-muted">{notebookCount}</span>
+        </Link>
       </section>
 
       <section className="flex flex-col gap-3">

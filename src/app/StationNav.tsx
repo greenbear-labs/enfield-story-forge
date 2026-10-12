@@ -1,13 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import { Icon } from '../components/ui/Icon';
-import { toast } from '../components/ui/toast';
-import {
-  APPENDIX_NAV,
-  CHARACTER_NAV,
-  JOURNEY_NAV,
-  WORLD_CREATOR_SOON,
-  type NavItem,
-} from './navigation';
+import { APPENDIX_NAV, CHARACTER_NAV, JOURNEY_NAV, type NavItem } from './navigation';
 
 function NavLink({ item }: { item: NavItem }) {
   return (
@@ -27,15 +20,10 @@ export function StationNav() {
       ))}
       <span className="mx-1.5 my-2.5 w-px flex-none bg-line" aria-hidden="true" />
       <NavLink item={CHARACTER_NAV} />
-      <button
-        type="button"
-        className="st"
-        data-sec="world"
-        onClick={() => toast(WORLD_CREATOR_SOON)}
-      >
+      <Link to="/world" className="st" data-sec="world">
         <Icon name="world" />
         <span>World Creator ↗</span>
-      </button>
+      </Link>
       <NavLink item={APPENDIX_NAV} />
     </nav>
   );

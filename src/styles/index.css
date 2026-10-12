@@ -644,6 +644,121 @@
     pointer-events: none;
   }
 
+  /* ----- World Creator ----- */
+  /* Its own app: the page takes on a light wash of teal. */
+  .world-app {
+    min-height: 100dvh;
+    background: color-mix(in srgb, var(--sec-world-soft) 45%, var(--bg));
+  }
+  .world-table {
+    border-collapse: collapse;
+    min-width: 100%;
+    font-size: 0.9rem;
+  }
+  .world-table th,
+  .world-table td {
+    padding: 2px 6px;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: middle;
+  }
+  .world-table th + th,
+  .world-table td,
+  .world-table tbody th + td {
+    border-left: 1px solid var(--line);
+  }
+  .world-table thead th {
+    background: var(--sunken);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .world-table .col-head {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+    padding: 6px 2px;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-align: left;
+  }
+  .world-table .col-head:hover {
+    color: var(--accent);
+  }
+  .cell-input {
+    width: 100%;
+    min-width: 0;
+    padding: 6px 2px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    outline: none;
+  }
+  .cell-input:focus {
+    background: var(--accent-soft);
+  }
+  .world-table-add {
+    display: block;
+    width: 100%;
+    padding: 8px 10px;
+    border: 0;
+    background: none;
+    color: var(--muted);
+    font-size: 0.85rem;
+    text-align: left;
+  }
+  .world-table-add:hover {
+    color: var(--accent);
+    background: var(--sunken);
+  }
+  .rich-page {
+    min-height: 40vh;
+    outline: none;
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+  }
+  .rich-page > * + * {
+    margin-top: 0.7em;
+  }
+  .rich-page h2 {
+    margin-top: 1.2em;
+    font-size: 1.3rem;
+  }
+  .rich-page h3 {
+    margin-top: 1em;
+    font-size: 1.08rem;
+  }
+  .rich-page ul {
+    padding-left: 1.4em;
+    list-style: disc;
+  }
+  .rich-page ol {
+    padding-left: 1.4em;
+    list-style: decimal;
+  }
+  .rich-page blockquote {
+    padding-left: 1em;
+    border-left: 3px solid var(--accent-soft);
+    font-style: italic;
+  }
+  .rich-page hr {
+    height: auto;
+    border: 0;
+    border-top: 1px solid var(--line);
+  }
+  .rich-page p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    color: var(--muted);
+    pointer-events: none;
+  }
+
   /* ----- Chapter Breakdown grid ----- */
   .breakdown {
     border-collapse: separate;
