@@ -50,12 +50,13 @@ const landingRoute = createRoute({
 const signInRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/sign-in',
-  validateSearch: (search: Record<string, unknown>): { redirect?: string } => ({
+  validateSearch: (search: Record<string, unknown>): { redirect?: string; signUp?: boolean } => ({
     redirect: optionalString(search.redirect),
+    signUp: search.signUp === true || search.signUp === 'true' ? true : undefined,
   }),
   component: function SignInRouteComponent() {
-    const { redirect } = signInRoute.useSearch();
-    return <SignInPage redirect={redirect} />;
+    const { redirect, signUp } = signInRoute.useSearch();
+    return <SignInPage redirect={redirect} startWithSignUp={signUp} />;
   },
 });
 

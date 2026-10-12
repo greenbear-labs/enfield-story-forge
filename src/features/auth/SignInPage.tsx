@@ -21,9 +21,15 @@ const TITLES: Record<Mode, string> = {
   reset: 'Reset your password',
 };
 
-export function SignInPage({ redirect }: { redirect?: string }) {
+export function SignInPage({
+  redirect,
+  startWithSignUp,
+}: {
+  redirect?: string;
+  startWithSignUp?: boolean;
+}) {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<Mode>('signIn');
+  const [mode, setMode] = useState<Mode>(startWithSignUp ? 'signUp' : 'signIn');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);

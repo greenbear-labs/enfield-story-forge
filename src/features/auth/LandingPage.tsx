@@ -50,13 +50,24 @@ export function LandingPage() {
             chapters connected, so every idea moves forward to the page.
           </p>
           <div className="flex flex-wrap items-center gap-3 pt-2">
-            <Link
-              to={signedIn ? '/hub' : '/sign-in'}
-              className="btn btn-primary px-5 py-2.5 text-base"
-            >
-              {signedIn ? 'Open the studio' : 'Sign in to start'}
-            </Link>
-            <span className="text-[0.85rem] text-muted">Invite-only for now.</span>
+            {signedIn ? (
+              <Link to="/hub" className="btn btn-primary px-5 py-2.5 text-base">
+                Open the studio
+              </Link>
+            ) : (
+              <>
+                <Link
+                  to="/sign-in"
+                  search={{ signUp: true }}
+                  className="btn btn-primary px-5 py-2.5 text-base"
+                >
+                  Create a free account
+                </Link>
+                <Link to="/sign-in" className="btn px-5 py-2.5 text-base">
+                  Sign in
+                </Link>
+              </>
+            )}
           </div>
         </section>
 
