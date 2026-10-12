@@ -8,6 +8,7 @@ export function entryRoute(
   | { to: '/shards/groups/$groupId'; params: { groupId: string } }
   | { to: '/concepts/$conceptId'; params: { conceptId: string } }
   | { to: '/characters/$characterId'; params: { characterId: string } }
+  | { to: '/outlines/$outlineId'; params: { outlineId: string } }
   | null {
   switch (entry.type) {
     case 'shard':
@@ -16,6 +17,8 @@ export function entryRoute(
       return { to: '/shards/groups/$groupId', params: { groupId: entry.id } };
     case 'concept':
       return { to: '/concepts/$conceptId', params: { conceptId: entry.id } };
+    case 'book':
+      return { to: '/outlines/$outlineId', params: { outlineId: entry.id } };
     case 'character':
       return { to: '/characters/$characterId', params: { characterId: entry.id } };
     default:
@@ -28,6 +31,8 @@ const TYPE_NAMES: Partial<Record<Entry['type'], string>> = {
   shard_group: 'Shard group',
   concept: 'Concept',
   character: 'Character',
+  book: 'Outline',
+  series: 'Series',
   page: 'World page',
 };
 

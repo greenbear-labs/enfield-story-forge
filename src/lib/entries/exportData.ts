@@ -3,11 +3,12 @@ import type { Entry, Link } from '../../data/types';
 import { getFirebase } from '../firebase/client';
 import { paths } from '../firestore/paths';
 import { characterSummary } from '../../features/characters/characterModel';
+import { outlineStructure, outlineSummary } from '../../features/outlines/outlineModel';
 import { newestFirst } from './model';
 
 const text = (v: unknown) => (typeof v === 'string' ? v : '');
 
-/** Concepts, characters, shard groups, and shards as a readable Markdown file. Trashed entries are left out. */
+/** Outlines, concepts, characters, shard groups, and shards as a readable Markdown file. Trashed entries are left out. */
 export function toMarkdown(entries: Entry[], links: Link[], exportedAt = new Date()): string {
   const live = entries.filter((e) => !e.deletedAt);
   const byId = new Map(live.map((e) => [e.id, e]));
@@ -24,6 +25,28 @@ export function toMarkdown(entries: Entry[], links: Link[], exportedAt = new Dat
     `Exported ${exportedAt.toISOString().slice(0, 10)}.`,
     '',
   ];
+
+  out.push('## Outlines', '');
+  const outlines = live.filter((e) => e.type === 'book').sort(newestFirst);
+  if (outlines.length === 0) out.push('None yet.', '');
+  for (const o of outlines) {
+    const series = o.parentId ? byId.get(o.parentId) : undefined;
+    out.push(`### ${o.title || 'Untitled story'}`, '');
+    out.push(
+      `*${[series ? `Series: ${series.title}` : '', outlineStructure(o).name].filter(Boolean).join(' · ')}*`,
+      '',
+    );
+    const { spine, beats } = outlineSummary(o);
+    if (spine.length)
+      out.push(...spine.map(([k, v]) => `- **${k}:** ${v.replace(/\n+/g, ' ')}`), '');
+    if (beats.length)
+      out.push(
+        '#### Beats',
+        '',
+        ...beats.map(([k, v]) => `- **${k}:** ${v.replace(/\n+/g, ' ')}`),
+        '',
+      );
+  }
 
   out.push('## Concepts', '');
   if (concepts.length === 0) out.push('None yet.', '');
