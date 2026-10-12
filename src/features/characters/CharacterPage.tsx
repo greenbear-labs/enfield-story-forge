@@ -138,6 +138,14 @@ function CharacterEditor({ character }: { character: Entry }) {
             <Icon name="chat" size={16} />
             Interview them
           </Link>
+          <Link
+            to="/outlines/new"
+            search={{ character: character.id }}
+            data-sec="story"
+            className="btn text-accent"
+          >
+            Start an outline →
+          </Link>
           <button
             type="button"
             className="btn btn-ai"

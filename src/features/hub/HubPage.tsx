@@ -78,12 +78,15 @@ export function HubPage() {
   const shardCount = countOf('shard');
   const conceptCount = countOf('concept');
   const characterCount = countOf('character');
+  const outlineCount = countOf('book');
   const recent = useMemo(
     () => [...(entries.data ?? [])].filter(entryRoute).sort(recentlyUpdatedFirst).slice(0, 5),
     [entries.data],
   );
   const counts: Partial<Record<StationPath, string>> = {};
   if (shardCount) counts['/shards'] = `${shardCount} ${shardCount === 1 ? 'shard' : 'shards'}`;
+  if (outlineCount)
+    counts['/outlines'] = `${outlineCount} ${outlineCount === 1 ? 'outline' : 'outlines'}`;
   if (conceptCount)
     counts['/concepts'] = `${conceptCount} ${conceptCount === 1 ? 'concept' : 'concepts'}`;
 

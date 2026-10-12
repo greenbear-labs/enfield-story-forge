@@ -22,7 +22,10 @@ import { ShardGroupPage } from '../features/shards/ShardGroupPage';
 import { ShardMinesPage } from '../features/shards/ShardMinesPage';
 import { ShardPage } from '../features/shards/ShardPage';
 import { ShardsStationPage } from '../features/shards/ShardsStationPage';
-import { DeskPage, OutlinesPage } from '../features/stations/pages';
+import { NewOutlinePage } from '../features/outlines/NewOutlinePage';
+import { OutlinePage } from '../features/outlines/OutlinePage';
+import { OutlinesStationPage } from '../features/outlines/OutlinesStationPage';
+import { DeskPage } from '../features/stations/pages';
 import { AppShell } from './AppShell';
 
 const optionalString = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
@@ -137,7 +140,29 @@ const conceptRoute = createRoute({
 const outlinesRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/outlines',
-  component: OutlinesPage,
+  component: OutlinesStationPage,
+});
+const newOutlineRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/outlines/new',
+  validateSearch: (search: Record<string, unknown>): { concept?: string; character?: string } => ({
+    concept: optionalString(search.concept),
+    character: optionalString(search.character),
+  }),
+  component: function NewOutlineRouteComponent() {
+    const { concept, character } = newOutlineRoute.useSearch();
+    return (
+      <NewOutlinePage key={`${concept}:${character}`} conceptId={concept} characterId={character} />
+    );
+  },
+});
+const outlineRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/outlines/$outlineId',
+  component: function OutlineRouteComponent() {
+    const { outlineId } = outlineRoute.useParams();
+    return <OutlinePage outlineId={outlineId} />;
+  },
 });
 const deskRoute = createRoute({
   getParentRoute: () => appRoute,
@@ -195,6 +220,8 @@ const routeTree = rootRoute.addChildren([
     mashupRoute,
     conceptRoute,
     outlinesRoute,
+    newOutlineRoute,
+    outlineRoute,
     deskRoute,
     charactersRoute,
     characterInterviewRoute,

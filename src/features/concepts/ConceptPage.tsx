@@ -135,9 +135,10 @@ function ConceptEditor({ concept }: { concept: Entry }) {
             type="button"
             data-sec="story"
             className="btn text-accent"
-            onClick={() =>
-              toast('Sending concepts to the Outline Builder arrives with the Outline Builder.')
-            }
+            onClick={() => {
+              [title, logline, genre, notes].forEach((f) => f.flush());
+              void navigate({ to: '/outlines/new', search: { concept: concept.id } });
+            }}
           >
             Send to Outline Builder →
           </button>

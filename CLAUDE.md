@@ -30,6 +30,7 @@ src/
     stations/       StationPage template, ToolCard, station content, Appendix
     shards/         Story Shards: quick capture, library, shard page, Shard Mines, groups, Spark Prompts
     concepts/       Concepts: Concept Bank, Concept Generator (option pools as data), the Mashup, concept page, shards → concept
+    outlines/       Outline Builder: New Outline, Story Spine, Beat Board, structure library (data), series
     characters/     Character Center: the cast, character page (core card + modules), Quick Card, Character Interview, Archetype Spark (pools as data)
     search/         Ctrl+K search over all entries
   components/ui/    Icon, Menu, Dialog, TagInput, Toaster/toast (with Undo actions), EmptyState, Loading
@@ -49,7 +50,7 @@ firestore.rules, storage.rules, firebase.json   security rules (deploy with the 
 - **AI buttons are present but inactive** (`btn btn-ai`), with a placeholder message. No AI calls in v1.
 - **Offline-first.** Firestore writes go to the local cache immediately; don't block the UI on the server. Call `trackPendingWrites()` after writes so the sync indicator is honest.
 - **Data lives under `workspaces/{workspaceId}/...`** (see `src/lib/firestore/paths.ts`). The personal workspace id is the user's uid.
-- **Everything is an entry.** Use `src/lib/entries` (`createEntry`, `updateEntry`, `trashEntry`, `addLink`, and the `useEntries` / `useEntry` / `useLinks` hooks) rather than raw Firestore calls in features. Deleting is a soft delete (`deletedAt`), with an Undo toast. Links have deterministic ids (`from__kind__to`); a shard group's shards are `member` links, a concept's shards or groups (and a character's shards) are `source` links, and a character's relationships are `related` links with the note kept on the character (`fields.relations`).
+- **Everything is an entry.** Use `src/lib/entries` (`createEntry`, `updateEntry`, `trashEntry`, `addLink`, and the `useEntries` / `useEntry` / `useLinks` hooks) rather than raw Firestore calls in features. Deleting is a soft delete (`deletedAt`), with an Undo toast. An outline is a `book` entry (its series is its parent); beat notes are kept per structure in `fields.beatNotes`. Links have deterministic ids (`from__kind__to`); a shard group's shards are `member` links, a concept's shards or groups (and a character's shards) are `source` links, an outline's concept is a `source` link, and a character's relationships are `related` links with the note kept on the character (`fields.relations`).
 - **No screenplay formatting**, ever.
 - Keep the UI simple and calm, matching the v3 wireframe. Check phone width (390px): no horizontal page scroll.
 - Never ship auth bypasses or test-only hooks in `src/`.
