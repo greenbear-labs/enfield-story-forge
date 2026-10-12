@@ -5,9 +5,12 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     match /workspaces/{wsId}/{allPaths=**} {
+      // A personal workspace's id is its owner's uid, so that needs no Firestore
+      // read (the same check firestore.rules makes). Shared workspaces look up memberIds.
       function isMember() {
         return request.auth != null
-          && request.auth.uid in firestore.get(/databases/(default)/documents/workspaces/$(wsId)).data.memberIds;
+          && (request.auth.uid == wsId
+            || request.auth.uid in firestore.get(/databases/(default)/documents/workspaces/$(wsId)).data.memberIds);
       }
 
       allow read: if isMember();

@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import type { Entry } from '../../data/types';
+import { Avatar } from '../images/EntryImg';
 import { characterRole, fieldText } from './characterModel';
 
 /** How a character looks in the cast, and anywhere else a character is shown. */
@@ -14,10 +15,13 @@ export function CharacterCard({ character }: { character: Entry }) {
       data-sec="char"
       className="entry-card"
     >
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="chip">{role || 'No role yet'}</span>
+      <div className="flex items-center gap-3">
+        <Avatar entry={character} />
+        <div className="flex min-w-0 flex-col items-start gap-1.5">
+          <span className="chip">{role || 'No role yet'}</span>
+          <h3 className="text-[1.05rem]">{character.title || 'Unnamed character'}</h3>
+        </div>
       </div>
-      <h3 className="text-[1.05rem]">{character.title || 'Unnamed character'}</h3>
       {want || flaw ? (
         <dl className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-0.5 text-[0.88rem]">
           {want && (

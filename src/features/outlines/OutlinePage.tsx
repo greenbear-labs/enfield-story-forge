@@ -12,6 +12,7 @@ import { InfoLink } from '../appendix/InfoLink';
 import { onDesk } from '../desk/deskModel';
 import { SendToDeskDialog } from '../desk/SendToDeskDialog';
 import { useAuthStore } from '../auth/authStore';
+import { EntryGallery } from '../images/EntryGallery';
 import { filterCast } from '../characters/characterModel';
 import {
   beatNote,
@@ -170,6 +171,7 @@ function OutlineEditor({ outline }: { outline: Entry }) {
           </label>
         </div>
         <FromConcept outlineId={outline.id} />
+        <EntryGallery entry={outline} label="Images and mood board" />
         <div className="flex flex-wrap gap-2 border-t border-line pt-4">
           <button
             type="button"

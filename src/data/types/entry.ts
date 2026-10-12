@@ -66,6 +66,8 @@ export interface EntryModule {
 export interface EntryImage {
   id: string;
   storagePath: string;
+  /** Download URL, kept so the image shows without asking Storage first (and offline, once cached). */
+  url?: string;
   width?: number;
   height?: number;
   alt?: string;

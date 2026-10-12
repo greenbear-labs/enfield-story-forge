@@ -21,7 +21,7 @@ export function Dialog({ title, onClose, children, sec, wide }: DialogProps) {
   useEffect(() => {
     const before = document.activeElement as HTMLElement | null;
     const first = ref.current?.querySelector<HTMLElement>(
-      '[autofocus], textarea, input, select, button:not([data-close])',
+      '[autofocus], [data-autofocus], textarea, input, select, button:not([data-close])',
     );
     (first ?? ref.current)?.focus();
     // Start typing after any text that's already there (e.g. a Spark Prompt).

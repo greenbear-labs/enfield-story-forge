@@ -14,6 +14,7 @@ import {
   updateEntry,
 } from '../../lib/entries/entries';
 import { useEntries, useEntry, useEntryMap, useLinks } from '../../lib/entries/hooks';
+import { imagesOf } from '../../lib/entries/images';
 import { useAutosaved } from '../../lib/entries/useAutosaved';
 import { InfoLink } from '../appendix/InfoLink';
 import { useAuthStore } from '../auth/authStore';
@@ -30,6 +31,7 @@ import {
   type FieldDef,
 } from './characterModel';
 import { AppearsIn } from '../desk/AppearsIn';
+import { EntryGallery } from '../images/EntryGallery';
 import { RoleInput } from './RoleInput';
 
 export function CharacterPage({ characterId }: { characterId: string }) {
@@ -198,10 +200,12 @@ function CharacterEditor({ character }: { character: Entry }) {
             ))}
           </div>
         </Module>
-        <Module title="Images" blurb="A gallery of looks, sketches, and references." count="Soon">
-          <p className="text-[0.9rem] text-muted">
-            Image galleries arrive once photo storage is switched on for Story Forge.
-          </p>
+        <Module
+          title="Images"
+          blurb="A gallery of looks, sketches, and references. The cover shows on their card."
+          count={`${imagesOf(character).length}`}
+        >
+          <EntryGallery entry={character} label="Gallery" />
         </Module>
       </section>
 
