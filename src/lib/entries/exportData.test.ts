@@ -14,4 +14,20 @@ describe('toMarkdown', () => {
     expect(md).toContain('*location · #city*');
     expect(md).not.toContain('Deleted idea');
   });
+
+  it('writes characters with labeled fields and relationships', () => {
+    const a = fakeShard('', {
+      type: 'character',
+      title: 'Mira',
+      fields: { role: 'Protagonist', arc: { lie: 'Nobody stays.' }, relations: {} },
+    });
+    const b = fakeShard('', { type: 'character', title: 'Tam', fields: {} });
+    (a.fields.relations as Record<string, string>)[b.id] = 'Her brother';
+    const md = toMarkdown(
+      [a, b],
+      [{ id: 'x', workspaceId: 'u1', fromId: a.id, toId: b.id, kind: 'related' }],
+    );
+    expect(md).toContain('### Mira\n\n- **Role:** Protagonist\n- **The lie:** Nobody stays.');
+    expect(md).toContain('- **Relationship:** Tam: Her brother');
+  });
 });

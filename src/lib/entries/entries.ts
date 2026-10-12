@@ -1,6 +1,7 @@
 import {
   collection,
   deleteDoc,
+  deleteField,
   doc,
   serverTimestamp,
   setDoc,
@@ -40,6 +41,9 @@ export function createEntry(workspaceId: string, input: NewEntry): string {
 export type EntryChanges = Partial<
   Pick<Entry, 'title' | 'icon' | 'template' | 'parentId' | 'order' | 'tags' | 'status' | 'fields'>
 >;
+
+/** Pass as a value in `fieldChanges` to remove that field. */
+export const removedField = () => deleteField();
 
 /** Updates an entry. Pass `fields` as dotted keys via `fieldChanges` to change one field. */
 export function updateEntry(

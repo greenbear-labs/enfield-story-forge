@@ -2,17 +2,21 @@ import { collection, getDocs, type QuerySnapshot } from 'firebase/firestore';
 import type { Entry, Link } from '../../data/types';
 import { getFirebase } from '../firebase/client';
 import { paths } from '../firestore/paths';
+import { characterSummary } from '../../features/characters/characterModel';
 import { newestFirst } from './model';
 
 const text = (v: unknown) => (typeof v === 'string' ? v : '');
 
-/** Shards and shard groups as a readable Markdown file. Trashed entries are left out. */
+/** Concepts, characters, shard groups, and shards as a readable Markdown file. Trashed entries are left out. */
 export function toMarkdown(entries: Entry[], links: Link[], exportedAt = new Date()): string {
   const live = entries.filter((e) => !e.deletedAt);
   const byId = new Map(live.map((e) => [e.id, e]));
   const shards = live.filter((e) => e.type === 'shard').sort(newestFirst);
   const groups = live.filter((e) => e.type === 'shard_group').sort(newestFirst);
   const concepts = live.filter((e) => e.type === 'concept').sort(newestFirst);
+  const characters = live
+    .filter((e) => e.type === 'character')
+    .sort((a, b) => a.title.localeCompare(b.title));
 
   const out = [
     `# Story Forge export`,
@@ -28,6 +32,26 @@ export function toMarkdown(entries: Entry[], links: Link[], exportedAt = new Dat
     if (text(c.fields.logline)) out.push(`> ${text(c.fields.logline)}`, '');
     const meta = [c.status, text(c.fields.genre)].filter(Boolean).join(' · ');
     if (meta) out.push(`*${meta}*`, '');
+    if (text(c.fields.notes)) out.push(text(c.fields.notes), '');
+  }
+
+  out.push('## Characters', '');
+  if (characters.length === 0) out.push('None yet.', '');
+  for (const c of characters) {
+    out.push(`### ${c.title || 'Unnamed character'}`, '');
+    const lines = characterSummary(c).map(
+      ([label, v]) => `- **${label}:** ${v.replace(/\n+/g, ' ')}`,
+    );
+    if (lines.length) out.push(...lines, '');
+    const related = links
+      .filter((l) => l.kind === 'related' && l.fromId === c.id)
+      .flatMap((l) => byId.get(l.toId) ?? []);
+    const notes = c.fields.relations as Record<string, unknown> | undefined;
+    for (const r of related) {
+      const note = text(notes?.[r.id]);
+      out.push(`- **Relationship:** ${r.title}${note ? `: ${note}` : ''}`);
+    }
+    if (related.length) out.push('');
     if (text(c.fields.notes)) out.push(text(c.fields.notes), '');
   }
 

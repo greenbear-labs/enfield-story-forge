@@ -11,6 +11,9 @@ import { LandingPage } from '../features/auth/LandingPage';
 import { SignInPage } from '../features/auth/SignInPage';
 import { HubPage } from '../features/hub/HubPage';
 import { AppendixPage } from '../features/stations/AppendixPage';
+import { CharacterInterviewPage } from '../features/characters/CharacterInterviewPage';
+import { CharacterPage } from '../features/characters/CharacterPage';
+import { CharactersStationPage } from '../features/characters/CharactersStationPage';
 import { ConceptGeneratorPage } from '../features/concepts/ConceptGeneratorPage';
 import { ConceptPage } from '../features/concepts/ConceptPage';
 import { ConceptsStationPage } from '../features/concepts/ConceptsStationPage';
@@ -19,7 +22,7 @@ import { ShardGroupPage } from '../features/shards/ShardGroupPage';
 import { ShardMinesPage } from '../features/shards/ShardMinesPage';
 import { ShardPage } from '../features/shards/ShardPage';
 import { ShardsStationPage } from '../features/shards/ShardsStationPage';
-import { CharactersPage, DeskPage, OutlinesPage } from '../features/stations/pages';
+import { DeskPage, OutlinesPage } from '../features/stations/pages';
 import { AppShell } from './AppShell';
 
 const optionalString = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
@@ -144,7 +147,26 @@ const deskRoute = createRoute({
 const charactersRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/characters',
-  component: CharactersPage,
+  component: CharactersStationPage,
+});
+const characterInterviewRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/characters/interview',
+  validateSearch: (search: Record<string, unknown>): { character?: string } => ({
+    character: optionalString(search.character),
+  }),
+  component: function CharacterInterviewRouteComponent() {
+    const { character } = characterInterviewRoute.useSearch();
+    return <CharacterInterviewPage key={character ?? ''} characterId={character} />;
+  },
+});
+const characterRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/characters/$characterId',
+  component: function CharacterRouteComponent() {
+    const { characterId } = characterRoute.useParams();
+    return <CharacterPage characterId={characterId} />;
+  },
 });
 
 const appendixRoute = createRoute({
@@ -175,6 +197,8 @@ const routeTree = rootRoute.addChildren([
     outlinesRoute,
     deskRoute,
     charactersRoute,
+    characterInterviewRoute,
+    characterRoute,
     appendixRoute,
   ]),
 ]);
