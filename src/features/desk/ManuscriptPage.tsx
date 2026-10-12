@@ -1,13 +1,15 @@
 import { Link } from '@tanstack/react-router';
-import { useMemo } from 'react';
+import { useMemo, useState, type FormEvent } from 'react';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Icon } from '../../components/ui/Icon';
 import { Loading } from '../../components/ui/Loading';
 import type { Entry } from '../../data/types';
+import { updateEntry } from '../../lib/entries/entries';
 import { useEntries, useEntry } from '../../lib/entries/hooks';
 import { useAuthStore } from '../auth/authStore';
 import { structureByKey } from '../outlines/structures';
 import { addChapter, chapterBeatKeys, childrenOf, move, sceneText, words } from './deskModel';
+import { bookTarget, parseGoal, percent } from './writingModel';
 
 /** The whole book at a glance: chapters in order, with their beats and scenes. */
 export function ManuscriptPage({ bookId }: { bookId: string }) {
@@ -83,6 +85,7 @@ function Manuscript({ book }: { book: Entry }) {
             Compile and export
           </Link>
         </div>
+        <BookTarget book={book} words={totalWords} />
       </header>
 
       {allChapters.data === undefined ? (
@@ -112,6 +115,78 @@ function Manuscript({ book }: { book: Entry }) {
         + Add a chapter
       </button>
     </>
+  );
+}
+
+/** The book's word count target, with how far along the draft is. */
+function BookTarget({ book, words }: { book: Entry; words: number }) {
+  const ws = useAuthStore((s) => s.workspaceId)!;
+  const target = bookTarget(book);
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState('');
+  const save = (e: FormEvent) => {
+    e.preventDefault();
+    updateEntry(ws, book.id, {}, { targetWords: parseGoal(draft) });
+    setEditing(false);
+  };
+  const change = (
+    <button
+      type="button"
+      className="font-semibold text-accent"
+      onClick={() => {
+        setDraft(target ? String(target) : '');
+        setEditing(true);
+      }}
+    >
+      {target ? 'Change' : 'Set a word count target'}
+    </button>
+  );
+  if (editing) {
+    return (
+      <form className="flex flex-wrap items-center gap-2" onSubmit={save}>
+        <label className="flex items-center gap-2 text-[0.88rem]">
+          Target
+          <input
+            className="txt w-32"
+            inputMode="numeric"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            placeholder="e.g. 80000"
+            autoFocus
+          />
+          words
+        </label>
+        <button type="submit" className="btn btn-primary btn-small">
+          Save
+        </button>
+        <button type="button" className="btn btn-small" onClick={() => setEditing(false)}>
+          Cancel
+        </button>
+      </form>
+    );
+  }
+  if (!target) return <p className="text-[0.85rem]">{change}</p>;
+  return (
+    <div className="flex flex-col gap-1">
+      <div
+        role="progressbar"
+        aria-label="Word count target"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={percent(words, target)}
+        className="h-2 overflow-hidden rounded-full bg-sunken"
+      >
+        <div
+          className="h-full rounded-full bg-accent"
+          style={{ width: `${percent(words, target)}%` }}
+        />
+      </div>
+      <p className="flex flex-wrap gap-2 text-[0.85rem] text-muted">
+        {percent(words, target)}% of {target.toLocaleString()} words
+        {words < target && ` · ${(target - words).toLocaleString()} to go`}
+        {change}
+      </p>
+    </div>
   );
 }
 

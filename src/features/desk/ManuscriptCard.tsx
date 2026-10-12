@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import type { Entry } from '../../data/types';
 import { formatLabel, outlineFormat } from '../outlines/outlineModel';
+import { bookTarget, percent } from './writingModel';
 
 export interface ManuscriptStats {
   chapters: number;
@@ -17,6 +18,7 @@ export function ManuscriptCard({ book, stats }: { book: Entry; stats: Manuscript
       <p className="text-[0.88rem] text-muted">
         {stats.chapters} {stats.chapters === 1 ? 'chapter' : 'chapters'} · {stats.scenes}{' '}
         {stats.scenes === 1 ? 'scene' : 'scenes'} · {stats.words.toLocaleString()} words
+        {bookTarget(book) > 0 && ` · ${percent(stats.words, bookTarget(book))}% of the target`}
       </p>
     </Link>
   );

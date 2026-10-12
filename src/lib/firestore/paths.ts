@@ -6,6 +6,8 @@
  * workspaces/{workspaceId}/bodies/{entryId}                     (EntryBody, same id as its entry)
  * workspaces/{workspaceId}/links/{linkId}
  * workspaces/{workspaceId}/entries/{entryId}/snapshots/{snapshotId}
+ * workspaces/{workspaceId}/writingDays/{YYYY-MM-DD}              (words written that day)
+ * workspaces/{workspaceId}/settings/writing                     (the daily goal)
  */
 
 function seg(value: string, name: string): string {
@@ -35,6 +37,11 @@ export const paths = {
     `${paths.entry(workspaceId, entryId)}/snapshots`,
   snapshot: (workspaceId: string, entryId: string, snapshotId: string) =>
     `${paths.snapshots(workspaceId, entryId)}/${seg(snapshotId, 'snapshotId')}`,
+
+  writingDays: (workspaceId: string) => `${paths.workspace(workspaceId)}/writingDays`,
+  writingDay: (workspaceId: string, date: string) =>
+    `${paths.writingDays(workspaceId)}/${seg(date, 'date')}`,
+  writingSettings: (workspaceId: string) => `${paths.workspace(workspaceId)}/settings/writing`,
 } as const;
 
 /** Storage folder for an entry's images (see storage.rules). */

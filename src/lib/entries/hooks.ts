@@ -28,7 +28,7 @@ const toEntry = (snap: DocumentSnapshot): Entry =>
  * Subscribes while `key` is set and stays the same. Results are stored with
  * the key they belong to, so a new key reads as loading until its data comes.
  */
-function useListener<T>(
+export function useListener<T>(
   key: string | null,
   subscribe: (onData: (data: T) => void, onError: (err: Error) => void) => () => void,
 ): Live<T> {

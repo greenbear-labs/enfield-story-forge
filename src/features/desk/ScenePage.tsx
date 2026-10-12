@@ -7,12 +7,14 @@ import type { Entry } from '../../data/types';
 import { saveBody, updateEntry } from '../../lib/entries/entries';
 import { useBody, useEntries, useEntry, useLinks } from '../../lib/entries/hooks';
 import { useAutosaved } from '../../lib/entries/useAutosaved';
+import { recordWords, useDailyGoal, useWritingDays } from '../../lib/entries/writing';
 import { useAuthStore } from '../auth/authStore';
 import { linkables } from '../world/worldModel';
 import { manuscriptScenes, sceneText, syncMentions, words } from './deskModel';
 import type { ProseHandle, ProseSave } from './ProseEditor';
 import { SceneSetup } from './SceneSetup';
 import { SnapshotsPanel } from './SnapshotsPanel';
+import { DEFAULT_DAILY_GOAL, dayKey } from './writingModel';
 
 // The editor is the biggest piece of the app, so it loads only when you write.
 const ProseEditor = lazy(() => import('./ProseEditor'));
@@ -100,15 +102,42 @@ function SceneDesk({ scene }: { scene: Entry }) {
   useEffect(() => {
     mentioned.current = (mentionLinks.data ?? []).map((l) => l.toId);
   }, [mentionLinks.data]);
+  // The writing log counts what each save changed, from the count the editor opened with.
+  const logged = useRef<number | null>(null);
+  const [opened, setOpened] = useState<number | null>(null);
+  const [saved, setSaved] = useState<number | null>(null);
+  const bookRef = useRef(bookId);
+  useEffect(() => {
+    bookRef.current = bookId;
+  }, [bookId]);
+  const onWords = useCallback((n: number) => {
+    setCount(n);
+    if (logged.current === null) {
+      logged.current = n;
+      setOpened(n);
+      setSaved(n);
+    }
+  }, []);
   const onSave = useCallback(
     ({ doc, words, mentions }: ProseSave) => {
       saveBody(ws, scene.id, doc);
       updateEntry(ws, scene.id, { wordCount: words });
       syncMentions(ws, scene.id, mentioned.current, mentions);
       mentioned.current = mentions;
+      if (logged.current !== null) {
+        recordWords(ws, dayKey(), bookRef.current, words - logged.current);
+        logged.current = words;
+        setSaved(words);
+      }
     },
     [ws, scene.id],
   );
+  const days = useWritingDays();
+  const goal = useDailyGoal();
+  const dailyGoal = goal.data === null ? DEFAULT_DAILY_GOAL : (goal.data ?? 0);
+  const session = opened === null ? 0 : count - opened;
+  // Today's log lags the editor by a save, so add what hasn't been saved yet.
+  const today = (days.data?.get(dayKey()) ?? 0) + (saved === null ? 0 : count - saved);
 
   const leaveFocus = useCallback(() => {
     setFocus(false);
@@ -150,10 +179,18 @@ function SceneDesk({ scene }: { scene: Entry }) {
               {here ? `Chapter ${here.chapterNumber} · Scene ${sceneNumber}` : 'Scene'}
               {book.data ? ` · ${book.data.title}` : ''}
             </span>
-            <span className="flex items-center gap-2">
+            <span className="flex flex-wrap items-center gap-2">
               <span className="text-[0.8rem] text-muted" aria-live="polite">
                 {wordLabel}
               </span>
+              {days.data && (
+                <span className="text-[0.8rem] text-muted">
+                  {session !== 0 &&
+                    `${session > 0 ? '+' : ''}${session.toLocaleString()} this session · `}
+                  Today {today.toLocaleString()}
+                  {dailyGoal > 0 && ` of ${dailyGoal.toLocaleString()}`}
+                </span>
+              )}
               {focus ? (
                 <button type="button" className="btn btn-small" onClick={leaveFocus}>
                   Leave focus mode
@@ -190,7 +227,7 @@ function SceneDesk({ scene }: { scene: Entry }) {
               <ProseEditor
                 initial={body.data?.doc ?? null}
                 onSave={onSave}
-                onWords={setCount}
+                onWords={onWords}
                 label={`${scene.title || 'Untitled scene'}: the prose`}
                 mentionables={mentionables}
                 ref={prose}
