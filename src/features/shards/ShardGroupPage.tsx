@@ -10,6 +10,7 @@ import { useEntries, useEntry, useEntryMap, useLinks } from '../../lib/entries/h
 import { newestFirst } from '../../lib/entries/model';
 import { useDebouncedSave } from '../../lib/entries/useDebouncedSave';
 import { useAuthStore } from '../auth/authStore';
+import { conceptFromGroup } from '../concepts/fromShards';
 import { groupNote, membersByGroup, removeFromGroup } from './groupModel';
 import { cardGrid, ShardCard } from './ShardCard';
 import { BackToShards } from './ShardPage';
@@ -112,7 +113,17 @@ function GroupEditor({ group }: { group: Entry }) {
               type="button"
               data-sec="concept"
               className="btn text-accent"
-              onClick={() => toast('Sending groups to Concepts arrives with the Concepts station.')}
+              onClick={() => {
+                titleSave.flush();
+                noteSave.flush();
+                const id = conceptFromGroup(ws, {
+                  ...group,
+                  title,
+                  fields: { ...group.fields, note },
+                });
+                toast('Sent to Concepts as a new concept.');
+                void navigate({ to: '/concepts/$conceptId', params: { conceptId: id } });
+              }}
             >
               Send to Concepts →
             </button>

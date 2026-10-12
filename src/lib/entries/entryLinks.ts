@@ -6,12 +6,15 @@ export function entryRoute(
 ):
   | { to: '/shards/$shardId'; params: { shardId: string } }
   | { to: '/shards/groups/$groupId'; params: { groupId: string } }
+  | { to: '/concepts/$conceptId'; params: { conceptId: string } }
   | null {
   switch (entry.type) {
     case 'shard':
       return { to: '/shards/$shardId', params: { shardId: entry.id } };
     case 'shard_group':
       return { to: '/shards/groups/$groupId', params: { groupId: entry.id } };
+    case 'concept':
+      return { to: '/concepts/$conceptId', params: { conceptId: entry.id } };
     default:
       return null;
   }

@@ -7,6 +7,7 @@ import { toast } from '../../components/ui/toast';
 import { useEntries, useEntryMap } from '../../lib/entries/hooks';
 import { newestFirst } from '../../lib/entries/model';
 import { useAuthStore } from '../auth/authStore';
+import { conceptFromShards } from '../concepts/fromShards';
 import { addToGroup, createShardGroup } from './groupModel';
 import { addToCart, clearCart, removeFromCart, useMineCart } from './mineCart';
 import { cardGrid, ShardCard } from './ShardCard';
@@ -204,9 +205,12 @@ function MineCartPanel({ targetGroupId }: { targetGroupId?: string }) {
           data-sec="concept"
           className="btn text-accent"
           disabled={inCart.length === 0}
-          onClick={() =>
-            toast('Forging straight into a concept arrives with the Concepts station.')
-          }
+          onClick={() => {
+            const id = conceptFromShards(ws, inCart);
+            clearCart();
+            toast('Forged into a new concept.');
+            void navigate({ to: '/concepts/$conceptId', params: { conceptId: id } });
+          }}
         >
           Forge into a concept →
         </button>

@@ -11,11 +11,15 @@ import { LandingPage } from '../features/auth/LandingPage';
 import { SignInPage } from '../features/auth/SignInPage';
 import { HubPage } from '../features/hub/HubPage';
 import { AppendixPage } from '../features/stations/AppendixPage';
+import { ConceptGeneratorPage } from '../features/concepts/ConceptGeneratorPage';
+import { ConceptPage } from '../features/concepts/ConceptPage';
+import { ConceptsStationPage } from '../features/concepts/ConceptsStationPage';
+import { MashupPage } from '../features/concepts/MashupPage';
 import { ShardGroupPage } from '../features/shards/ShardGroupPage';
 import { ShardMinesPage } from '../features/shards/ShardMinesPage';
 import { ShardPage } from '../features/shards/ShardPage';
 import { ShardsStationPage } from '../features/shards/ShardsStationPage';
-import { CharactersPage, ConceptsPage, DeskPage, OutlinesPage } from '../features/stations/pages';
+import { CharactersPage, DeskPage, OutlinesPage } from '../features/stations/pages';
 import { AppShell } from './AppShell';
 
 const optionalString = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
@@ -107,7 +111,25 @@ const shardRoute = createRoute({
 const conceptsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/concepts',
-  component: ConceptsPage,
+  component: ConceptsStationPage,
+});
+const conceptGeneratorRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/concepts/generator',
+  component: ConceptGeneratorPage,
+});
+const mashupRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/concepts/mashup',
+  component: MashupPage,
+});
+const conceptRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/concepts/$conceptId',
+  component: function ConceptRouteComponent() {
+    const { conceptId } = conceptRoute.useParams();
+    return <ConceptPage conceptId={conceptId} />;
+  },
 });
 const outlinesRoute = createRoute({
   getParentRoute: () => appRoute,
@@ -147,6 +169,9 @@ const routeTree = rootRoute.addChildren([
     shardGroupRoute,
     shardRoute,
     conceptsRoute,
+    conceptGeneratorRoute,
+    mashupRoute,
+    conceptRoute,
     outlinesRoute,
     deskRoute,
     charactersRoute,

@@ -59,7 +59,7 @@ export const conceptsStation: StationContent = {
     {
       name: 'From the Shard Mines',
       icon: 'mine',
-      description: 'Shard groups sent here wait to be shaped into concepts.',
+      description: 'Pick a shard group and shape it into a concept, with its shards beside you.',
     },
   ],
   library: {

@@ -74,14 +74,17 @@ export function HubPage() {
   const workspaceId = useAuthStore((s) => s.workspaceId);
   const [shard, setShard] = useState('');
   const entries = useEntries();
-  const shardCount = entries.data?.filter((e) => e.type === 'shard').length;
+  const countOf = (type: Entry['type']) => entries.data?.filter((e) => e.type === type).length ?? 0;
+  const shardCount = countOf('shard');
+  const conceptCount = countOf('concept');
   const recent = useMemo(
     () => [...(entries.data ?? [])].filter(entryRoute).sort(recentlyUpdatedFirst).slice(0, 5),
     [entries.data],
   );
-  const counts: Partial<Record<StationPath, string>> = shardCount
-    ? { '/shards': `${shardCount} ${shardCount === 1 ? 'shard' : 'shards'}` }
-    : {};
+  const counts: Partial<Record<StationPath, string>> = {};
+  if (shardCount) counts['/shards'] = `${shardCount} ${shardCount === 1 ? 'shard' : 'shards'}`;
+  if (conceptCount)
+    counts['/concepts'] = `${conceptCount} ${conceptCount === 1 ? 'concept' : 'concepts'}`;
 
   return (
     <div data-sec="home" className="flex flex-col gap-[22px]">
