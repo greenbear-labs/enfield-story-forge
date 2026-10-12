@@ -27,7 +27,8 @@ src/
   features/
     auth/           auth store, auth actions, landing and sign-in pages
     hub/            the Hub
-    stations/       StationPage template, ToolCard, station content, Appendix
+    stations/       StationPage template, ToolCard, station content
+    appendix/       the Appendix: craft articles as data (articles.ts), article pages, InfoLink (i) links
     shards/         Story Shards: quick capture, library, shard page, Shard Mines, groups, Spark Prompts
     concepts/       Concepts: Concept Bank, Concept Generator (option pools as data), the Mashup, concept page, shards → concept
     outlines/       Outline Builder: New Outline, Story Spine, Beat Board, structure library (data), series

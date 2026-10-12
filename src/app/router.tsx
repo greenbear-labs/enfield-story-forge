@@ -10,7 +10,7 @@ import { authReady } from '../features/auth/authStore';
 import { LandingPage } from '../features/auth/LandingPage';
 import { SignInPage } from '../features/auth/SignInPage';
 import { HubPage } from '../features/hub/HubPage';
-import { AppendixPage } from '../features/stations/AppendixPage';
+import { AppendixPage } from '../features/appendix/AppendixPage';
 import { CharacterInterviewPage } from '../features/characters/CharacterInterviewPage';
 import { CharacterPage } from '../features/characters/CharacterPage';
 import { CharactersStationPage } from '../features/characters/CharactersStationPage';
