@@ -5,7 +5,7 @@ import { Icon } from '../../components/ui/Icon';
 import { Loading } from '../../components/ui/Loading';
 import { toast } from '../../components/ui/toast';
 import type { Entry } from '../../data/types';
-import { restoreEntry, trashEntry, updateEntry } from '../../lib/entries/entries';
+import { removedField, restoreEntry, trashEntry, updateEntry } from '../../lib/entries/entries';
 import { useEntries, useEntry, useEntryMap, useLinks } from '../../lib/entries/hooks';
 import { useAutosaved } from '../../lib/entries/useAutosaved';
 import { useAuthStore } from '../auth/authStore';
@@ -14,18 +14,28 @@ import {
   beatNote,
   beatPath,
   beatsFilled,
+  chapterCount,
   FORMATS,
   outlineFormat,
   outlineMethod,
+  outlineOverlay,
   outlineStructure,
   protagonistId,
   spineFor,
   spinePath,
   spineText,
   START_METHODS,
+  structuresWithNotes,
   type SpineSlot,
 } from './outlineModel';
-import { STRUCTURES, type Beat, type Structure } from './structures';
+import {
+  alignBeats,
+  chapterFor,
+  structureByKey,
+  STRUCTURES,
+  type Beat,
+  type Structure,
+} from './structures';
 
 export function OutlinePage({ outlineId }: { outlineId: string }) {
   const outline = useEntry(outlineId);
@@ -300,7 +310,24 @@ function SpineField({ outline, slot, n }: { outline: Entry; slot: SpineSlot; n: 
 }
 
 function BeatBoard({ outline, structure }: { outline: Entry; structure: Structure }) {
+  const ws = useAuthStore((s) => s.workspaceId)!;
   const { filled, total } = beatsFilled(outline);
+  const overlay = outlineOverlay(outline);
+  const chapters = chapterCount(outline);
+  const otherNotes = structuresWithNotes(outline).filter((k) => k !== structure.key);
+  const aligned = useMemo(
+    () => (overlay ? alignBeats(structure.beats, overlay.beats) : null),
+    [structure, overlay],
+  );
+  const chaptersField = useAutosaved(chapters ? String(chapters) : '', (v) => {
+    const n = Number(v);
+    updateEntry(
+      ws,
+      outline.id,
+      {},
+      { chapters: Number.isInteger(n) && n > 0 && n <= 500 ? n : removedField() },
+    );
+  });
   const parts = useMemo(() => {
     const out: { part: string; beats: Beat[] }[] = [];
     for (const b of structure.beats) {
@@ -323,12 +350,73 @@ function BeatBoard({ outline, structure }: { outline: Entry; structure: Structur
         {structure.name}, from {structure.origin}. Each beat shows roughly how far through the story
         it lands.
       </p>
+      <div className="panel flex flex-wrap items-end gap-3 !py-3">
+        <label className="flex min-w-[220px] flex-1 flex-col gap-1">
+          <span className="label">Compare with</span>
+          <select
+            className="txt"
+            value={overlay?.key ?? ''}
+            onChange={(e) => updateEntry(ws, outline.id, {}, { overlay: e.target.value })}
+          >
+            <option value="">No second structure</option>
+            {STRUCTURES.filter((st) => st.key !== structure.key).map((st) => (
+              <option key={st.key} value={st.key}>
+                {st.name}
+                {otherNotes.includes(st.key) ? ' (has your notes)' : ''}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex w-[160px] flex-col gap-1">
+          <span className="label">Chapters</span>
+          <input
+            className="txt"
+            type="number"
+            inputMode="numeric"
+            min={1}
+            max={500}
+            placeholder="e.g. 36"
+            {...chaptersField.props}
+          />
+        </label>
+        <p className="w-full text-[0.8rem] text-muted">
+          A second structure shows its beats beside the nearest of yours. Set a chapter count to see
+          where each beat should land.
+        </p>
+        {!overlay && otherNotes.length > 0 && (
+          <p className="w-full text-[0.85rem]">
+            You also have notes in{' '}
+            {otherNotes.map((k, i) => (
+              <span key={k}>
+                {i > 0 && ', '}
+                <button
+                  type="button"
+                  className="font-semibold text-accent underline"
+                  onClick={() => updateEntry(ws, outline.id, {}, { overlay: k })}
+                >
+                  {structureByKey(k).name}
+                </button>
+              </span>
+            ))}
+            . Compare with it to see them here.
+          </p>
+        )}
+      </div>
       {parts.map((p) => (
         <div key={p.part} className="flex flex-col gap-2">
           <h3 className="label">{p.part}</h3>
           <ol className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-3">
             {p.beats.map((b) => (
-              <BeatCard key={b.key} outline={outline} structure={structure} beat={b} />
+              <BeatCard
+                key={b.key}
+                outline={outline}
+                structure={structure}
+                beat={b}
+                chapters={chapters}
+                overlay={
+                  overlay && aligned ? { structure: overlay, beats: aligned.get(b.key)! } : null
+                }
+              />
             ))}
           </ol>
         </div>
@@ -341,10 +429,14 @@ function BeatCard({
   outline,
   structure,
   beat,
+  chapters,
+  overlay,
 }: {
   outline: Entry;
   structure: Structure;
   beat: Beat;
+  chapters: number | null;
+  overlay: { structure: Structure; beats: Beat[] } | null;
 }) {
   const ws = useAuthStore((s) => s.workspaceId)!;
   const field = useAutosaved(beatNote(outline, structure.key, beat.key), (v) =>
@@ -354,8 +446,15 @@ function BeatCard({
     <li className="panel flex flex-col gap-1.5 !p-3">
       <div className="flex items-baseline justify-between gap-2">
         <h4 className="font-display text-[1rem] font-semibold">{beat.name}</h4>
-        <span className="font-mono text-[0.72rem] text-muted" title="How far through the story">
-          {Math.round(beat.position * 100)}%
+        <span className="flex flex-none items-baseline gap-1.5">
+          {chapters && (
+            <span className="chip" title="Where it lands in your chapters">
+              Ch. {chapterFor(beat.position, chapters)}
+            </span>
+          )}
+          <span className="font-mono text-[0.72rem] text-muted" title="How far through the story">
+            {Math.round(beat.position * 100)}%
+          </span>
         </span>
       </div>
       <label className="flex flex-col gap-1">
@@ -366,6 +465,25 @@ function BeatCard({
           {...field.props}
         />
       </label>
+      {overlay && overlay.beats.length > 0 && (
+        <ul
+          aria-label={`${overlay.structure.name} beats here`}
+          className="flex flex-col gap-1.5 border-l-2 border-accent pl-2.5"
+        >
+          {overlay.beats.map((o) => {
+            const note = beatNote(outline, overlay.structure.key, o.key);
+            return (
+              <li key={o.key} className="text-[0.82rem]">
+                <span className="font-semibold">{o.name}</span>{' '}
+                <span className="font-mono text-[0.7rem] text-muted">
+                  {Math.round(o.position * 100)}%
+                </span>
+                <span className={`block ${note ? 'body' : 'text-muted'}`}>{note || o.prompt}</span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </li>
   );
 }
