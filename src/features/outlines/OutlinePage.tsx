@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from '@tanstack/react-router';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Icon } from '../../components/ui/Icon';
 import { Loading } from '../../components/ui/Loading';
@@ -9,6 +9,8 @@ import { removedField, restoreEntry, trashEntry, updateEntry } from '../../lib/e
 import { useEntries, useEntry, useEntryMap, useLinks } from '../../lib/entries/hooks';
 import { useAutosaved } from '../../lib/entries/useAutosaved';
 import { InfoLink } from '../appendix/InfoLink';
+import { onDesk } from '../desk/deskModel';
+import { SendToDeskDialog } from '../desk/SendToDeskDialog';
 import { useAuthStore } from '../auth/authStore';
 import { filterCast } from '../characters/characterModel';
 import {
@@ -88,6 +90,7 @@ function OutlineEditor({ outline }: { outline: Entry }) {
     [series.data],
   );
   const structure = outlineStructure(outline);
+  const [sending, setSending] = useState(false);
 
   // The Story Spine and Beat Board tools link straight to their section.
   useEffect(() => {
@@ -172,9 +175,13 @@ function OutlineEditor({ outline }: { outline: Entry }) {
             type="button"
             data-sec="desk"
             className="btn text-accent"
-            onClick={() => toast('Sending outlines to the Writer’s Desk arrives with the Desk.')}
+            onClick={() =>
+              onDesk(outline)
+                ? void navigate({ to: '/desk/$bookId', params: { bookId: outline.id } })
+                : setSending(true)
+            }
           >
-            Send to Writer’s Desk →
+            {onDesk(outline) ? 'Open on the Writer’s Desk →' : 'Send to Writer’s Desk →'}
           </button>
           <button
             type="button"
@@ -199,6 +206,7 @@ function OutlineEditor({ outline }: { outline: Entry }) {
         </a>
       </nav>
 
+      {sending && <SendToDeskDialog outline={outline} onClose={() => setSending(false)} />}
       <StorySpine outline={outline} />
       <BeatBoard key={structure.key} outline={outline} structure={structure} />
     </>

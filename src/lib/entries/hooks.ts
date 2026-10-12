@@ -80,15 +80,20 @@ export function useEntries(type?: EntryType): Live<Entry[]> {
   );
 }
 
-/** One entry, including when it's in the trash. `data` is null if it doesn't exist. */
-export function useEntry(entryId: string): Live<Entry | null> {
+/**
+ * One entry, including when it's in the trash. `data` is null if it doesn't
+ * exist. Pass null for no entry (it stays loading).
+ */
+export function useEntry(entryId: string | null): Live<Entry | null> {
   const ws = useWorkspaceId();
-  return useListener<Entry | null>(ws ? `entry:${ws}:${entryId}` : null, (onData, onError) =>
-    onSnapshot(
-      doc(getFirebase().db, paths.entry(ws!, entryId)),
-      (snap) => onData(snap.exists() ? toEntry(snap) : null),
-      onError,
-    ),
+  return useListener<Entry | null>(
+    ws && entryId ? `entry:${ws}:${entryId}` : null,
+    (onData, onError) =>
+      onSnapshot(
+        doc(getFirebase().db, paths.entry(ws!, entryId!)),
+        (snap) => onData(snap.exists() ? toEntry(snap) : null),
+        onError,
+      ),
   );
 }
 

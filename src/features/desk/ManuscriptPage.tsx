@@ -1,0 +1,183 @@
+import { Link } from '@tanstack/react-router';
+import { useMemo } from 'react';
+import { EmptyState } from '../../components/ui/EmptyState';
+import { Icon } from '../../components/ui/Icon';
+import { Loading } from '../../components/ui/Loading';
+import type { Entry } from '../../data/types';
+import { useEntries, useEntry } from '../../lib/entries/hooks';
+import { useAuthStore } from '../auth/authStore';
+import { structureByKey } from '../outlines/structures';
+import { addChapter, chapterBeatKeys, childrenOf, move, sceneText, words } from './deskModel';
+
+/** The whole book at a glance: chapters in order, with their beats and scenes. */
+export function ManuscriptPage({ bookId }: { bookId: string }) {
+  const book = useEntry(bookId);
+  return (
+    <div data-sec="desk" className="mx-auto flex w-full max-w-[920px] flex-col gap-4">
+      <Link
+        to="/desk"
+        className="inline-flex items-center gap-1 self-start text-[0.85rem] font-semibold text-accent"
+      >
+        <Icon name="arrowLeft" size={16} />
+        Writer’s Desk
+      </Link>
+      {book.data === undefined ? (
+        book.error ? (
+          <EmptyState>Couldn’t load this manuscript. Check your connection and reload.</EmptyState>
+        ) : (
+          <Loading />
+        )
+      ) : !book.data || book.data.deletedAt ? (
+        <EmptyState>This manuscript isn’t here. Its outline may be in the trash.</EmptyState>
+      ) : (
+        <Manuscript book={book.data} />
+      )}
+    </div>
+  );
+}
+
+function Manuscript({ book }: { book: Entry }) {
+  const ws = useAuthStore((s) => s.workspaceId)!;
+  const allChapters = useEntries('chapter');
+  const allScenes = useEntries('scene');
+  const chapters = useMemo(
+    () => childrenOf(allChapters.data, book.id),
+    [allChapters.data, book.id],
+  );
+  const scenesOf = (id: string) => childrenOf(allScenes.data, id);
+  const totalWords = chapters.reduce(
+    (sum, c) => sum + scenesOf(c.id).reduce((s, sc) => s + words(sc), 0),
+    0,
+  );
+
+  return (
+    <>
+      <header className="panel flex flex-col gap-2 border-t-4 border-t-accent">
+        <span className="label">Manuscript</span>
+        <h1 className="text-[1.8rem] max-sm:text-[1.5rem]">{book.title || 'Untitled story'}</h1>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.88rem] text-muted">
+          <span>
+            {chapters.length} {chapters.length === 1 ? 'chapter' : 'chapters'} ·{' '}
+            {totalWords.toLocaleString()} words
+          </span>
+          <Link
+            to="/outlines/$outlineId"
+            params={{ outlineId: book.id }}
+            data-sec="story"
+            className="font-semibold text-accent"
+          >
+            Open the outline
+          </Link>
+        </div>
+      </header>
+
+      {allChapters.data === undefined ? (
+        <Loading />
+      ) : chapters.length === 0 ? (
+        <EmptyState>No chapters yet. Add the first one below.</EmptyState>
+      ) : (
+        <ol className="flex flex-col gap-2.5">
+          {chapters.map((c, i) => (
+            <ChapterRow
+              key={c.id}
+              chapter={c}
+              n={i + 1}
+              scenes={scenesOf(c.id)}
+              onMove={(dir) => move(ws, chapters, c.id, dir)}
+              first={i === 0}
+              last={i === chapters.length - 1}
+            />
+          ))}
+        </ol>
+      )}
+      <button
+        type="button"
+        className="btn self-start"
+        onClick={() => addChapter(ws, book.id, chapters.length + 1)}
+      >
+        + Add a chapter
+      </button>
+    </>
+  );
+}
+
+function ChapterRow({
+  chapter,
+  n,
+  scenes,
+  onMove,
+  first,
+  last,
+}: {
+  chapter: Entry;
+  n: number;
+  scenes: Entry[];
+  onMove: (dir: -1 | 1) => void;
+  first: boolean;
+  last: boolean;
+}) {
+  const structure = structureByKey(
+    typeof chapter.fields.structure === 'string' ? chapter.fields.structure : undefined,
+  );
+  const beatNames = chapterBeatKeys(chapter).flatMap(
+    (k) => structure.beats.find((b) => b.key === k)?.name ?? [],
+  );
+  const goal = sceneText(chapter, 'goal');
+  const chapterWords = scenes.reduce((s, sc) => s + words(sc), 0);
+  const name = chapter.title || `Chapter ${n}`;
+
+  return (
+    <li className="panel flex gap-3 !p-3.5">
+      <span className="w-7 flex-none pt-0.5 text-right font-mono text-[0.85rem] text-accent">
+        {n}
+      </span>
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+        <Link
+          to="/desk/chapters/$chapterId"
+          params={{ chapterId: chapter.id }}
+          className="self-start font-display text-[1.08rem] font-semibold hover:underline"
+        >
+          {name}
+        </Link>
+        {goal && <p className="text-[0.9rem]">{goal}</p>}
+        {beatNames.length > 0 && (
+          <div data-sec="story" className="flex flex-wrap gap-1.5">
+            {beatNames.map((b) => (
+              <span key={b} className="chip">
+                {b}
+              </span>
+            ))}
+          </div>
+        )}
+        <p className="text-[0.82rem] text-muted">
+          {scenes.length === 0
+            ? 'No scenes yet'
+            : `${scenes.length} ${scenes.length === 1 ? 'scene' : 'scenes'}: ${scenes
+                .map((s) => s.title || 'Untitled scene')
+                .join(', ')}`}
+          {chapterWords > 0 && ` · ${chapterWords.toLocaleString()} words`}
+        </p>
+      </div>
+      <div className="flex flex-none flex-col gap-1">
+        <button
+          type="button"
+          className="btn btn-ghost btn-icon"
+          aria-label={`Move ${name} up`}
+          disabled={first}
+          onClick={() => onMove(-1)}
+        >
+          ↑
+        </button>
+        <button
+          type="button"
+          className="btn btn-ghost btn-icon"
+          aria-label={`Move ${name} down`}
+          disabled={last}
+          onClick={() => onMove(1)}
+        >
+          ↓
+        </button>
+      </div>
+    </li>
+  );
+}

@@ -25,7 +25,9 @@ import { ShardsStationPage } from '../features/shards/ShardsStationPage';
 import { NewOutlinePage } from '../features/outlines/NewOutlinePage';
 import { OutlinePage } from '../features/outlines/OutlinePage';
 import { OutlinesStationPage } from '../features/outlines/OutlinesStationPage';
-import { DeskPage } from '../features/stations/pages';
+import { ChapterPage } from '../features/desk/ChapterPage';
+import { DeskStationPage } from '../features/desk/DeskStationPage';
+import { ManuscriptPage } from '../features/desk/ManuscriptPage';
 import { AppShell } from './AppShell';
 
 const optionalString = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
@@ -167,7 +169,23 @@ const outlineRoute = createRoute({
 const deskRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/desk',
-  component: DeskPage,
+  component: DeskStationPage,
+});
+const manuscriptRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/desk/$bookId',
+  component: function ManuscriptRouteComponent() {
+    const { bookId } = manuscriptRoute.useParams();
+    return <ManuscriptPage bookId={bookId} />;
+  },
+});
+const chapterRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/desk/chapters/$chapterId',
+  component: function ChapterRouteComponent() {
+    const { chapterId } = chapterRoute.useParams();
+    return <ChapterPage key={chapterId} chapterId={chapterId} />;
+  },
 });
 const charactersRoute = createRoute({
   getParentRoute: () => appRoute,
@@ -223,6 +241,8 @@ const routeTree = rootRoute.addChildren([
     newOutlineRoute,
     outlineRoute,
     deskRoute,
+    manuscriptRoute,
+    chapterRoute,
     charactersRoute,
     characterInterviewRoute,
     characterRoute,
