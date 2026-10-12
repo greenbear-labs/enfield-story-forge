@@ -11,13 +11,11 @@ import { LandingPage } from '../features/auth/LandingPage';
 import { SignInPage } from '../features/auth/SignInPage';
 import { HubPage } from '../features/hub/HubPage';
 import { AppendixPage } from '../features/stations/AppendixPage';
-import {
-  CharactersPage,
-  ConceptsPage,
-  DeskPage,
-  OutlinesPage,
-  ShardsPage,
-} from '../features/stations/pages';
+import { ShardGroupPage } from '../features/shards/ShardGroupPage';
+import { ShardMinesPage } from '../features/shards/ShardMinesPage';
+import { ShardPage } from '../features/shards/ShardPage';
+import { ShardsStationPage } from '../features/shards/ShardsStationPage';
+import { CharactersPage, ConceptsPage, DeskPage, OutlinesPage } from '../features/stations/pages';
 import { AppShell } from './AppShell';
 
 const optionalString = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
@@ -77,7 +75,34 @@ const hubRoute = createRoute({ getParentRoute: () => appRoute, path: '/hub', com
 const shardsRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/shards',
-  component: ShardsPage,
+  component: ShardsStationPage,
+});
+const shardMinesRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/shards/mines',
+  validateSearch: (search: Record<string, unknown>): { group?: string } => ({
+    group: optionalString(search.group),
+  }),
+  component: function ShardMinesRouteComponent() {
+    const { group } = shardMinesRoute.useSearch();
+    return <ShardMinesPage targetGroupId={group} />;
+  },
+});
+const shardGroupRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/shards/groups/$groupId',
+  component: function ShardGroupRouteComponent() {
+    const { groupId } = shardGroupRoute.useParams();
+    return <ShardGroupPage groupId={groupId} />;
+  },
+});
+const shardRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/shards/$shardId',
+  component: function ShardRouteComponent() {
+    const { shardId } = shardRoute.useParams();
+    return <ShardPage shardId={shardId} />;
+  },
 });
 const conceptsRoute = createRoute({
   getParentRoute: () => appRoute,
@@ -118,6 +143,9 @@ const routeTree = rootRoute.addChildren([
   appRoute.addChildren([
     hubRoute,
     shardsRoute,
+    shardMinesRoute,
+    shardGroupRoute,
+    shardRoute,
     conceptsRoute,
     outlinesRoute,
     deskRoute,

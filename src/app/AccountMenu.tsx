@@ -4,6 +4,7 @@ import { Menu } from '../components/ui/Menu';
 import { toast } from '../components/ui/toast';
 import { signOut } from '../features/auth/authActions';
 import { useAuthStore } from '../features/auth/authStore';
+import { exportJson, exportMarkdown } from '../lib/entries/exportData';
 
 export function AccountMenu() {
   const user = useAuthStore((s) => s.user);
@@ -17,6 +18,17 @@ export function AccountMenu() {
       await navigate({ to: '/' });
     } catch {
       toast('Couldn’t sign out. Please try again.');
+    }
+  };
+
+  const onExport = async (format: 'json' | 'md') => {
+    const ws = useAuthStore.getState().workspaceId;
+    if (!ws) return;
+    try {
+      await (format === 'json' ? exportJson(ws) : exportMarkdown(ws));
+    } catch (err) {
+      console.error('Export failed', err);
+      toast('Couldn’t export. Please try again.');
     }
   };
 
@@ -45,6 +57,30 @@ export function AccountMenu() {
             type="button"
             role="menuitem"
             className="menu-item mt-1"
+            onClick={() => {
+              close();
+              void onExport('md');
+            }}
+          >
+            <Icon name="download" />
+            Export as Markdown
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            className="menu-item"
+            onClick={() => {
+              close();
+              void onExport('json');
+            }}
+          >
+            <Icon name="download" />
+            Export everything (JSON)
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            className="menu-item mt-1 border-t border-line"
             onClick={() => {
               close();
               void onSignOut();

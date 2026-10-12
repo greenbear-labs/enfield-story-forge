@@ -147,6 +147,21 @@ const ICONS = {
     </>
   ),
   check: <path d="m5 12 5 5 9-10" />,
+  close: <path d="M6 6l12 12M18 6 6 18" />,
+  trash: (
+    <>
+      <path d="M4 7h16M10 11v6M14 11v6" />
+      <path d="M6 7l1 13h10l1-13M9 7V4h6v3" />
+    </>
+  ),
+  arrowLeft: <path d="M19 12H5M11 6l-6 6 6 6" />,
+  download: <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />,
+  tag: (
+    <>
+      <path d="M3 12V4h8l10 10-8 8z" />
+      <circle cx="7.5" cy="8.5" r="1.5" />
+    </>
+  ),
   google: (
     <>
       <path d="M21 12.2c0-.7-.1-1.3-.2-1.9H12v3.6h5a4.3 4.3 0 0 1-1.9 2.8v2.3h3A9 9 0 0 0 21 12.2z" />

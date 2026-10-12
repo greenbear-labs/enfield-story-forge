@@ -446,4 +446,83 @@
     color: var(--bg);
     font-size: 0.85rem;
   }
+
+  /* ----- Dialogs ----- */
+  .dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 10vh 16px 16px;
+    background: rgb(0 0 0 / 0.35);
+    overflow-y: auto;
+  }
+  .dialog {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    padding: 18px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--accent);
+    border-radius: 12px;
+    box-shadow: 0 16px 48px rgb(0 0 0 / 0.22);
+  }
+  .dialog:focus {
+    outline: none;
+  }
+  @media (max-width: 640px) {
+    .dialog-backdrop {
+      padding-top: 16px;
+    }
+  }
+
+  /* ----- Entry cards ----- */
+  .entry-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+    padding: 12px 14px;
+    text-align: left;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+  }
+  a.entry-card:hover,
+  button.entry-card:hover {
+    border-color: var(--accent);
+  }
+  .entry-card .body {
+    font-family: var(--font-display);
+    font-size: 0.98rem;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+    white-space: pre-line;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 5;
+    overflow: hidden;
+  }
+
+  .seg {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border: 1px solid var(--line);
+    border-radius: 99px;
+    background: var(--surface);
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--muted);
+  }
+  .seg[aria-pressed='true'] {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
 }

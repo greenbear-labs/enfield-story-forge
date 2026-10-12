@@ -17,7 +17,7 @@ describe('StationPage', () => {
       expect.stringContaining('/appendix'),
     );
 
-    const tools = screen.getByRole('heading', { name: 'Tools' }).parentElement!;
+    const tools = screen.getByRole('heading', { name: 'Tools' }).closest('section')!;
     for (const name of ['Create a Shard', 'The Shard Mines', 'Spark Prompts']) {
       expect(within(tools).getByRole('heading', { name })).toBeVisible();
     }
