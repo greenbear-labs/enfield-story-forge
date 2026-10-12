@@ -118,4 +118,6 @@ export interface Snapshot {
   doc: Record<string, unknown>;
   createdAt: Timestamp;
   note?: string;
+  /** Word count when it was taken. */
+  words?: number;
 }

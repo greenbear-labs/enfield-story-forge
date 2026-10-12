@@ -8,7 +8,7 @@ import {
   updateDoc,
   type UpdateData,
 } from 'firebase/firestore';
-import type { Entry, LinkKind } from '../../data/types';
+import type { Entry, LinkKind, Snapshot } from '../../data/types';
 import { getFirebase } from '../firebase/client';
 import { paths } from '../firestore/paths';
 import { trackPendingWrites } from '../firestore/sync';
@@ -128,5 +128,44 @@ export function saveBody(
       updatedAt: serverTimestamp(),
     }),
     'save the writing',
+  );
+}
+
+/** Keeps a copy of an entry's body as it is now, with an optional note. */
+export function saveSnapshot(
+  workspaceId: string,
+  entryId: string,
+  body: Record<string, unknown>,
+  words: number,
+  note = '',
+): void {
+  const { db } = getFirebase();
+  fireAndTrack(
+    setDoc(doc(collection(db, paths.snapshots(workspaceId, entryId))), {
+      entryId,
+      doc: body,
+      words,
+      note: note.trim(),
+      createdAt: serverTimestamp(),
+    }),
+    'save the snapshot',
+  );
+}
+
+export function deleteSnapshot(workspaceId: string, entryId: string, snapshotId: string): void {
+  const { db } = getFirebase();
+  fireAndTrack(
+    deleteDoc(doc(db, paths.snapshot(workspaceId, entryId, snapshotId))),
+    'delete the snapshot',
+  );
+}
+
+/** Puts a deleted snapshot back as it was (for Undo). */
+export function restoreSnapshot(workspaceId: string, snapshot: Snapshot): void {
+  const { db } = getFirebase();
+  const { id, ...data } = snapshot;
+  fireAndTrack(
+    setDoc(doc(db, paths.snapshot(workspaceId, snapshot.entryId, id)), data),
+    'restore the snapshot',
   );
 }

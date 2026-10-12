@@ -1,7 +1,7 @@
 import { Placeholder } from '@tiptap/extensions';
 import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { useEffect, useRef } from 'react';
+import { useEffect, useImperativeHandle, useRef, type Ref } from 'react';
 import { countWords, mentionIds } from '../../lib/entries/prose';
 import { useDebouncedSave } from '../../lib/entries/useDebouncedSave';
 import type { MentionItem } from './MentionList';
@@ -13,6 +13,12 @@ export interface ProseSave {
   words: number;
   /** Ids of the entries @mentioned in the prose. */
   mentions: string[];
+}
+
+/** For the page around the editor: read the prose now, or put an earlier version back. */
+export interface ProseHandle {
+  current: () => { doc: Record<string, unknown>; words: number } | null;
+  replace: (doc: Record<string, unknown>) => void;
 }
 
 /**
@@ -27,12 +33,14 @@ export default function ProseEditor({
   onWords,
   label,
   mentionables,
+  ref,
 }: {
   initial: Record<string, unknown> | null;
   onSave: (save: ProseSave) => void;
   onWords: (words: number) => void;
   label: string;
   mentionables: MentionItem[];
+  ref?: Ref<ProseHandle>;
 }) {
   const { schedule, flush } = useDebouncedSave(onSave, 800);
   // The editor is built once, so it reads the latest cast through a ref.
@@ -80,6 +88,22 @@ export default function ProseEditor({
     },
     onBlur: flush,
   });
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      current: () =>
+        editor && !editor.isDestroyed
+          ? {
+              doc: editor.getJSON() as Record<string, unknown>,
+              words: countWords(editor.getText({ blockSeparator: '\n\n' })),
+            }
+          : null,
+      // Goes through onUpdate, so it saves like any other edit (and Ctrl+Z undoes it).
+      replace: (doc) => editor?.commands.setContent(doc, { emitUpdate: true }),
+    }),
+    [editor],
+  );
 
   // When the cast changes (or first loads), look for names again.
   useEffect(() => {
