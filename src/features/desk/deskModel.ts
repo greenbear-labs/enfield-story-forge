@@ -108,3 +108,14 @@ export const scenePov = (e: Entry) => str(e.fields.pov) || null;
 export const chapterBeatKeys = (e: Entry): string[] =>
   Array.isArray(e.fields.beatKeys) ? e.fields.beatKeys : [];
 export const words = (e: Entry) => e.wordCount ?? 0;
+
+/** Every scene in a manuscript, in reading order, with its chapter and that chapter's number. */
+export function manuscriptScenes(
+  chapters: Entry[] | undefined,
+  scenes: Entry[] | undefined,
+  bookId: string,
+): { scene: Entry; chapter: Entry; chapterNumber: number }[] {
+  return childrenOf(chapters, bookId).flatMap((chapter, i) =>
+    childrenOf(scenes, chapter.id).map((scene) => ({ scene, chapter, chapterNumber: i + 1 })),
+  );
+}

@@ -80,15 +80,17 @@ export function HubPage() {
   const characterCount = countOf('character');
   const outlineCount = countOf('book');
   const books = useEntryMap(entries.data?.filter((e) => e.type === 'book'));
-  // The chapter or scene you touched last, as the chapter to go back to.
-  const lastChapter = useMemo(() => {
+  // The chapter or scene you touched last, to go back to.
+  const lastPlace = useMemo(() => {
     const live = entries.data ?? [];
     const chapters = new Map(live.filter((e) => e.type === 'chapter').map((e) => [e.id, e]));
     const recent = live
       .filter((e) => e.type === 'chapter' || (e.type === 'scene' && chapters.has(e.parentId ?? '')))
       .sort(recentlyUpdatedFirst)[0];
-    return recent?.type === 'scene' ? chapters.get(recent.parentId!) : recent;
-  }, [entries.data]);
+    if (!recent) return undefined;
+    const chapter = recent.type === 'scene' ? chapters.get(recent.parentId!)! : recent;
+    return { entry: recent, chapter, book: books.get(chapter.parentId ?? '') };
+  }, [entries.data, books]);
   const manuscriptCount =
     entries.data?.filter((e) => e.type === 'book' && e.fields.onDesk === true).length ?? 0;
   const recent = useMemo(
@@ -182,17 +184,23 @@ export function HubPage() {
         <div className="grid grid-cols-[1.3fr_1fr] gap-3 max-[900px]:grid-cols-1">
           <div className="panel flex flex-col gap-2.5 border-l-4 border-l-accent" data-sec="desk">
             <div className="label">Pick up where you left off</div>
-            {lastChapter ? (
+            {lastPlace ? (
               <Link
-                to="/desk/chapters/$chapterId"
-                params={{ chapterId: lastChapter.id }}
+                {...(lastPlace.entry.type === 'scene'
+                  ? { to: '/desk/scenes/$sceneId', params: { sceneId: lastPlace.entry.id } }
+                  : { to: '/desk/chapters/$chapterId', params: { chapterId: lastPlace.entry.id } })}
                 className="flex flex-col gap-0.5 rounded-md p-1.5 hover:bg-sunken"
               >
                 <span className="font-display text-[1.1rem] font-semibold">
-                  {lastChapter.title || 'Untitled chapter'}
+                  {lastPlace.entry.title ||
+                    (lastPlace.entry.type === 'scene' ? 'Untitled scene' : 'Untitled chapter')}
                 </span>
                 <span className="text-[0.85rem] text-muted">
-                  {[books.get(lastChapter.parentId ?? '')?.title, 'Resume →']
+                  {[
+                    lastPlace.book?.title,
+                    lastPlace.entry.type === 'scene' ? lastPlace.chapter.title : '',
+                    'Resume →',
+                  ]
                     .filter(Boolean)
                     .join(' · ')}
                 </span>

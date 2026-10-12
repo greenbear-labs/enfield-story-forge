@@ -1,7 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createEntry, updateEntry } from '../../lib/entries/entries';
 import { fakeShard } from '../../test/entries';
-import { beatsByChapter, childrenOf, move, sendToDesk, suggestedChapters } from './deskModel';
+import {
+  beatsByChapter,
+  childrenOf,
+  manuscriptScenes,
+  move,
+  sendToDesk,
+  suggestedChapters,
+} from './deskModel';
 
 vi.mock('../../lib/entries/entries', () => ({
   createEntry: vi.fn(() => 'id'),
@@ -57,5 +64,26 @@ describe('the Writer’s Desk', () => {
     vi.mocked(updateEntry).mockClear();
     move('u1', [a, b], 'a', -1);
     expect(updateEntry).not.toHaveBeenCalled();
+  });
+
+  it('lists a manuscript’s scenes in reading order', () => {
+    const ch = (id: string, order: string, parentId = 'b1') =>
+      fakeShard('', { id, type: 'chapter', parentId, order });
+    const sc = (id: string, parentId: string, order: string) =>
+      fakeShard('', { id, type: 'scene', parentId, order });
+    const chapters = [ch('c2', '2'), ch('c1', '1'), ch('cx', '0', 'b2')];
+    const scenes = [
+      sc('s3', 'c2', '1'),
+      sc('s2', 'c1', '2'),
+      sc('s1', 'c1', '1'),
+      sc('sx', 'cx', '1'),
+    ];
+    expect(
+      manuscriptScenes(chapters, scenes, 'b1').map((r) => [r.scene.id, r.chapterNumber]),
+    ).toEqual([
+      ['s1', 1],
+      ['s2', 1],
+      ['s3', 2],
+    ]);
   });
 });

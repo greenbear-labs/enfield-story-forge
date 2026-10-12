@@ -9,7 +9,7 @@ import {
   type QueryConstraint,
 } from 'firebase/firestore';
 import { useEffect, useMemo, useState } from 'react';
-import type { Entry, EntryType, Link, LinkKind } from '../../data/types';
+import type { Entry, EntryBody, EntryType, Link, LinkKind } from '../../data/types';
 import { useAuthStore } from '../../features/auth/authStore';
 import { getFirebase } from '../firebase/client';
 import { paths } from '../firestore/paths';
@@ -92,6 +92,20 @@ export function useEntry(entryId: string | null): Live<Entry | null> {
       onSnapshot(
         doc(getFirebase().db, paths.entry(ws!, entryId!)),
         (snap) => onData(snap.exists() ? toEntry(snap) : null),
+        onError,
+      ),
+  );
+}
+
+/** An entry's rich text body. `data` is null if nothing has been written yet. */
+export function useBody(entryId: string | null): Live<EntryBody | null> {
+  const ws = useWorkspaceId();
+  return useListener<EntryBody | null>(
+    ws && entryId ? `body:${ws}:${entryId}` : null,
+    (onData, onError) =>
+      onSnapshot(
+        doc(getFirebase().db, paths.body(ws!, entryId!)),
+        (snap) => onData(snap.exists() ? (snap.data() as EntryBody) : null),
         onError,
       ),
   );
