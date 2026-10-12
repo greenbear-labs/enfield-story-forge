@@ -300,3 +300,51 @@ export function treeIds(entries: Entry[] | undefined, rootId: string): string[] 
     for (const e of entries ?? []) if (e.parentId === out[i]) out.push(e.id);
   return out;
 }
+
+// ----- The notebook tree -----
+
+/** What sits above an entry, from its notebook down to its parent. */
+export function trailOf(byId: Map<string, Entry>, entry: Pick<Entry, 'parentId'>): Entry[] {
+  const trail: Entry[] = [];
+  let parent = byId.get(entry.parentId ?? '');
+  while (parent && !trail.includes(parent)) {
+    trail.unshift(parent);
+    parent = byId.get(parent.parentId ?? '');
+  }
+  return trail;
+}
+
+const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
+/** What a world page is, for labels: "Place" for a page in Places, "Page" for one inside a page. */
+export function pageKind(byId: Map<string, Entry>, page: Pick<Entry, 'parentId'>): string {
+  const parent = byId.get(page.parentId ?? '');
+  return parent?.type === 'index' ? capitalize(itemName(parent)) : 'Page';
+}
+
+/** Adds a page inside another page. Returns its id. */
+export function addSubpage(ws: string, parent: Entry, title = ''): string {
+  return createEntry(ws, {
+    type: 'page',
+    title: title.trim(),
+    template: 'page',
+    parentId: parent.id,
+    fields: { notebookId: parent.fields.notebookId ?? null, props: {} },
+  });
+}
+
+/** Everything a world page can @link: other world pages and the cast, by name. */
+export function linkables(entries: Entry[] | undefined, selfId: string) {
+  const live = entries ?? [];
+  const byId = new Map(live.map((e) => [e.id, e]));
+  return live
+    .filter(
+      (e) => e.id !== selfId && e.title.trim() && (e.type === 'page' || e.type === 'character'),
+    )
+    .map((e) => ({
+      id: e.id,
+      label: e.title.trim(),
+      kind: e.type === 'character' ? 'Character' : pageKind(byId, e),
+    }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+}

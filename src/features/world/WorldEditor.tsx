@@ -1,7 +1,18 @@
 import { Placeholder } from '@tiptap/extensions';
 import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import { useEffect, useRef } from 'react';
+import { mentionIds } from '../../lib/entries/prose';
 import { useDebouncedSave } from '../../lib/entries/useDebouncedSave';
+import type { MentionItem } from '../desk/MentionList';
+import { proseMention } from '../desk/proseMention';
+import { SlashCommands } from './slashCommands';
+
+export interface WorldSave {
+  doc: Record<string, unknown>;
+  /** Ids of the entries @linked in the text. */
+  mentions: string[];
+}
 
 const TOOLS = [
   { key: 'h2', label: 'Heading', title: 'A heading' },
@@ -14,20 +25,30 @@ const TOOLS = [
 ] as const;
 
 /**
- * A world page's rich text: headings, lists, quotes, bold and italic. It
- * saves a moment after you stop typing, and on the way out. Live updates
- * don't reset it, so keep one editor per page (key it by the page's id).
+ * A world page's rich text: headings, lists, quotes, bold and italic, "/"
+ * for blocks, and "@" to link another page or a character (a click on a link
+ * opens it). It saves a moment after you stop typing, and on the way out.
+ * Live updates don't reset it, so keep one editor per page (key it by the page's id).
  */
 export default function WorldEditor({
   initial,
   onSave,
   label,
+  linkables,
+  onOpen,
 }: {
   initial: Record<string, unknown> | null;
-  onSave: (doc: Record<string, unknown>) => void;
+  onSave: (save: WorldSave) => void;
   label: string;
+  linkables: MentionItem[];
+  onOpen: (entryId: string) => void;
 }) {
   const { schedule, flush } = useDebouncedSave(onSave, 800);
+  // The editor is built once, so it reads the latest list and handler through refs.
+  const latest = useRef({ linkables, onOpen });
+  useEffect(() => {
+    latest.current = { linkables, onOpen };
+  });
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -36,7 +57,17 @@ export default function WorldEditor({
         codeBlock: false,
         link: false,
       }),
-      Placeholder.configure({ placeholder: 'Write about it: history, look, rumors, anything…' }),
+      Placeholder.configure({
+        placeholder: 'Write about it… (type / for headings and lists, @ to link a page)',
+      }),
+      SlashCommands,
+      // The getter runs on keystrokes, never during render.
+      // eslint-disable-next-line react-hooks/refs
+      proseMention(() => latest.current.linkables, {
+        sec: 'world',
+        label: 'Link',
+        empty: (q) => (q ? `No page or character called “${q}”.` : 'Nothing to link yet.'),
+      }),
     ],
     content: initial ?? '',
     editorProps: {
@@ -47,8 +78,16 @@ export default function WorldEditor({
         'aria-label': label,
         spellcheck: 'true',
       },
+      handleClickOn: (_view, _pos, node) => {
+        if (node.type.name !== 'mention') return false;
+        latest.current.onOpen(String(node.attrs.id));
+        return true;
+      },
     },
-    onUpdate: ({ editor }) => schedule(editor.getJSON() as Record<string, unknown>),
+    onUpdate: ({ editor }) => {
+      const doc = editor.getJSON() as Record<string, unknown>;
+      schedule({ doc, mentions: mentionIds(doc) });
+    },
     onBlur: flush,
   });
 

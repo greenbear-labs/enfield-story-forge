@@ -22,14 +22,12 @@ export function WorldHomePage() {
     return live
       .filter((e) => e.type === 'notebook')
       .sort(recentlyUpdatedFirst)
-      .map((notebook) => {
-        const own = new Set(indexes.filter((i) => i.parentId === notebook.id).map((i) => i.id));
-        return {
-          notebook,
-          indexes: own.size,
-          pages: pages.filter((p) => own.has(p.parentId ?? '')).length,
-        };
-      });
+      .map((notebook) => ({
+        notebook,
+        indexes: indexes.filter((i) => i.parentId === notebook.id).length,
+        // Pages inside pages count too: every page knows its notebook.
+        pages: pages.filter((p) => p.fields.notebookId === notebook.id).length,
+      }));
   }, [entries.data]);
 
   return (

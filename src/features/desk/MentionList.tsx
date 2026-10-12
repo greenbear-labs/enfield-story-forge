@@ -11,11 +11,19 @@ export interface MentionListHandle {
   onKeyDown: (event: KeyboardEvent) => boolean;
 }
 
-/** The list that pops up after "@" in the prose editor. Arrow keys move, Enter or Tab picks. */
+/** The list that pops up after "@" (or "/") in an editor. Arrow keys move, Enter or Tab picks. */
 export const MentionList = forwardRef<
   MentionListHandle,
-  { items: MentionItem[]; query: string; command: (item: { id: string; label: string }) => void }
->(function MentionList({ items, query, command }, ref) {
+  {
+    items: MentionItem[];
+    query: string;
+    command: (item: { id: string; label: string }) => void;
+    /** For lists other than the cast: their color, name, and what to say when nothing matches. */
+    sec?: string;
+    label?: string;
+    empty?: (query: string) => string;
+  }
+>(function MentionList({ items, query, command, sec = 'char', label = 'Mention', empty }, ref) {
   const [state, setState] = useState({ items, active: 0 });
   // A new list of matches starts again at the top.
   const active = state.items === items ? state.active : 0;
@@ -46,10 +54,14 @@ export const MentionList = forwardRef<
   }));
 
   return (
-    <div data-sec="char" className="menu static w-60" role="listbox" aria-label="Mention">
+    <div data-sec={sec} className="menu static w-60" role="listbox" aria-label={label}>
       {items.length === 0 ? (
         <p className="px-2.5 py-1.5 text-[0.82rem] text-muted">
-          {query ? `No one called “${query}” in your cast.` : 'Your cast is empty so far.'}
+          {empty
+            ? empty(query)
+            : query
+              ? `No one called “${query}” in your cast.`
+              : 'Your cast is empty so far.'}
         </p>
       ) : (
         items.map((item, i) => (
