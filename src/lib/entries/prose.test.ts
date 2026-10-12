@@ -69,4 +69,40 @@ describe('prose', () => {
     expect(mentionIds(withMentions)).toEqual(['c1', 'c2']);
     expect(mentionIds(doc)).toEqual([]);
   });
+
+  it('writes headings and lists, and moves headings down when asked', () => {
+    const doc = {
+      type: 'doc',
+      content: [
+        { type: 'heading', attrs: { level: 2 }, content: [{ type: 'text', text: 'History' }] },
+        {
+          type: 'bulletList',
+          content: [
+            {
+              type: 'listItem',
+              content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Founded' }] }],
+            },
+            {
+              type: 'listItem',
+              content: [
+                { type: 'paragraph', content: [{ type: 'text', text: 'Flooded' }] },
+                {
+                  type: 'orderedList',
+                  content: [
+                    {
+                      type: 'listItem',
+                      content: [{ type: 'paragraph', content: [{ type: 'text', text: 'once' }] }],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+    expect(proseToMarkdown(doc)).toBe('## History\n\n- Founded\n- Flooded\n  1. once');
+    expect(proseToMarkdown(doc, 3).split('\n')[0]).toBe('##### History');
+    expect(proseText(doc)).toBe('History\n\n• Founded\n• Flooded\n  1. once');
+  });
 });

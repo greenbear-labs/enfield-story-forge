@@ -775,6 +775,26 @@
     pointer-events: none;
   }
 
+  /* A notebook printed (or saved as a PDF): just the document. */
+  @media print {
+    .no-print {
+      display: none !important;
+    }
+    html,
+    body,
+    .world-app {
+      background: none;
+    }
+    .print-doc {
+      border: 0;
+      padding: 0;
+      box-shadow: none;
+    }
+    .print-page {
+      break-inside: avoid-page;
+    }
+  }
+
   /* ----- Chapter Breakdown grid ----- */
   .breakdown {
     border-collapse: separate;

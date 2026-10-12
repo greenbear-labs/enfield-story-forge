@@ -65,7 +65,7 @@ export function NotebookLayout({
     <div className="grid grid-cols-[230px_minmax(0,1fr)] items-start gap-6 max-[960px]:grid-cols-1">
       <aside
         aria-label="Notebook pages"
-        className="sticky top-[72px] max-h-[calc(100dvh-96px)] overflow-y-auto max-[960px]:hidden"
+        className="no-print sticky top-[72px] max-h-[calc(100dvh-96px)] overflow-y-auto max-[960px]:hidden"
       >
         {notebookId && entries && (
           <NotebookTree

@@ -32,6 +32,7 @@ import { ManuscriptPage } from '../features/desk/ManuscriptPage';
 import { ScenePage } from '../features/desk/ScenePage';
 import { IndexPage } from '../features/world/IndexPage';
 import { NotebookPage } from '../features/world/NotebookPage';
+import { NotebookPrintPage } from '../features/world/NotebookPrintPage';
 import { WorldHomePage } from '../features/world/WorldHomePage';
 import { WorldPagePage } from '../features/world/WorldPagePage';
 import { AppShell } from './AppShell';
@@ -270,6 +271,14 @@ const notebookRoute = createRoute({
     return <NotebookPage key={notebookId} notebookId={notebookId} />;
   },
 });
+const notebookPrintRoute = createRoute({
+  getParentRoute: () => worldRoute,
+  path: '/world/$notebookId/print',
+  component: function NotebookPrintRouteComponent() {
+    const { notebookId } = notebookPrintRoute.useParams();
+    return <NotebookPrintPage key={notebookId} notebookId={notebookId} />;
+  },
+});
 const indexRoute = createRoute({
   getParentRoute: () => worldRoute,
   path: '/world/index/$indexId',
@@ -313,7 +322,13 @@ const routeTree = rootRoute.addChildren([
     characterRoute,
     appendixRoute,
   ]),
-  worldRoute.addChildren([worldHomeRoute, notebookRoute, indexRoute, worldPageRoute]),
+  worldRoute.addChildren([
+    worldHomeRoute,
+    notebookRoute,
+    notebookPrintRoute,
+    indexRoute,
+    worldPageRoute,
+  ]),
 ]);
 
 export const router = createRouter({

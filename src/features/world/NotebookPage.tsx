@@ -6,6 +6,7 @@ import { Menu } from '../../components/ui/Menu';
 import { toast } from '../../components/ui/toast';
 import type { Entry } from '../../data/types';
 import { updateEntry } from '../../lib/entries/entries';
+import { exportNotebookMarkdown } from '../../lib/entries/exportData';
 import { useEntries, useEntry } from '../../lib/entries/hooks';
 import { useAutosaved } from '../../lib/entries/useAutosaved';
 import { useAuthStore } from '../auth/authStore';
@@ -100,11 +101,36 @@ function Notebook({ notebook }: { notebook: Entry }) {
             </button>
           )}
         >
-          {() => (
-            <button type="button" role="menuitem" className="menu-item" onClick={onDelete}>
-              <Icon name="trash" size={16} />
-              Delete notebook
-            </button>
+          {(close) => (
+            <>
+              <button
+                type="button"
+                role="menuitem"
+                className="menu-item"
+                onClick={() => {
+                  close();
+                  void exportNotebookMarkdown(ws, notebook).catch(() =>
+                    toast('Couldn’t export the notebook. Try again.'),
+                  );
+                }}
+              >
+                <Icon name="download" size={16} />
+                Export as Markdown
+              </button>
+              <Link
+                to="/world/$notebookId/print"
+                params={{ notebookId: notebook.id }}
+                role="menuitem"
+                className="menu-item"
+              >
+                <Icon name="download" size={16} />
+                Print or save as PDF
+              </Link>
+              <button type="button" role="menuitem" className="menu-item" onClick={onDelete}>
+                <Icon name="trash" size={16} />
+                Delete notebook
+              </button>
+            </>
           )}
         </Menu>
       </header>

@@ -39,8 +39,28 @@ function inline(node: ProseNode, markdown: boolean): string {
   return (node.content ?? []).map((n) => inline(n, markdown)).join('');
 }
 
+const headingLevel = (node: ProseNode, shift = 0) =>
+  Math.min(6, (typeof node.attrs?.level === 'number' ? node.attrs.level : 2) + shift);
+
+function listText(node: ProseNode, markdown: boolean): string {
+  const ordered = node.type === 'orderedList';
+  return (node.content ?? [])
+    .map((item, i) => {
+      const marker = ordered ? `${i + 1}. ` : markdown ? '- ' : '• ';
+      const inner = (item.content ?? []).map((n) => blockText(n, markdown)).join('\n');
+      // Lines after the first (and nested lists) are indented under the marker.
+      return marker + inner.replace(/\n/g, `\n${' '.repeat(marker.length)}`);
+    })
+    .join('\n');
+}
+
 function blockText(node: ProseNode, markdown: boolean): string {
   if (node.type === 'horizontalRule') return markdown ? '\\* \\* \\*' : '* * *';
+  if (node.type === 'heading')
+    return markdown
+      ? `${'#'.repeat(headingLevel(node))} ${inline(node, true)}`
+      : inline(node, false);
+  if (node.type === 'bulletList' || node.type === 'orderedList') return listText(node, markdown);
   if (node.type === 'blockquote')
     return (node.content ?? [])
       .map((n) => blockText(n, markdown))
@@ -55,10 +75,15 @@ export const proseText = (doc: unknown): string =>
     .map((b) => blockText(b, false))
     .join('\n\n');
 
-/** The prose as Markdown: paragraphs, bold, italic, quotes, and scene breaks. */
-export const proseToMarkdown = (doc: unknown): string =>
+/** The prose as Markdown: paragraphs, bold, italic, quotes, scene breaks, headings, and lists. */
+export const proseToMarkdown = (doc: unknown, headingShift = 0): string =>
   blocks(doc)
-    .map((b) => blockText(b, true))
+    .map((b) =>
+      // Headings move down under the export's own (a page's "##" under its "###").
+      b.type === 'heading'
+        ? `${'#'.repeat(headingLevel(b, headingShift))} ${inline(b, true)}`
+        : blockText(b, true),
+    )
     .filter((t) => t.trim())
     .join('\n\n');
 
