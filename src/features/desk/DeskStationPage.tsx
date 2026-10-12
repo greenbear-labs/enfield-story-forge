@@ -35,6 +35,10 @@ export function DeskStationPage() {
     <StationPage
       content={deskStation}
       toolActions={{
+        'Chapter Breakdown': () =>
+          latest
+            ? void navigate({ to: '/desk/$bookId/breakdown', params: { bookId: latest.id } })
+            : void navigate({ to: '/outlines' }),
         'Chapter Builder': () =>
           latest
             ? void navigate({ to: '/desk/$bookId', params: { bookId: latest.id } })

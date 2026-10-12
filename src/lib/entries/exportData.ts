@@ -50,6 +50,14 @@ export function toMarkdown(
   if (manuscripts.length) out.push('## Manuscripts', '');
   for (const book of manuscripts) {
     out.push(`### ${book.title || 'Untitled story'}`, '');
+    const plotlines = childrenOf(book.id, 'plotline');
+    if (plotlines.length)
+      out.push(
+        `*Plotlines: ${plotlines
+          .map((p) => (text(p.fields.mice) ? `${p.title} (${text(p.fields.mice)})` : p.title))
+          .join(', ')}*`,
+        '',
+      );
     for (const chapter of childrenOf(book.id, 'chapter')) {
       out.push(`#### ${chapter.title || 'Untitled chapter'}`, '');
       for (const scene of childrenOf(chapter.id, 'scene')) {

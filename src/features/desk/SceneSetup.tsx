@@ -1,11 +1,12 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { Entry } from '../../data/types';
 import { updateEntry } from '../../lib/entries/entries';
-import { useEntries } from '../../lib/entries/hooks';
+import { useEntries, useLinks } from '../../lib/entries/hooks';
 import { useAutosaved } from '../../lib/entries/useAutosaved';
 import { useAuthStore } from '../auth/authStore';
 import { filterCast } from '../characters/characterModel';
-import { SCENE_FIELDS, SCENE_TYPES, sceneText, scenePov } from './deskModel';
+import { childrenOf, SCENE_FIELDS, SCENE_TYPES, sceneText, scenePov } from './deskModel';
+import { plotlineColor, setScenePlotline } from './plotlineModel';
 
 /**
  * A scene's setup: Scene or Sequel, point of view, and the card fields. Shared
@@ -53,12 +54,54 @@ export function SceneSetup({ scene, narrow = false }: { scene: Entry; narrow?: b
           </select>
         </label>
       </div>
+      <ScenePlotlines scene={scene} />
       <div className={`grid gap-3 ${narrow ? '' : 'grid-cols-2 max-sm:grid-cols-1'}`}>
         {SCENE_FIELDS.map((f) => (
           <SceneField key={f.key} scene={scene} field={f} wide={narrow} />
         ))}
       </div>
     </>
+  );
+}
+
+/** Toggle chips for the book's plotlines that this scene carries. */
+function ScenePlotlines({ scene }: { scene: Entry }) {
+  const ws = useAuthStore((s) => s.workspaceId)!;
+  const bookId = sceneText(scene, 'bookId');
+  const allPlotlines = useEntries('plotline');
+  const links = useLinks({ kind: 'plotline', fromId: scene.id });
+  const plotlines = useMemo(
+    () => (bookId ? childrenOf(allPlotlines.data, bookId) : []),
+    [allPlotlines.data, bookId],
+  );
+  const live = new Set((links.data ?? []).map((l) => l.toId));
+  // A tap shows at once; the live links catch up a moment later.
+  const [taps, setTaps] = useState<Record<string, boolean>>({});
+  const isOn = (id: string) => taps[id] ?? live.has(id);
+  const toggle = (id: string) => {
+    const next = !isOn(id);
+    setTaps((t) => ({ ...t, [id]: next }));
+    setScenePlotline(ws, scene.id, id, next);
+  };
+  if (!bookId || plotlines.length === 0) return null;
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span className="label">Plotlines</span>
+      <div role="group" aria-label="Plotlines" className="flex flex-wrap gap-1.5">
+        {plotlines.map((p) => (
+          <button
+            key={p.id}
+            type="button"
+            data-sec={plotlineColor(p)}
+            className="seg"
+            aria-pressed={isOn(p.id)}
+            onClick={() => toggle(p.id)}
+          >
+            {p.title || 'Untitled plotline'}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
 

@@ -331,7 +331,36 @@ Set the arc type in a character's **Arc** module, and write where they start and
 5. **Check the rhythm.** Vary chapter lengths, and end each chapter on a question or a turn.
 
 ## Scenes are the real unit
-Every scene should change something: from safe to endangered, from trust to betrayal. If nothing changes, the scene may not be needed. The **Writer's Desk** (coming next) is built around these scene cards.`,
+Every scene should change something: from safe to endangered, from trust to betrayal. If nothing changes, the scene may not be needed. On the **Writer's Desk**, each chapter holds scene cards, and each card opens on the **Scene Desk** to write.
+
+## Scenes and sequels
+Dwight Swain's pattern alternates two kinds of scene:
+- **Scene:** a goal, conflict, then a disaster (a setback, or a yes-but).
+- **Sequel:** a reaction, a dilemma, then a decision that sets the next goal.
+
+Stories that are all scenes feel breathless; all sequels, slow. Tag each card and look at the rhythm. To see how your threads are spread across chapters, read [[Plotlines and the MICE quotient]].`,
+  },
+  {
+    title: 'Plotlines and the MICE quotient',
+    group: 'Writing',
+    sec: 'desk',
+    summary: 'Track each thread of the story across chapters, and know when it should end.',
+    body: `A plotline is one thread of the story: the main plot, a romance, a mystery, a rivalry. Most novels braid three to five of them.
+
+## The MICE quotient
+Orson Scott Card sorts threads into four kinds. Each one tells you where it begins and what ends it:
+- **Milieu:** a character arrives somewhere new. It ends when they leave, or make it home.
+- **Idea:** a question or mystery. It ends when the question is answered.
+- **Character:** someone unhappy with who they are. It ends when they change, or accept they won't.
+- **Event:** the world is thrown out of order. It ends when a new order is set.
+
+Threads nest like brackets: the last one opened is usually the first one closed. If your story opens with a murder (event) and then a journey (milieu), close the journey before the murder is resolved.
+
+## Using the Chapter Breakdown
+1. Add your plotlines and give each one a color and a MICE kind.
+2. Tag each scene with the plotlines it moves forward, from the grid or the Scene Desk.
+3. Read across a row. A thread that **goes quiet** for several chapters may be forgotten by the reader; give it a scene, or let it end.
+4. Read down a column. A chapter where every thread is crowded together may need to be split.`,
   },
 ];
 
