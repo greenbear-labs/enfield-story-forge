@@ -5,6 +5,7 @@ import { useEffect, useRef } from 'react';
 import { countWords, mentionIds } from '../../lib/entries/prose';
 import { useDebouncedSave } from '../../lib/entries/useDebouncedSave';
 import type { MentionItem } from './MentionList';
+import { hintedNames, linkAllNames, nameHints, nameHintsKey } from './nameHints';
 import { proseMention } from './proseMention';
 
 export interface ProseSave {
@@ -54,9 +55,11 @@ export default function ProseEditor({
         strike: false,
       }),
       Placeholder.configure({ placeholder: 'Start writing… (type @ to mention someone)' }),
-      // The getter runs on keystrokes after "@", never during render.
+      // The getters run on keystrokes, never during render.
       // eslint-disable-next-line react-hooks/refs
       proseMention(() => people.current),
+      // eslint-disable-next-line react-hooks/refs
+      nameHints(() => people.current),
     ],
     content: initial ?? '',
     editorProps: {
@@ -78,14 +81,22 @@ export default function ProseEditor({
     onBlur: flush,
   });
 
+  // When the cast changes (or first loads), look for names again.
+  useEffect(() => {
+    if (editor && !editor.isDestroyed)
+      editor.view.dispatch(editor.state.tr.setMeta(nameHintsKey, true));
+  }, [editor, mentionables]);
+
   const marks = useEditorState({
     editor,
     selector: ({ editor: e }) => ({
       bold: e?.isActive('bold') ?? false,
       italic: e?.isActive('italic') ?? false,
       quote: e?.isActive('blockquote') ?? false,
+      unlinked: hintedNames(e).join('\u0000'),
     }),
   });
+  const unlinked = marks?.unlinked ? marks.unlinked.split('\u0000') : [];
 
   return (
     <div className="flex flex-col gap-2">
@@ -127,6 +138,21 @@ export default function ProseEditor({
         </button>
       </div>
       <EditorContent editor={editor} />
+      {unlinked.length > 0 && (
+        <p
+          data-sec="char"
+          className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.82rem] text-muted"
+        >
+          <span>Named without a link: {unlinked.join(', ')}.</span>
+          <button
+            type="button"
+            className="font-semibold text-accent hover:underline"
+            onClick={() => editor && linkAllNames(editor, mentionables)}
+          >
+            Link {unlinked.length === 1 ? 'it' : 'them'}
+          </button>
+        </p>
+      )}
     </div>
   );
 }
