@@ -5,8 +5,11 @@ import { Icon } from '../../components/ui/Icon';
 import { Loading } from '../../components/ui/Loading';
 import type { Entry } from '../../data/types';
 import { useEntries, useEntry, useEntryMap, useLinks } from '../../lib/entries/hooks';
-import { childrenOf } from './deskModel';
+import { castOf, useCasts } from '../characters/castModel';
+import { childrenOf, scenePov } from './deskModel';
 import { chapterName, health, type ChapterPace, type Check, type PovShare } from './healthModel';
+import { secretsOf } from './knowledgeModel';
+import { WhoKnowsWhat } from './WhoKnowsWhat';
 
 /** Story health for one manuscript: gentle checks, pacing, and point-of-view balance. */
 export function HealthPage({ bookId }: { bookId: string }) {
@@ -44,16 +47,35 @@ function StoryHealth({ book }: { book: Entry }) {
   const characterMap = useEntryMap(characters.data);
   const plotlineLinks = useLinks({ kind: 'plotline' });
   const mentionLinks = useLinks({ kind: 'mention' });
+  const casts = useCasts();
   const loading =
+    !casts.ready ||
     !allChapters.data ||
     !scenes.data ||
     !allPlotlines.data ||
     !characters.data ||
     !plotlineLinks.data ||
     !mentionLinks.data;
+  const chapters = useMemo(
+    () => childrenOf(allChapters.data, book.id),
+    [allChapters.data, book.id],
+  );
+  // Who to track secrets for: the cast, the POV characters, and anyone already marked.
+  const people = useMemo(() => {
+    const ids = new Set(castOf(book, casts.links, casts.books).keys());
+    for (const c of chapters)
+      for (const s of childrenOf(scenes.data, c.id)) {
+        const pov = scenePov(s);
+        if (pov) ids.add(pov);
+      }
+    for (const secret of secretsOf(book)) for (const id of Object.keys(secret.learns)) ids.add(id);
+    return [...ids]
+      .map((id) => characterMap.get(id))
+      .filter((c): c is Entry => !!c && !c.deletedAt)
+      .sort((a, b) => a.title.localeCompare(b.title));
+  }, [book, casts.links, casts.books, chapters, scenes.data, characterMap]);
   const result = useMemo(() => {
     if (loading) return null;
-    const chapters = childrenOf(allChapters.data, book.id);
     const plotlines = childrenOf(allPlotlines.data, book.id);
     return health(chapters, scenes.data, plotlines, characterMap, [
       ...plotlineLinks.data!,
@@ -61,7 +83,7 @@ function StoryHealth({ book }: { book: Entry }) {
     ]);
   }, [
     loading,
-    allChapters.data,
+    chapters,
     allPlotlines.data,
     scenes.data,
     characterMap,
@@ -76,7 +98,8 @@ function StoryHealth({ book }: { book: Entry }) {
         <span className="label">Story health</span>
         <h1 className="text-[1.8rem] max-sm:text-[1.5rem]">{book.title || 'Untitled story'}</h1>
         <p className="text-[0.9rem] text-muted">
-          Pacing, point of view, and a few things worth a look. These are notes, not rules.
+          Pacing, point of view, who knows what, and a few things worth a look. These are notes, not
+          rules.
         </p>
       </header>
       {!result ? (
@@ -88,6 +111,7 @@ function StoryHealth({ book }: { book: Entry }) {
           <Checks checks={result.checks} />
           <Pacing chapters={result.chapters} average={result.average} />
           <PointOfView shares={result.pov} />
+          <WhoKnowsWhat book={book} chapters={chapters} people={people} />
         </>
       )}
     </>
