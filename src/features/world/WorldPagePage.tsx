@@ -13,6 +13,7 @@ import { useAutosaved } from '../../lib/entries/useAutosaved';
 import { useAuthStore } from '../auth/authStore';
 import { AppearsIn } from '../desk/AppearsIn';
 import { syncMentions } from '../desk/deskModel';
+import { EntryGallery } from '../images/EntryGallery';
 import { PropField } from './PropField';
 import { Breadcrumbs, EntryGate, NotebookLayout } from './WorldFrame';
 import type { WorldSave } from './WorldEditor';
@@ -144,6 +145,7 @@ function WorldPage({
             ))}
           </dl>
         )}
+        <EntryGallery entry={page} />
         <div className="border-t border-line pt-4">
           {body.data === undefined ? (
             body.error ? (

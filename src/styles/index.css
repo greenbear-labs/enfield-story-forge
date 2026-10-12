@@ -508,6 +508,75 @@
     -webkit-line-clamp: 5;
     overflow: hidden;
   }
+  /* A cover image, edge to edge across the top of a card. */
+  .entry-card .card-cover {
+    width: calc(100% + 28px);
+    max-width: none;
+    height: auto;
+    aspect-ratio: 16 / 9;
+    margin: -12px -14px 0;
+    object-fit: cover;
+    border-top-right-radius: 7px;
+  }
+
+  /* Image galleries */
+  .image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+    gap: 8px;
+    padding: 2px;
+    border-radius: 8px;
+  }
+  .image-grid.is-dragging {
+    outline: 2px dashed var(--accent);
+    outline-offset: 2px;
+  }
+  .image-tile {
+    position: relative;
+    display: block;
+    aspect-ratio: 1;
+    padding: 0;
+    overflow: hidden;
+    background: var(--sunken);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  button.image-tile:hover {
+    border-color: var(--accent);
+  }
+  .image-tile.is-uploading img {
+    opacity: 0.55;
+  }
+  .image-add {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--accent);
+    background: transparent;
+    border-style: dashed;
+  }
+  .image-add:hover,
+  .image-add:focus-within {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+  }
+  .image-badge {
+    position: absolute;
+    bottom: 6px;
+    left: 6px;
+    padding: 1px 7px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--ink);
+    background: var(--surface);
+    border-radius: 999px;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+  }
 
   .seg {
     display: inline-flex;

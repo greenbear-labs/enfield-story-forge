@@ -8,6 +8,7 @@ import { removeLink, restoreEntry, trashEntry, updateEntry } from '../../lib/ent
 import { useEntries, useEntry, useEntryMap, useLinks } from '../../lib/entries/hooks';
 import { useAutosaved } from '../../lib/entries/useAutosaved';
 import { useAuthStore } from '../auth/authStore';
+import { EntryGallery } from '../images/EntryGallery';
 import { ShardCard, cardGrid } from '../shards/ShardCard';
 import {
   CONCEPT_STATUSES,
@@ -130,6 +131,7 @@ function ConceptEditor({ concept }: { concept: Entry }) {
             {...notes.props}
           />
         </label>
+        <EntryGallery entry={concept} />
         <div className="flex flex-wrap gap-2 border-t border-line pt-4">
           <button
             type="button"

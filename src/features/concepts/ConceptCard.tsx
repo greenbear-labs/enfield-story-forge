@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import type { Entry } from '../../data/types';
+import { CardCover } from '../images/EntryImg';
 import { conceptGenre, conceptLogline, conceptStatus, conceptStatusLabel } from './conceptModel';
 
 /** How a concept looks in the Concept Bank. */
@@ -12,6 +13,7 @@ export function ConceptCard({ concept }: { concept: Entry }) {
       data-sec="concept"
       className="entry-card"
     >
+      <CardCover entry={concept} />
       <div className="flex flex-wrap items-center gap-2">
         <span className="chip">{conceptStatusLabel(conceptStatus(concept))}</span>
         {genre && <span className="text-[0.78rem] text-muted">{genre}</span>}

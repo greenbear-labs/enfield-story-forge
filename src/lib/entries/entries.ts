@@ -18,7 +18,7 @@ import { linkId, newEntryData, newLinkData, normalizeTags, type NewEntry } from 
  * Writes land in the local cache at once and sync later, so none of these
  * wait for the server. A rejected write (say, the rules refused it) is logged.
  */
-function fireAndTrack(write: Promise<void>, what: string): void {
+export function fireAndTrack(write: Promise<void>, what: string): void {
   write.catch((err: unknown) => console.error(`Could not ${what}`, err));
   trackPendingWrites();
 }

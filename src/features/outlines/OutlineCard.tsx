@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import type { Entry } from '../../data/types';
+import { CardCover } from '../images/EntryImg';
 import {
   beatsFilled,
   formatLabel,
@@ -19,6 +20,7 @@ export function OutlineCard({ outline }: { outline: Entry }) {
       data-sec="story"
       className="entry-card"
     >
+      <CardCover entry={outline} />
       <div className="flex flex-wrap items-center gap-2">
         <span className="chip">{formatLabel(outlineFormat(outline))}</span>
         <span className="text-[0.78rem] text-muted">{outlineStructure(outline).name}</span>

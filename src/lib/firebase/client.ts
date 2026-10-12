@@ -6,6 +6,7 @@ import {
   persistentMultipleTabManager,
   type Firestore,
 } from 'firebase/firestore';
+import { getStorage, type FirebaseStorage } from 'firebase/storage';
 import { firebaseConfig, isFirebaseConfigured } from './config';
 
 // Analytics is intentionally not used. Don't import firebase/analytics.
@@ -33,4 +34,12 @@ export function getFirebase(): FirebaseClient {
   });
   client = { app, auth, db };
   return client;
+}
+
+let storage: FirebaseStorage | undefined;
+
+/** Firebase Storage, where images live. Unlike Firestore it has no offline cache. */
+export function getImageStorage(): FirebaseStorage {
+  storage ??= getStorage(getFirebase().app);
+  return storage;
 }

@@ -11,6 +11,7 @@ import { useEntries, useEntry, useEntryMap } from '../../lib/entries/hooks';
 import { matchesQuery } from '../../lib/entries/model';
 import { useAutosaved } from '../../lib/entries/useAutosaved';
 import { useAuthStore } from '../auth/authStore';
+import { CardCover, Thumb } from '../images/EntryImg';
 import { cardGrid } from '../shards/ShardCard';
 import { ColumnDialog } from './ColumnDialog';
 import { PropField } from './PropField';
@@ -254,6 +255,7 @@ function PageCard({ page, columns }: { page: Entry; columns: WorldColumn[] }) {
   const chips = chipsOf(page, columns);
   return (
     <Link to="/world/pages/$pageId" params={{ pageId: page.id }} className="entry-card">
+      <CardCover entry={page} />
       <b className="font-display text-[1.05rem]">{untitled(page)}</b>
       {summary && <p className="body text-[0.9rem]">{summary}</p>}
       {chips.length > 0 && (
@@ -278,6 +280,7 @@ function PageRow({ page, columns }: { page: Entry; columns: WorldColumn[] }) {
       params={{ pageId: page.id }}
       className="flex items-center gap-3 px-3 py-2.5 hover:bg-sunken"
     >
+      <Thumb entry={page} />
       <span className="flex min-w-0 flex-1 flex-col">
         <b>{untitled(page)}</b>
         {summary && <span className="truncate text-[0.85rem] text-muted">{summary}</span>}

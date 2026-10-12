@@ -27,11 +27,23 @@ export default defineConfig({
       workbox: {
         navigateFallback: '/index.html',
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // Images never change once uploaded (each gets a new path), so keep them for offline use.
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.hostname === 'firebasestorage.googleapis.com',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'entry-images',
+              expiration: { maxEntries: 400, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
       },
     }),
   ],
   build: {
-    // Firebase Auth + Firestore (with the offline cache) is about 630 kB on its own.
+    // Firebase Auth, Firestore (with the offline cache) and Storage are about 670 kB on their own.
     chunkSizeWarningLimit: 700,
     rolldownOptions: {
       output: {

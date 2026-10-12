@@ -10,6 +10,7 @@ import { restoreEntry, trashEntry, updateEntry } from '../../lib/entries/entries
 import { useEntries, useEntry, useLinks } from '../../lib/entries/hooks';
 import { useDebouncedSave } from '../../lib/entries/useDebouncedSave';
 import { useAuthStore } from '../auth/authStore';
+import { EntryGallery } from '../images/EntryGallery';
 import { createCharacter } from '../characters/characterModel';
 import { addToCart, useMineCart } from './mineCart';
 import { saveShardText, shardText, shardType } from './shardModel';
@@ -120,6 +121,7 @@ function ShardEditor({ shard }: { shard: Entry }) {
           onChange={(tags) => updateEntry(ws, shard.id, { tags })}
         />
       </div>
+      <EntryGallery entry={shard} />
       <InGroups shardId={shard.id} />
       <div className="flex flex-wrap gap-2 border-t border-line pt-4">
         <button
