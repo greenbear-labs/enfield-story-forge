@@ -12,6 +12,7 @@ import { InfoLink } from '../appendix/InfoLink';
 import { onDesk } from '../desk/deskModel';
 import { SendToDeskDialog } from '../desk/SendToDeskDialog';
 import { useAuthStore } from '../auth/authStore';
+import { StoryCast } from '../characters/CastPanels';
 import { EntryGallery } from '../images/EntryGallery';
 import { filterCast } from '../characters/characterModel';
 import {
@@ -203,6 +204,9 @@ function OutlineEditor({ outline }: { outline: Entry }) {
         <a href="#spine" className="seg">
           Story Spine
         </a>
+        <a href="#cast" className="seg">
+          Cast
+        </a>
         <a href="#beats" className="seg">
           Beat Board
         </a>
@@ -210,6 +214,7 @@ function OutlineEditor({ outline }: { outline: Entry }) {
 
       {sending && <SendToDeskDialog outline={outline} onClose={() => setSending(false)} />}
       <StorySpine outline={outline} />
+      <StoryCast story={outline} />
       <BeatBoard key={structure.key} outline={outline} structure={structure} />
     </>
   );

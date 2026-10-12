@@ -46,6 +46,8 @@ export const LINK_KINDS = [
   'source',
   /** A character → another character it has a relationship with. The note lives on the character. */
   'related',
+  /** A character → a book or series whose cast they're in. */
+  'cast',
   'appears_in',
   'pov',
   'location',

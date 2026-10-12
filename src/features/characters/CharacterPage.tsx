@@ -32,6 +32,7 @@ import {
 } from './characterModel';
 import { AppearsIn } from '../desk/AppearsIn';
 import { EntryGallery } from '../images/EntryGallery';
+import { CharacterStories } from './CastPanels';
 import { RoleInput } from './RoleInput';
 
 export function CharacterPage({ characterId }: { characterId: string }) {
@@ -137,6 +138,7 @@ function CharacterEditor({ character }: { character: Entry }) {
             {...notes.props}
           />
         </label>
+        <CharacterStories character={character} />
         <div className="flex flex-wrap gap-2 border-t border-line pt-4">
           <Link to="/characters/interview" search={{ character: character.id }} className="btn">
             <Icon name="chat" size={16} />
