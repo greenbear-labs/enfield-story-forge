@@ -191,7 +191,14 @@ const outlineRoute = createRoute({
 const deskRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/desk',
-  component: DeskStationPage,
+  // import: open "Import a draft" straight away (from the welcome tour).
+  validateSearch: (search: Record<string, unknown>): { import?: boolean } => ({
+    import: search.import === true || search.import === 'true' ? true : undefined,
+  }),
+  component: function DeskRouteComponent() {
+    const { import: openImport } = deskRoute.useSearch();
+    return <DeskStationPage openImport={!!openImport} />;
+  },
 });
 const manuscriptRoute = createRoute({
   getParentRoute: () => appRoute,

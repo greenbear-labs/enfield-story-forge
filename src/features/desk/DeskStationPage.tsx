@@ -1,5 +1,5 @@
 import { useNavigate } from '@tanstack/react-router';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Loading } from '../../components/ui/Loading';
 import type { Entry } from '../../data/types';
@@ -14,9 +14,13 @@ import { ManuscriptCard } from './ManuscriptCard';
 import { useManuscriptStats } from './useManuscriptStats';
 import { WritingHabit } from './WritingHabit';
 
-export function DeskStationPage() {
+export function DeskStationPage({ openImport = false }: { openImport?: boolean }) {
   const navigate = useNavigate();
-  const [importing, setImporting] = useState(false);
+  const [importing, setImporting] = useState(openImport);
+  // Opened from a link: drop ?import so a reload doesn't open it again.
+  useEffect(() => {
+    if (openImport) void navigate({ to: '/desk', search: {}, replace: true });
+  }, [openImport, navigate]);
   const books = useEntries('book');
   const manuscripts = useMemo(
     () => (books.data ?? []).filter(onDesk).sort(recentlyUpdatedFirst),

@@ -26,7 +26,7 @@ src/
   app/              router, app shell, top bar, station nav, World Creator shell, app switcher, theme, navigation config
   features/
     auth/           auth store, auth actions, landing and sign-in pages
-    hub/            the Hub
+    hub/            the Hub, and the first-time welcome tour (tour.ts; put away in `settings/welcome`)
     stations/       StationPage template, ToolCard, station content
     appendix/       the Appendix: craft articles as data (articles.ts), article pages, InfoLink (i) links
     shards/         Story Shards: quick capture, library, shard page, Shard Mines, groups, Spark Prompts
