@@ -8,6 +8,7 @@ import {
   parseValue,
   linkables,
   pageKind,
+  planTreeMove,
   presetColumns,
   sortPages,
   summaryOf,
@@ -119,5 +120,71 @@ describe('the notebook tree', () => {
       { id: 'c1', label: 'Mira', kind: 'Character' },
       { id: 'p2', label: 'The Old Docks', kind: 'Page' },
     ]);
+  });
+});
+
+describe('planTreeMove', () => {
+  const nb = fakeShard('', { id: 'nb', type: 'notebook', fields: {} });
+  const other = fakeShard('', { id: 'nb2', type: 'notebook', fields: {} });
+  const places = fakeShard('', {
+    id: 'places',
+    type: 'index',
+    parentId: 'nb',
+    order: 'a',
+    fields: { preset: 'places' },
+  });
+  const people = fakeShard('', {
+    id: 'people',
+    type: 'index',
+    parentId: 'nb',
+    order: 'b',
+    fields: { preset: 'peoples' },
+  });
+  const far = fakeShard('', { id: 'far', type: 'index', parentId: 'nb2', fields: {} });
+  const page = (id: string, parentId: string, order: string, notebookId = 'nb') =>
+    fakeShard('', {
+      id,
+      type: 'page',
+      parentId,
+      order,
+      template: 'location',
+      fields: { notebookId },
+    });
+  const a = page('a', 'places', '1');
+  const b = page('b', 'places', '2');
+  const c = page('c', 'places', '3');
+  const inner = page('inner', 'a', '1');
+  const elsewhere = page('x', 'far', '1', 'nb2');
+  const all = [nb, other, places, people, far, a, b, c, inner, elsewhere];
+
+  it('reorders siblings, renumbering the list', () => {
+    const w = planTreeMove(all, 'c', { parentId: 'places', beforeId: 'a' })!;
+    const order = Object.fromEntries(w.map((x) => [x.id, x.changes.order]));
+    expect([order.c, order.a, order.b].every(Boolean)).toBe(true);
+    expect(order.c! < order.a! && order.a! < order.b!).toBe(true);
+    expect(w.some((x) => x.changes.parentId)).toBe(false);
+  });
+
+  it('moves a page into another page or index, taking the index’s kind', () => {
+    const intoPage = planTreeMove(all, 'b', { parentId: 'a', beforeId: null })!;
+    expect(intoPage.find((x) => x.id === 'b')!.changes).toMatchObject({ parentId: 'a' });
+    expect(intoPage.find((x) => x.id === 'b')!.changes.template).toBeUndefined();
+    const intoIndex = planTreeMove(all, 'inner', { parentId: 'people', beforeId: null })!;
+    expect(intoIndex[0]!.changes.parentId).toBe('people');
+    expect(intoIndex[0]!.changes.template).toBe(presetByKey('peoples').template);
+  });
+
+  it('refuses moves that would break the tree', () => {
+    expect(planTreeMove(all, 'a', { parentId: 'inner', beforeId: null })).toBeNull();
+    expect(planTreeMove(all, 'a', { parentId: 'a', beforeId: null })).toBeNull();
+    expect(planTreeMove(all, 'a', { parentId: 'far', beforeId: null })).toBeNull();
+    expect(planTreeMove(all, 'a', { parentId: 'nb', beforeId: null })).toBeNull();
+    expect(planTreeMove(all, 'places', { parentId: 'people', beforeId: null })).toBeNull();
+  });
+
+  it('reorders indexes within their notebook', () => {
+    const w = planTreeMove(all, 'people', { parentId: 'nb', beforeId: 'places' })!;
+    const order = Object.fromEntries(w.map((x) => [x.id, x.changes.order]));
+    expect(order.people! < order.places!).toBe(true);
   });
 });
