@@ -21,6 +21,7 @@ export function ShardPage({ shardId }: { shardId: string }) {
 
   return (
     <div data-sec="shard" className="mx-auto flex w-full max-w-[720px] flex-col gap-4">
+      <h1 className="sr-only">{shard.data?.title || 'Shard'}</h1>
       <BackToShards />
       {shard.data === undefined ? (
         shard.error ? (

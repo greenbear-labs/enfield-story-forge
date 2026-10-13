@@ -51,6 +51,7 @@ export function IndexPage({ indexId }: { indexId: string }) {
       trail={trail}
       entries={entries.data}
     >
+      <h1 className="sr-only">{index.data?.title || 'Index'}</h1>
       <Breadcrumbs trail={trail} />
       <EntryGate live={index} noun="index">
         {(i) => <Index key={i.id} index={i} />}

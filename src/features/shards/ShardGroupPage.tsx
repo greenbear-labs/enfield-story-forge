@@ -21,6 +21,7 @@ export function ShardGroupPage({ groupId }: { groupId: string }) {
 
   return (
     <div data-sec="shard" className="flex flex-col gap-4">
+      <h1 className="sr-only">{group.data?.title || 'Shard group'}</h1>
       <BackToShards />
       {group.data === undefined ? (
         group.error ? (

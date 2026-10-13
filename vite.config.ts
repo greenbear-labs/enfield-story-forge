@@ -43,14 +43,15 @@ export default defineConfig({
     }),
   ],
   build: {
-    // Firebase Auth, Firestore (with the offline cache) and Storage are about 670 kB on their own.
+    // Firebase Auth and Firestore (with the offline cache) are about 600 kB on their own.
     chunkSizeWarningLimit: 700,
     rolldownOptions: {
       output: {
         // Keep the big, rarely-changing libraries in their own cacheable chunks.
         codeSplitting: {
           groups: [
-            { name: 'firebase', test: /node_modules[\\/](@firebase|firebase)[\\/]/ },
+            // Storage (images) loads on its own, the first time an image is shown or added.
+            { name: 'firebase', test: /node_modules[\\/]@?firebase[\\/](?!storage)/ },
             { name: 'react', test: /node_modules[\\/](react|react-dom|scheduler|@tanstack)[\\/]/ },
           ],
         },

@@ -1,3 +1,4 @@
+import { lazy, type ComponentType } from 'react';
 import {
   createRootRoute,
   createRoute,
@@ -10,38 +11,89 @@ import { authReady } from '../features/auth/authStore';
 import { LandingPage } from '../features/auth/LandingPage';
 import { SignInPage } from '../features/auth/SignInPage';
 import { HubPage } from '../features/hub/HubPage';
-import { FeedbackInboxPage } from '../features/feedback/FeedbackInboxPage';
-import { AppendixPage } from '../features/appendix/AppendixPage';
-import { CharacterInterviewPage } from '../features/characters/CharacterInterviewPage';
-import { CharacterPage } from '../features/characters/CharacterPage';
-import { RelationshipWebPage } from '../features/characters/RelationshipWebPage';
-import { CharactersStationPage } from '../features/characters/CharactersStationPage';
 import { CHARACTER_VIEWS, type CharacterView } from '../features/characters/characterModel';
-import { ConceptGeneratorPage } from '../features/concepts/ConceptGeneratorPage';
-import { ConceptPage } from '../features/concepts/ConceptPage';
-import { ConceptsStationPage } from '../features/concepts/ConceptsStationPage';
-import { MashupPage } from '../features/concepts/MashupPage';
-import { ShardGroupPage } from '../features/shards/ShardGroupPage';
-import { ShardMinesPage } from '../features/shards/ShardMinesPage';
-import { ShardPage } from '../features/shards/ShardPage';
-import { ShardsStationPage } from '../features/shards/ShardsStationPage';
-import { NewOutlinePage } from '../features/outlines/NewOutlinePage';
-import { OutlinePage } from '../features/outlines/OutlinePage';
-import { OutlinesStationPage } from '../features/outlines/OutlinesStationPage';
-import { BreakdownPage } from '../features/desk/BreakdownPage';
-import { ChapterPage } from '../features/desk/ChapterPage';
-import { CompilePage } from '../features/desk/CompilePage';
-import { HealthPage } from '../features/desk/HealthPage';
-import { DeskStationPage } from '../features/desk/DeskStationPage';
-import { ManuscriptPage } from '../features/desk/ManuscriptPage';
-import { ScenePage } from '../features/desk/ScenePage';
-import { IndexPage } from '../features/world/IndexPage';
-import { NotebookPage } from '../features/world/NotebookPage';
-import { NotebookPrintPage } from '../features/world/NotebookPrintPage';
-import { WorldHomePage } from '../features/world/WorldHomePage';
-import { WorldPagePage } from '../features/world/WorldPagePage';
 import { AppShell } from './AppShell';
 import { WorldShell } from './WorldShell';
+
+/** A page loaded the first time it's opened, so the first screen loads faster. */
+function lazyPage<M, K extends keyof M>(load: () => Promise<M>, name: K) {
+  const page = lazy(async () => ({
+    default: (await load())[name] as unknown as ComponentType<object>,
+  }));
+  return page as unknown as M[K];
+}
+
+const FeedbackInboxPage = lazyPage(
+  () => import('../features/feedback/FeedbackInboxPage'),
+  'FeedbackInboxPage',
+);
+const AppendixPage = lazyPage(() => import('../features/appendix/AppendixPage'), 'AppendixPage');
+const CharacterInterviewPage = lazyPage(
+  () => import('../features/characters/CharacterInterviewPage'),
+  'CharacterInterviewPage',
+);
+const CharacterPage = lazyPage(
+  () => import('../features/characters/CharacterPage'),
+  'CharacterPage',
+);
+const RelationshipWebPage = lazyPage(
+  () => import('../features/characters/RelationshipWebPage'),
+  'RelationshipWebPage',
+);
+const CharactersStationPage = lazyPage(
+  () => import('../features/characters/CharactersStationPage'),
+  'CharactersStationPage',
+);
+const ConceptGeneratorPage = lazyPage(
+  () => import('../features/concepts/ConceptGeneratorPage'),
+  'ConceptGeneratorPage',
+);
+const ConceptPage = lazyPage(() => import('../features/concepts/ConceptPage'), 'ConceptPage');
+const ConceptsStationPage = lazyPage(
+  () => import('../features/concepts/ConceptsStationPage'),
+  'ConceptsStationPage',
+);
+const MashupPage = lazyPage(() => import('../features/concepts/MashupPage'), 'MashupPage');
+const ShardGroupPage = lazyPage(
+  () => import('../features/shards/ShardGroupPage'),
+  'ShardGroupPage',
+);
+const ShardMinesPage = lazyPage(
+  () => import('../features/shards/ShardMinesPage'),
+  'ShardMinesPage',
+);
+const ShardPage = lazyPage(() => import('../features/shards/ShardPage'), 'ShardPage');
+const ShardsStationPage = lazyPage(
+  () => import('../features/shards/ShardsStationPage'),
+  'ShardsStationPage',
+);
+const NewOutlinePage = lazyPage(
+  () => import('../features/outlines/NewOutlinePage'),
+  'NewOutlinePage',
+);
+const OutlinePage = lazyPage(() => import('../features/outlines/OutlinePage'), 'OutlinePage');
+const OutlinesStationPage = lazyPage(
+  () => import('../features/outlines/OutlinesStationPage'),
+  'OutlinesStationPage',
+);
+const BreakdownPage = lazyPage(() => import('../features/desk/BreakdownPage'), 'BreakdownPage');
+const ChapterPage = lazyPage(() => import('../features/desk/ChapterPage'), 'ChapterPage');
+const CompilePage = lazyPage(() => import('../features/desk/CompilePage'), 'CompilePage');
+const HealthPage = lazyPage(() => import('../features/desk/HealthPage'), 'HealthPage');
+const DeskStationPage = lazyPage(
+  () => import('../features/desk/DeskStationPage'),
+  'DeskStationPage',
+);
+const ManuscriptPage = lazyPage(() => import('../features/desk/ManuscriptPage'), 'ManuscriptPage');
+const ScenePage = lazyPage(() => import('../features/desk/ScenePage'), 'ScenePage');
+const IndexPage = lazyPage(() => import('../features/world/IndexPage'), 'IndexPage');
+const NotebookPage = lazyPage(() => import('../features/world/NotebookPage'), 'NotebookPage');
+const NotebookPrintPage = lazyPage(
+  () => import('../features/world/NotebookPrintPage'),
+  'NotebookPrintPage',
+);
+const WorldHomePage = lazyPage(() => import('../features/world/WorldHomePage'), 'WorldHomePage');
+const WorldPagePage = lazyPage(() => import('../features/world/WorldPagePage'), 'WorldPagePage');
 
 const optionalString = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
 

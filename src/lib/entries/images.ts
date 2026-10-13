@@ -1,8 +1,7 @@
 import { arrayUnion, deleteField, doc, serverTimestamp, updateDoc } from 'firebase/firestore';
-import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { useEffect, useState } from 'react';
 import type { Entry, EntryImage } from '../../data/types';
-import { getFirebase, getImageStorage } from '../firebase/client';
+import { getFirebase, loadImageStorage } from '../firebase/client';
 import { paths, storagePaths } from '../firestore/paths';
 import { fireAndTrack } from './entries';
 
@@ -99,13 +98,14 @@ export async function addEntryImage(
   const id = newImageId();
   const ext = blob.type === 'image/webp' ? 'webp' : 'jpg';
   const storagePath = `${storagePaths.entryImages(workspaceId, entryId)}/${id}.${ext}`;
-  const fileRef = ref(getImageStorage(), storagePath);
+  const { storage, lib } = await loadImageStorage();
+  const fileRef = lib.ref(storage, storagePath);
   // Each upload gets a new path, so browsers can keep it for good.
-  await uploadBytes(fileRef, blob, {
+  await lib.uploadBytes(fileRef, blob, {
     contentType: blob.type,
     cacheControl: 'private, max-age=31536000, immutable',
   });
-  const url = await getDownloadURL(fileRef);
+  const url = await lib.getDownloadURL(fileRef);
   const image: EntryImage = { id, storagePath, url, width, height };
   // arrayUnion, so several uploads finishing together don't overwrite each other.
   writeImages(workspaceId, entryId, { images: arrayUnion(image) }, 'add the image');
@@ -149,9 +149,9 @@ export function removeEntryImage(workspaceId: string, entry: Entry, image: Entry
     'remove the image',
   );
   const timer = setTimeout(() => {
-    deleteObject(ref(getImageStorage(), image.storagePath)).catch((err: unknown) =>
-      console.error('Could not delete the image file', err),
-    );
+    loadImageStorage()
+      .then(({ storage, lib }) => lib.deleteObject(lib.ref(storage, image.storagePath)))
+      .catch((err: unknown) => console.error('Could not delete the image file', err));
   }, UNDO_MS);
   return () => {
     clearTimeout(timer);
@@ -169,7 +169,9 @@ const urlCache = new Map<string, Promise<string>>();
 function lookUpUrl(storagePath: string): Promise<string> {
   let url = urlCache.get(storagePath);
   if (!url) {
-    url = getDownloadURL(ref(getImageStorage(), storagePath));
+    url = loadImageStorage().then(({ storage, lib }) =>
+      lib.getDownloadURL(lib.ref(storage, storagePath)),
+    );
     url.catch(() => urlCache.delete(storagePath));
     urlCache.set(storagePath, url);
   }

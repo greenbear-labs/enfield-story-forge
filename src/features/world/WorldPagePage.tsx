@@ -41,6 +41,7 @@ export function WorldPagePage({ pageId }: { pageId: string }) {
   const notebookId = trail[0]?.type === 'notebook' ? trail[0].id : null;
   return (
     <NotebookLayout notebookId={notebookId} currentId={pageId} trail={trail} entries={entries.data}>
+      <h1 className="sr-only">{page.data?.title || 'World page'}</h1>
       <Breadcrumbs trail={trail} />
       <EntryGate live={page} noun="page">
         {(p) => <WorldPage key={p.id} page={p} entries={entries.data} byId={byId} trail={trail} />}

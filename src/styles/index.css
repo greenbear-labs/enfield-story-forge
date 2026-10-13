@@ -1028,3 +1028,23 @@
     }
   }
 }
+
+/* Keyboard users can jump past the top bar. Hidden until focused. */
+.skip-link {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  transform: translateY(-150%);
+  border-radius: 8px;
+  background: var(--brand);
+  padding: 8px 14px;
+  font-weight: 600;
+  color: var(--surface);
+}
+.skip-link:focus {
+  transform: none;
+}
+#main:focus {
+  outline: none;
+}
