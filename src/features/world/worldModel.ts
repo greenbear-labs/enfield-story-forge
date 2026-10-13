@@ -348,3 +348,72 @@ export function linkables(entries: Entry[] | undefined, selfId: string) {
     }))
     .sort((a, b) => a.label.localeCompare(b.label));
 }
+
+// ----- Moving things in the notebook tree -----
+
+/** Where a dragged page or index lands: inside `parentId`, before `beforeId` (or last). */
+export interface TreeDrop {
+  parentId: string;
+  beforeId: string | null;
+}
+
+/** Whether `id` is `ancestorId` or somewhere inside it. */
+function isWithin(byId: Map<string, Entry>, id: string, ancestorId: string): boolean {
+  for (let at: Entry | undefined = byId.get(id); at; at = byId.get(at.parentId ?? '')) {
+    if (at.id === ancestorId) return true;
+  }
+  return false;
+}
+
+/** Sibling order keys for a renumbered list: small, so they stay ahead of newer entries' keys. */
+const slotKey = (i: number) => i.toString(36).padStart(10, '0');
+
+/**
+ * The writes that move `dragId` to `drop`, or null when it can't go there.
+ * Indexes only reorder within their notebook. Pages can go into an index or
+ * another page of the same notebook, but not into themselves. Every sibling
+ * at the destination is renumbered, so the order is exact.
+ */
+export function planTreeMove(
+  entries: Entry[],
+  dragId: string,
+  drop: TreeDrop,
+): { id: string; changes: { parentId?: string; order?: string; template?: string } }[] | null {
+  const byId = new Map(entries.map((e) => [e.id, e]));
+  const dragged = byId.get(dragId);
+  const parent = byId.get(drop.parentId);
+  if (!dragged || !parent || dragged.id === drop.beforeId) return null;
+  if (dragged.type === 'index') {
+    if (parent.id !== dragged.parentId) return null;
+  } else if (dragged.type === 'page') {
+    if (parent.type !== 'index' && parent.type !== 'page') return null;
+    if (isWithin(byId, parent.id, dragged.id)) return null;
+    const notebookOf = (e: Entry) => (e.type === 'index' ? e.parentId : e.fields.notebookId);
+    if (notebookOf(parent) !== dragged.fields.notebookId) return null;
+  } else return null;
+
+  const siblings = childrenOf(entries, parent.id, dragged.type).filter((e) => e.id !== dragId);
+  const at = drop.beforeId ? siblings.findIndex((e) => e.id === drop.beforeId) : -1;
+  siblings.splice(at === -1 ? siblings.length : at, 0, dragged);
+
+  const moved = parent.id !== dragged.parentId;
+  const writes = siblings.flatMap((e, i) => {
+    const changes: { parentId?: string; order?: string; template?: string } = {};
+    if (e.order !== slotKey(i)) changes.order = slotKey(i);
+    if (e.id === dragId && moved) {
+      changes.parentId = parent.id;
+      // A page placed in an index becomes that index's kind of page.
+      if (parent.type === 'index') changes.template = indexPreset(parent).template;
+    }
+    return Object.keys(changes).length ? [{ id: e.id, changes }] : [];
+  });
+  return writes;
+}
+
+/** Moves a page or index in the tree. Returns false if it can't go there. */
+export function moveInTree(ws: string, entries: Entry[], dragId: string, drop: TreeDrop): boolean {
+  const writes = planTreeMove(entries, dragId, drop);
+  if (!writes) return false;
+  for (const w of writes) updateEntry(ws, w.id, w.changes);
+  return true;
+}
