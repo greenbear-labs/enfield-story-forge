@@ -40,7 +40,7 @@ src/
   components/ui/    Icon, Menu, Dialog, TagInput, Toaster/toast (with Undo actions), EmptyState, Loading
   lib/firebase/     config from env, lazy Firebase client
   lib/firestore/    path helpers, workspace bootstrap, sync status
-  lib/entries/      the entry engine: create/update/trash/links, live hooks, search, export
+  lib/entries/      the entry engine: create/update/trash/links, live hooks, search, export, full backup and restore (backup.ts; last backup time in `settings/backup`)
   data/types/       Entry, EntryBody, Link, Snapshot, Workspace, Section
   styles/           tokens.css (wireframe tokens), index.css (Tailwind + components)
 e2e/                Playwright smoke tests

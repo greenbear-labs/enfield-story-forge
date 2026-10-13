@@ -14,6 +14,7 @@ import { createShard } from '../shards/shardModel';
 import { useWelcomeDismissed } from '../../lib/entries/welcome';
 import { TOUR, tourDone } from './tour';
 import { WelcomeTour } from './WelcomeTour';
+import { BackupNudge } from './BackupNudge';
 
 interface JourneyStep {
   to: StationPath;
@@ -146,6 +147,7 @@ export function HubPage() {
       </section>
 
       {showTour && <WelcomeTour entries={entries.data!} onClose={() => setTourOpen(false)} />}
+      {!showTour && entries.data && <BackupNudge entryCount={entries.data.length} />}
 
       <section className="journey" aria-label="The journey">
         {JOURNEY.map((s) => (
