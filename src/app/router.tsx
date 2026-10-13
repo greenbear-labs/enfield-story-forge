@@ -13,6 +13,7 @@ import { HubPage } from '../features/hub/HubPage';
 import { AppendixPage } from '../features/appendix/AppendixPage';
 import { CharacterInterviewPage } from '../features/characters/CharacterInterviewPage';
 import { CharacterPage } from '../features/characters/CharacterPage';
+import { RelationshipWebPage } from '../features/characters/RelationshipWebPage';
 import { CharactersStationPage } from '../features/characters/CharactersStationPage';
 import { CHARACTER_VIEWS, type CharacterView } from '../features/characters/characterModel';
 import { ConceptGeneratorPage } from '../features/concepts/ConceptGeneratorPage';
@@ -264,6 +265,19 @@ const characterInterviewRoute = createRoute({
     return <CharacterInterviewPage key={character ?? ''} characterId={character} />;
   },
 });
+const relationshipWebRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/characters/web',
+  // story: only that story's cast; focus: the character whose ties are shown.
+  validateSearch: (search: Record<string, unknown>): { story?: string; focus?: string } => ({
+    story: optionalString(search.story),
+    focus: optionalString(search.focus),
+  }),
+  component: function RelationshipWebRouteComponent() {
+    const { story, focus } = relationshipWebRoute.useSearch();
+    return <RelationshipWebPage story={story} focus={focus} />;
+  },
+});
 const characterRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/characters/$characterId',
@@ -348,6 +362,7 @@ const routeTree = rootRoute.addChildren([
     sceneRoute,
     charactersRoute,
     characterInterviewRoute,
+    relationshipWebRoute,
     characterRoute,
     appendixRoute,
   ]),

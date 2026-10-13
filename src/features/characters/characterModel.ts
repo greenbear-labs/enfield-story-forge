@@ -169,7 +169,7 @@ export function fieldText(entry: Pick<Entry, 'fields'>, path: FieldPath): string
 export const filledCount = (entry: Pick<Entry, 'fields'>, fields: { path: FieldPath }[]) =>
   fields.filter((f) => fieldText(entry, f.path).trim()).length;
 
-/** Every filled-in card, module, and interview field, as [label, text], in card order. */
+/** Every filled-in card, module, and interview field, then stats, as [label, text], in card order. */
 export function characterSummary(entry: Pick<Entry, 'fields'>): [string, string][] {
   const arcType = ARC_TYPES.find((a) => a.key === fieldText(entry, 'arc.type'));
   const defs: { path: FieldPath; label: string }[] = [
@@ -181,7 +181,10 @@ export function characterSummary(entry: Pick<Entry, 'fields'>): [string, string]
     const value = fieldText(entry, d.path).trim();
     return value ? [[d.label, value]] : [];
   });
-  return arcType ? [...rows, ['Arc type', arcType.label]] : rows;
+  const stats = statsOf(entry).flatMap((st): [string, string][] =>
+    st.name.trim() && st.value.trim() ? [[st.name.trim(), st.value.trim()]] : [],
+  );
+  return [...rows, ...(arcType ? [['Arc type', arcType.label] as [string, string]] : []), ...stats];
 }
 
 export const characterRole = (e: Entry) => fieldText(e, 'role');
@@ -251,3 +254,33 @@ export const CHARACTER_VIEWS = [
   { key: 'casts', label: 'By cast' },
 ] as const;
 export type CharacterView = (typeof CHARACTER_VIEWS)[number]['key'];
+
+/** A stat on a character: any name and value, like Age 32 or Strength 14. */
+export interface Stat {
+  id: string;
+  name: string;
+  value: string;
+  order: number;
+}
+
+/** Stats people often start with, offered as one-tap additions. */
+export const STAT_SUGGESTIONS = ['Age', 'Height', 'Birthday', 'Hometown', 'Occupation'];
+
+/** A character's stats (`fields.stats`, keyed by id), in order. */
+export function statsOf(e: Pick<Entry, 'fields'>): Stat[] {
+  const raw = e.fields.stats;
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return [];
+  return Object.entries(raw)
+    .flatMap(([id, v]): Stat[] => {
+      if (!v || typeof v !== 'object' || Array.isArray(v)) return [];
+      return [
+        {
+          id,
+          name: typeof v.name === 'string' ? v.name : '',
+          value: typeof v.value === 'string' ? v.value : '',
+          order: typeof v.order === 'number' ? v.order : 0,
+        },
+      ];
+    })
+    .sort((a, b) => a.order - b.order || a.id.localeCompare(b.id));
+}

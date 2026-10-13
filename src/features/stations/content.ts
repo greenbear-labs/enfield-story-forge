@@ -158,8 +158,7 @@ export const charactersStation: StationContent = {
     {
       name: 'Relationship Web',
       icon: 'web',
-      description: 'A map of how your cast connects.',
-      later: true,
+      description: 'A map of how your cast connects: family, friends, rivals, and enemies.',
     },
   ],
   library: {

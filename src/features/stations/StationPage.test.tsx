@@ -32,7 +32,6 @@ describe('StationPage', () => {
     render(<Toaster />);
 
     expect(await screen.findByText('Companion workshop')).toBeVisible();
-    expect(screen.getByText('Later')).toBeVisible();
 
     await userEvent.click(screen.getByRole('button', { name: /Quick Card/ }));
     expect(await screen.findByRole('status')).toHaveTextContent(/Quick Card/);
