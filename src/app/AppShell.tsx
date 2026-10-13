@@ -1,4 +1,6 @@
 import { Outlet } from '@tanstack/react-router';
+import { Suspense } from 'react';
+import { Loading } from '../components/ui/Loading';
 import { CaptureShardDialog } from '../features/shards/CaptureShardDialog';
 import { TopBar } from './TopBar';
 
@@ -6,9 +8,18 @@ import { TopBar } from './TopBar';
 export function AppShell() {
   return (
     <>
+      <a href="#main" className="skip-link">
+        Skip to content
+      </a>
       <TopBar />
-      <main className="mx-auto flex max-w-[1180px] flex-col gap-[22px] px-5 pt-[22px] pb-20 max-sm:px-4 max-sm:pt-4">
-        <Outlet />
+      <main
+        id="main"
+        tabIndex={-1}
+        className="mx-auto flex max-w-[1180px] flex-col gap-[22px] px-5 pt-[22px] pb-20 max-sm:px-4 max-sm:pt-4"
+      >
+        <Suspense fallback={<Loading />}>
+          <Outlet />
+        </Suspense>
       </main>
       <CaptureShardDialog />
     </>

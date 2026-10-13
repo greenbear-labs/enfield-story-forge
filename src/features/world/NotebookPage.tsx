@@ -26,6 +26,7 @@ export function NotebookPage({ notebookId }: { notebookId: string }) {
       trail={[]}
       entries={entries.data}
     >
+      <h1 className="sr-only">{notebook.data?.title || 'Notebook'}</h1>
       <Breadcrumbs />
       <EntryGate live={notebook} noun="notebook">
         {(n) => <Notebook key={n.id} notebook={n} />}

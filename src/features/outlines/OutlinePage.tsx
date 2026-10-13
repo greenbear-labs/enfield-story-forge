@@ -48,6 +48,7 @@ export function OutlinePage({ outlineId }: { outlineId: string }) {
 
   return (
     <div data-sec="story" className="mx-auto flex w-full max-w-[920px] flex-col gap-4">
+      <h1 className="sr-only">{outline.data?.title || 'Outline'}</h1>
       <Link
         to="/outlines"
         className="inline-flex items-center gap-1 self-start text-[0.85rem] font-semibold text-accent"

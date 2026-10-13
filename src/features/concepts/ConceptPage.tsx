@@ -24,6 +24,7 @@ export function ConceptPage({ conceptId }: { conceptId: string }) {
 
   return (
     <div data-sec="concept" className="mx-auto flex w-full max-w-[860px] flex-col gap-4">
+      <h1 className="sr-only">{concept.data?.title || 'Concept'}</h1>
       <Link
         to="/concepts"
         className="inline-flex items-center gap-1 self-start text-[0.85rem] font-semibold text-accent"

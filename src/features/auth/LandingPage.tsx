@@ -85,7 +85,7 @@ export function LandingPage() {
                 <Icon name={s.icon} />
                 STEP {i + 1}
               </span>
-              <h3 className="text-[1.1rem]">{s.title}</h3>
+              <h2 className="text-[1.1rem]">{s.title}</h2>
               <p className="text-[0.9rem] text-muted">{s.text}</p>
             </div>
           ))}

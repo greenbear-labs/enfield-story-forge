@@ -6,7 +6,7 @@ import {
   persistentMultipleTabManager,
   type Firestore,
 } from 'firebase/firestore';
-import { getStorage, type FirebaseStorage } from 'firebase/storage';
+import type { FirebaseStorage } from 'firebase/storage';
 import { firebaseConfig, isFirebaseConfigured } from './config';
 
 // Analytics is intentionally not used. Don't import firebase/analytics.
@@ -36,10 +36,17 @@ export function getFirebase(): FirebaseClient {
   return client;
 }
 
-let storage: FirebaseStorage | undefined;
+type StorageLib = typeof import('firebase/storage');
+let storage: Promise<{ storage: FirebaseStorage; lib: StorageLib }> | undefined;
 
-/** Firebase Storage, where images live. Unlike Firestore it has no offline cache. */
-export function getImageStorage(): FirebaseStorage {
-  storage ??= getStorage(getFirebase().app);
+/**
+ * Firebase Storage, where images live, loaded the first time it's needed.
+ * Unlike Firestore it has no offline cache.
+ */
+export function loadImageStorage(): Promise<{ storage: FirebaseStorage; lib: StorageLib }> {
+  storage ??= import('firebase/storage').then((lib) => ({
+    lib,
+    storage: lib.getStorage(getFirebase().app),
+  }));
   return storage;
 }

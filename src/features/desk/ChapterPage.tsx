@@ -20,6 +20,7 @@ export function ChapterPage({ chapterId }: { chapterId: string }) {
   const bookId = chapter.data?.parentId ?? null;
   return (
     <div data-sec="desk" className="mx-auto flex w-full max-w-[920px] flex-col gap-4">
+      <h1 className="sr-only">{chapter.data?.title || 'Chapter'}</h1>
       {bookId ? (
         <Link
           to="/desk/$bookId"

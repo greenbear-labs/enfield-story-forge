@@ -45,6 +45,7 @@ export function CharacterPage({ characterId }: { characterId: string }) {
 
   return (
     <div data-sec="char" className="mx-auto flex w-full max-w-[860px] flex-col gap-4">
+      <h1 className="sr-only">{character.data?.title || 'Character'}</h1>
       <Link
         to="/characters"
         className="inline-flex items-center gap-1 self-start text-[0.85rem] font-semibold text-accent"
