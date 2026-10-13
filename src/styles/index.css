@@ -724,10 +724,97 @@
     background: color-mix(in srgb, var(--sec-world-soft) 45%, var(--bg));
   }
   /* ----- Shadow Paths ----- */
-  /* Its own app: a dusk-indigo wash. */
+  /*
+   * Its own app, and always night: a misty teal dark, parchment text, and a
+   * lantern-gold accent. Every color token is redefined here, so the light
+   * theme never reaches it and everything inside (dialogs, menus) follows.
+   */
   .paths-app {
+    --bg: #0a1211;
+    --surface: #111c1a;
+    --sunken: #0d1615;
+    --ink: #ece4cf;
+    --muted: #a3b2aa;
+    --line: #26352f;
+    --on-accent: #1b1306;
+    --brand: #e7b04e;
+    --brand-soft: #2d2513;
+    --sec-paths: #e7b04e;
+    --sec-paths-soft: #2d2513;
+    --mist: #7fc8b8;
+    --font-display: 'IM Fell English', 'Literata', Georgia, serif;
+    color-scheme: dark;
     min-height: 100dvh;
-    background: color-mix(in srgb, var(--sec-paths-soft) 50%, var(--bg));
+    color: var(--ink);
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgb(127 200 184 / 0.13), transparent 70%),
+      radial-gradient(ellipse 60% 40% at 90% 105%, rgb(231 176 78 / 0.07), transparent 70%),
+      var(--bg);
+  }
+  .paths-app h1,
+  .paths-app h2,
+  .paths-app h3 {
+    font-weight: 400;
+    letter-spacing: 0.01em;
+  }
+  /* The lantern: a soft glow on primary buttons and the accent. */
+  .paths-app .btn-primary {
+    box-shadow: 0 0 18px rgb(231 176 78 / 0.35);
+  }
+  .paths-app .btn-primary:hover {
+    box-shadow: 0 0 26px rgb(231 176 78 / 0.55);
+  }
+  .paths-app .entry-card {
+    border-left-width: 1px;
+    overflow: hidden;
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s,
+      transform 0.2s;
+  }
+  .paths-app a.entry-card:hover {
+    box-shadow: 0 0 24px rgb(127 200 184 / 0.15);
+    transform: translateY(-2px);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .paths-app a.entry-card:hover {
+      transform: none;
+    }
+  }
+  /* A wide picture with the night fading over its edges, for page heads. */
+  .paths-banner {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--sunken);
+  }
+  .paths-banner > img,
+  .paths-banner > [role='img'] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .paths-banner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      rgb(10 18 17 / 0.92) 0%,
+      rgb(10 18 17 / 0.55) 55%,
+      rgb(10 18 17 / 0.1) 100%
+    );
+    pointer-events: none;
+  }
+  .paths-banner > .paths-banner-body {
+    position: relative;
+    z-index: 1;
+  }
+  .paths-glow {
+    text-shadow: 0 0 22px rgb(231 176 78 / 0.45);
   }
 
   .world-table {

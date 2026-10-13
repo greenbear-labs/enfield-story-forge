@@ -5,11 +5,11 @@ import { AccountMenu } from './AccountMenu';
 import { AppSwitcher } from './AppSwitcher';
 import { SearchButton } from './SearchButton';
 import { SyncIndicator } from './SyncIndicator';
-import { ThemeToggle } from './ThemeToggle';
 
 /**
- * Enfield Shadow Paths' own layout: its own name and a dusk-indigo look, with
- * the app switcher to go back to Story Forge. Same account, same library.
+ * Enfield Shadow Paths' own layout: its own name and an always-night look (no
+ * theme toggle), with the app switcher to go back to Story Forge. Same
+ * account, same library.
  */
 export function PathsShell() {
   return (
@@ -17,12 +17,11 @@ export function PathsShell() {
       <a href="#main" className="skip-link">
         Skip to content
       </a>
-      <header className="no-print sticky top-0 z-20 border-b-2 border-accent bg-surface">
+      <header className="no-print sticky top-0 z-20 border-b border-line bg-[rgb(10_18_17/0.85)] backdrop-blur">
         <div className="flex items-center gap-2.5 px-5 py-2 max-sm:gap-1.5 max-sm:px-4">
           <AppSwitcher current="paths" />
           <SearchButton />
           <SyncIndicator />
-          <ThemeToggle />
           <AccountMenu />
         </div>
       </header>

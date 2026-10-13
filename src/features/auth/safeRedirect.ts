@@ -5,12 +5,14 @@
 export function safeRedirect(
   redirect: string | undefined,
   origin = window.location.origin,
+  /** Where to go when there's no usable redirect. */
+  fallback = '/hub',
 ): string {
-  if (!redirect?.startsWith('/')) return '/hub';
+  if (!redirect?.startsWith('/')) return fallback;
   try {
     const url = new URL(redirect, origin);
-    return url.origin === origin ? url.pathname + url.search + url.hash : '/hub';
+    return url.origin === origin ? url.pathname + url.search + url.hash : fallback;
   } catch {
-    return '/hub';
+    return fallback;
   }
 }

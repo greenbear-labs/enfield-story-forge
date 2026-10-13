@@ -13,6 +13,7 @@ import { SignInPage } from '../features/auth/SignInPage';
 import { HubPage } from '../features/hub/HubPage';
 import { CHARACTER_VIEWS, type CharacterView } from '../features/characters/characterModel';
 import { AppShell } from './AppShell';
+import { usePathsTitle } from '../features/paths/usePathsTitle';
 import { PathsShell } from './PathsShell';
 import { WorldShell } from './WorldShell';
 
@@ -98,6 +99,10 @@ const WorldHomePage = lazyPage(() => import('../features/world/WorldHomePage'), 
 const WorldPagePage = lazyPage(() => import('../features/world/WorldPagePage'), 'WorldPagePage');
 
 const AdventurePage = lazyPage(() => import('../features/paths/AdventurePage'), 'AdventurePage');
+const PathsLandingPage = lazyPage(
+  () => import('../features/paths/PathsLandingPage'),
+  'PathsLandingPage',
+);
 const PathsHomePage = lazyPage(() => import('../features/paths/PathsHomePage'), 'PathsHomePage');
 
 const optionalString = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
@@ -163,11 +168,33 @@ const worldRoute = createRoute({
   component: WorldShell,
 });
 
-/** Enfield Shadow Paths: its own app, with its own shell. */
+/** Shadow Paths' own front door and sign-in, so it can stand on its own. */
+const pathsLandingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/shadow-paths',
+  component: PathsLandingPage,
+});
+const pathsSignInRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/shadow-paths/sign-in',
+  validateSearch: signInRoute.options.validateSearch,
+  component: function PathsSignInRouteComponent() {
+    const { redirect, signUp } = pathsSignInRoute.useSearch();
+    usePathsTitle('Sign in');
+    return <SignInPage app="paths" redirect={redirect} startWithSignUp={signUp} />;
+  },
+});
+
+/** Enfield Shadow Paths: its own app, with its own shell. Signed-out visitors sign in there. */
 const pathsRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: 'paths',
-  beforeLoad: requireUser,
+  beforeLoad: async ({ location }: { location: { href: string } }) => {
+    const auth = await authReady();
+    if (!auth.user) {
+      throw redirect({ to: '/shadow-paths/sign-in', search: { redirect: location.href } });
+    }
+  },
   component: PathsShell,
 });
 
@@ -441,6 +468,8 @@ const adventureRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   landingRoute,
   signInRoute,
+  pathsLandingRoute,
+  pathsSignInRoute,
   appRoute.addChildren([
     hubRoute,
     shardsRoute,
