@@ -14,6 +14,7 @@ import { manuscriptScenes, sceneText, syncMentions, words } from './deskModel';
 import type { ProseHandle, ProseSave } from './ProseEditor';
 import { SceneSetup } from './SceneSetup';
 import { SnapshotsPanel } from './SnapshotsPanel';
+import { EntryGallery } from '../images/EntryGallery';
 import { DEFAULT_DAILY_GOAL, dayKey } from './writingModel';
 
 // The editor is the biggest piece of the app, so it loads only when you write.
@@ -269,6 +270,7 @@ function SceneDesk({ scene }: { scene: Entry }) {
             </p>
           )}
           <SceneSetup scene={scene} narrow />
+          <EntryGallery entry={scene} label="Pictures" />
           <SnapshotsPanel sceneId={scene.id} editor={prose} />
         </aside>
       )}
