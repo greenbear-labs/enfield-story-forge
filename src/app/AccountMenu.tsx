@@ -1,4 +1,4 @@
-import { useNavigate } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { Icon } from '../components/ui/Icon';
 import { Menu } from '../components/ui/Menu';
@@ -6,6 +6,8 @@ import { toast } from '../components/ui/toast';
 import { signOut } from '../features/auth/authActions';
 import { useAuthStore } from '../features/auth/authStore';
 import { exportMarkdown } from '../lib/entries/exportData';
+import { FeedbackDialog } from '../features/feedback/FeedbackDialog';
+import { useIsFeedbackAdmin } from '../features/feedback/feedback';
 import { BackupDialog } from './BackupDialog';
 
 export function AccountMenu() {
@@ -14,6 +16,8 @@ export function AccountMenu() {
   const name = user?.displayName || user?.email || 'Account';
   const initial = name.trim().charAt(0).toUpperCase() || '?';
   const [backingUp, setBackingUp] = useState(false);
+  const [sendingFeedback, setSendingFeedback] = useState(false);
+  const isAdmin = useIsFeedbackAdmin();
 
   const onSignOut = async () => {
     try {
@@ -87,6 +91,24 @@ export function AccountMenu() {
               className="menu-item mt-1 border-t border-line"
               onClick={() => {
                 close();
+                setSendingFeedback(true);
+              }}
+            >
+              <Icon name="chat" />
+              Send feedback…
+            </button>
+            {isAdmin && (
+              <Link to="/feedback" role="menuitem" className="menu-item" onClick={close}>
+                <Icon name="chat" />
+                Feedback inbox
+              </Link>
+            )}
+            <button
+              type="button"
+              role="menuitem"
+              className="menu-item mt-1 border-t border-line"
+              onClick={() => {
+                close();
                 void onSignOut();
               }}
             >
@@ -97,6 +119,7 @@ export function AccountMenu() {
         )}
       </Menu>
       {backingUp && <BackupDialog onClose={() => setBackingUp(false)} />}
+      {sendingFeedback && <FeedbackDialog onClose={() => setSendingFeedback(false)} />}
     </>
   );
 }

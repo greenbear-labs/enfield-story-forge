@@ -10,6 +10,7 @@
  * workspaces/{workspaceId}/settings/writing                     (the daily goal)
  * workspaces/{workspaceId}/settings/welcome                     (the welcome tour, once dismissed)
  * workspaces/{workspaceId}/settings/backup                      (when the last backup was made)
+ * feedback/{feedbackId}                                          (notes from the Send feedback button; only the admin reads them)
  */
 
 function seg(value: string, name: string): string {
@@ -46,6 +47,9 @@ export const paths = {
   writingSettings: (workspaceId: string) => `${paths.workspace(workspaceId)}/settings/writing`,
   welcomeSettings: (workspaceId: string) => `${paths.workspace(workspaceId)}/settings/welcome`,
   backupSettings: (workspaceId: string) => `${paths.workspace(workspaceId)}/settings/backup`,
+
+  feedback: () => 'feedback',
+  feedbackNote: (id: string) => `feedback/${seg(id, 'feedbackId')}`,
 } as const;
 
 /** Storage folder for an entry's images (see storage.rules). */

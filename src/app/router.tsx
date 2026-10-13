@@ -10,6 +10,7 @@ import { authReady } from '../features/auth/authStore';
 import { LandingPage } from '../features/auth/LandingPage';
 import { SignInPage } from '../features/auth/SignInPage';
 import { HubPage } from '../features/hub/HubPage';
+import { FeedbackInboxPage } from '../features/feedback/FeedbackInboxPage';
 import { AppendixPage } from '../features/appendix/AppendixPage';
 import { CharacterInterviewPage } from '../features/characters/CharacterInterviewPage';
 import { CharacterPage } from '../features/characters/CharacterPage';
@@ -306,6 +307,12 @@ const appendixRoute = createRoute({
   },
 });
 
+const feedbackRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/feedback',
+  component: FeedbackInboxPage,
+});
+
 const worldHomeRoute = createRoute({
   getParentRoute: () => worldRoute,
   path: '/world',
@@ -372,6 +379,7 @@ const routeTree = rootRoute.addChildren([
     relationshipWebRoute,
     characterRoute,
     appendixRoute,
+    feedbackRoute,
   ]),
   worldRoute.addChildren([
     worldHomeRoute,

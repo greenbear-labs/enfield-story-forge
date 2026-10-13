@@ -37,6 +37,7 @@ src/
     world/          Enfield World Creator (its own app at /world): notebooks, indexes (table, gallery, list; custom columns; presets as data), world pages with rich text (/ commands, @links), pages inside pages, the notebook tree, and notebook export (Markdown, print or PDF)
     images/         images on entries: the gallery (EntryGallery), card covers, avatars and thumbnails
     search/         Ctrl+K search over all entries
+    feedback/       Send feedback (account menu) and the admin-only Feedback inbox at /feedback; notes live in the top-level `feedback` collection (the admin is set in firestore.rules)
   components/ui/    Icon, Menu, Dialog, TagInput, Toaster/toast (with Undo actions), EmptyState, Loading
   lib/firebase/     config from env, lazy Firebase client
   lib/firestore/    path helpers, workspace bootstrap, sync status
