@@ -2,12 +2,16 @@ import { Link } from '@tanstack/react-router';
 import { Icon } from '../components/ui/Icon';
 import { Menu } from '../components/ui/Menu';
 
-export type EnfieldApp = 'forge' | 'world';
+export type EnfieldApp = 'forge' | 'world' | 'paths';
 
 const APPS = {
   forge: { name: 'Story Forge', sec: 'home', blurb: 'From shards to a finished manuscript' },
   world: { name: 'World Creator', sec: 'world', blurb: 'Indexes of places, peoples, and anything' },
+  paths: { name: 'Shadow Paths', sec: 'paths', blurb: 'Build and play choose-your-own adventures' },
 } as const;
+
+const APP_HOME = { forge: '/hub', world: '/world', paths: '/paths' } as const;
+const APP_ICON = { forge: 'desk', world: 'world', paths: 'paths' } as const;
 
 export function Wordmark({
   tagline = 'Enfield · switch app ⇄',
@@ -34,7 +38,7 @@ export function Wordmark({
   );
 }
 
-/** The Enfield app family: Story Forge and World Creator share one account and one library. */
+/** The Enfield app family: Story Forge, World Creator, and Shadow Paths share one account and one library. */
 export function AppSwitcher({ current }: { current: EnfieldApp }) {
   return (
     <Menu
@@ -53,16 +57,16 @@ export function AppSwitcher({ current }: { current: EnfieldApp }) {
       {(close) => (
         <>
           <div className="label px-2 pt-1 pb-1.5">Enfield apps</div>
-          {(['forge', 'world'] as const).map((app) => (
+          {(['forge', 'world', 'paths'] as const).map((app) => (
             <Link
               key={app}
-              to={app === 'forge' ? '/hub' : '/world'}
+              to={APP_HOME[app]}
               role="menuitem"
               className="menu-item"
               onClick={close}
             >
               <span data-sec={APPS[app].sec} className="text-accent">
-                <Icon name={app === 'forge' ? 'desk' : 'world'} />
+                <Icon name={APP_ICON[app]} />
               </span>
               <span className="flex-1">
                 <b className="block">{APPS[app].name}</b>

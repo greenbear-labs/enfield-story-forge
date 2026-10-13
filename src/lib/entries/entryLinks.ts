@@ -17,6 +17,7 @@ export function entryRoute(
   | { to: '/world/$notebookId'; params: { notebookId: string } }
   | { to: '/world/index/$indexId'; params: { indexId: string } }
   | { to: '/world/pages/$pageId'; params: { pageId: string } }
+  | { to: '/paths/$adventureId'; params: { adventureId: string } }
   | null {
   switch (entry.type) {
     case 'shard':
@@ -47,6 +48,8 @@ export function entryRoute(
       return { to: '/world/index/$indexId', params: { indexId: entry.id } };
     case 'page':
       return { to: '/world/pages/$pageId', params: { pageId: entry.id } };
+    case 'adventure':
+      return { to: '/paths/$adventureId', params: { adventureId: entry.id } };
     default:
       return null;
   }
@@ -67,6 +70,7 @@ const TYPE_NAMES: Partial<Record<Entry['type'], string>> = {
   notebook: 'Notebook',
   index: 'Index',
   page: 'World page',
+  adventure: 'Adventure',
 };
 
 export const entryTypeName = (type: Entry['type']) => TYPE_NAMES[type] ?? type;

@@ -22,6 +22,8 @@ export const ENTRY_TYPES = [
   'plotline',
   /** A story structure the writer made: its beats are `fields.beats`, keyed by beat id. */
   'structure',
+  /** Shadow Paths: a choose-your-own-adventure story. */
+  'adventure',
 ] as const;
 export type EntryType = (typeof ENTRY_TYPES)[number];
 
@@ -43,6 +45,7 @@ export const ENTRY_SECTION: Record<EntryType, Section> = {
   scene: 'desk',
   plotline: 'desk',
   structure: 'story',
+  adventure: 'paths',
 };
 
 export const LINK_KINDS = [

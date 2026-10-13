@@ -43,6 +43,15 @@ const ICONS = {
       <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
     </>
   ),
+  /** Shadow Paths: a path that forks. */
+  paths: (
+    <>
+      <path d="M12 21v-7" />
+      <path d="M12 14 6 8M12 14l6-6" />
+      <circle cx="6" cy="6" r="2" />
+      <circle cx="18" cy="6" r="2" />
+    </>
+  ),
   search: (
     <>
       <circle cx="11" cy="11" r="7" />

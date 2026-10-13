@@ -16,6 +16,8 @@
   --brand-soft: #e2eee7;
   --sec-world: #1d7470;
   --sec-world-soft: #dcefee;
+  --sec-paths: #45479c;
+  --sec-paths-soft: #e4e4f5;
   --sec-char: #9a3f6b;
   --sec-char-soft: #f5e3ec;
   --sec-shard: #90590b;
@@ -46,6 +48,10 @@
     --brand-soft: #1f3229;
     --sec-world: #5cc3be;
     --sec-world-soft: #16302e;
+    --sec-paths: #a3a6f0;
+    --sec-paths-soft: #1f2140;
+    --sec-paths: #a3a6f0;
+    --sec-paths-soft: #1f2140;
     --sec-char: #e28ab4;
     --sec-char-soft: #35202b;
     --sec-shard: #e3a94f;
@@ -96,6 +102,10 @@
 [data-sec='world'] {
   --accent: var(--sec-world);
   --accent-soft: var(--sec-world-soft);
+}
+[data-sec='paths'] {
+  --accent: var(--sec-paths);
+  --accent-soft: var(--sec-paths-soft);
 }
 [data-sec='char'] {
   --accent: var(--sec-char);

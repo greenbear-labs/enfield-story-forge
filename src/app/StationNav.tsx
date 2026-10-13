@@ -24,6 +24,10 @@ export function StationNav() {
         <Icon name="world" />
         <span>World Creator ↗</span>
       </Link>
+      <Link to="/paths" className="st" data-sec="paths">
+        <Icon name="paths" />
+        <span>Shadow Paths ↗</span>
+      </Link>
       <NavLink item={APPENDIX_NAV} />
     </nav>
   );
