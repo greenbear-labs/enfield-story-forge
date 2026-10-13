@@ -8,6 +8,7 @@ export function entryRoute(
   | { to: '/shards/groups/$groupId'; params: { groupId: string } }
   | { to: '/concepts/$conceptId'; params: { conceptId: string } }
   | { to: '/characters/$characterId'; params: { characterId: string } }
+  | { to: '/characters'; search: { story: string } }
   | { to: '/outlines/$outlineId'; params: { outlineId: string } }
   | { to: '/desk/chapters/$chapterId'; params: { chapterId: string } }
   | { to: '/desk/scenes/$sceneId'; params: { sceneId: string } }
@@ -33,6 +34,8 @@ export function entryRoute(
       return entry.parentId
         ? { to: '/desk/$bookId/breakdown', params: { bookId: entry.parentId } }
         : null;
+    case 'cast_group':
+      return { to: '/characters', search: { story: entry.id } };
     case 'character':
       return { to: '/characters/$characterId', params: { characterId: entry.id } };
     case 'notebook':
@@ -51,6 +54,7 @@ const TYPE_NAMES: Partial<Record<Entry['type'], string>> = {
   shard_group: 'Shard group',
   concept: 'Concept',
   character: 'Character',
+  cast_group: 'Cast group',
   book: 'Outline',
   chapter: 'Chapter',
   scene: 'Scene',

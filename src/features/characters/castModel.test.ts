@@ -23,6 +23,12 @@ describe('storyList', () => {
       ['Alone', null],
     ]);
   });
+
+  it('puts groups last, and a group’s cast is only who was added to it', () => {
+    const crew = entry('Crew', 'cast_group');
+    expect(storyList([saga], books, [crew]).at(-1)!.story.id).toBe('Crew');
+    expect([...castOf(crew, [...links, cast('ida', 'Crew')], books)]).toEqual([['ida', 'cast']]);
+  });
 });
 
 describe('castOf', () => {

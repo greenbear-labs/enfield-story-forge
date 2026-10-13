@@ -243,3 +243,11 @@ const byName = (a: Entry, b: Entry) =>
 export function filterCast(characters: Entry[], query: string): Entry[] {
   return characters.filter((c) => matchesQuery(c, query)).sort(byName);
 }
+
+/** How the library shows characters: cards, a compact list, or grouped by cast. */
+export const CHARACTER_VIEWS = [
+  { key: 'cards', label: 'Cards' },
+  { key: 'list', label: 'List' },
+  { key: 'casts', label: 'By cast' },
+] as const;
+export type CharacterView = (typeof CHARACTER_VIEWS)[number]['key'];

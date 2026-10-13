@@ -162,5 +162,8 @@ export const charactersStation: StationContent = {
       later: true,
     },
   ],
-  library: { title: 'The cast', empty: 'No characters yet. A Quick Card takes under a minute.' },
+  library: {
+    title: 'Character library',
+    empty: 'No characters yet. A Quick Card takes under a minute.',
+  },
 };

@@ -1,13 +1,14 @@
 import { useMemo } from 'react';
 import type { Entry, Link } from '../../data/types';
-import { addLink, removeLink } from '../../lib/entries/entries';
+import { addLink, createEntry, removeLink } from '../../lib/entries/entries';
 import { useEntries, useLinks } from '../../lib/entries/hooks';
 import { protagonistId } from '../outlines/outlineModel';
 
 /**
  * A story's cast: characters with a `cast` link (character → book or series).
  * Someone in a series' cast is in the cast of every book in it, and a book's
- * protagonist is always in its cast.
+ * protagonist is always in its cast. A cast can also be a free-standing group
+ * (a `cast_group` entry), with its members linked the same way.
  */
 
 export interface Story {
@@ -16,8 +17,11 @@ export interface Story {
   series: Entry | null;
 }
 
-/** Every story a character can belong to: each series followed by its books, then standalone books. */
-export function storyList(series: Entry[], books: Entry[]): Story[] {
+/**
+ * Every cast a character can belong to: each series followed by its books,
+ * then standalone books, then groups.
+ */
+export function storyList(series: Entry[], books: Entry[], groups: Entry[] = []): Story[] {
   const byName = (a: Entry, b: Entry) => a.title.localeCompare(b.title);
   const seriesIds = new Set(series.map((s) => s.id));
   const inSeries = [...series].sort(byName).flatMap((s) => [
@@ -31,11 +35,17 @@ export function storyList(series: Entry[], books: Entry[]): Story[] {
     .filter((b) => !b.parentId || !seriesIds.has(b.parentId))
     .sort(byName)
     .map((b) => ({ story: b, series: null }));
-  return [...inSeries, ...standalone];
+  const ownGroups = [...groups].sort(byName).map((g) => ({ story: g, series: null }));
+  return [...inSeries, ...standalone, ...ownGroups];
 }
 
 export const storyName = (story: Entry) =>
-  story.title.trim() || (story.type === 'series' ? 'Untitled series' : 'Untitled story');
+  story.title.trim() ||
+  (story.type === 'series'
+    ? 'Untitled series'
+    : story.type === 'cast_group'
+      ? 'Untitled group'
+      : 'Untitled story');
 
 /** How a character came to be in a story's cast. */
 export type CastReason = 'cast' | 'series' | 'book' | 'protagonist';
@@ -56,7 +66,7 @@ export function castOf(story: Entry, links: Link[], books: Entry[]): Map<string,
       for (const l of links) if (l.toId === story.parentId) add(l.fromId, 'series');
     const hero = protagonistId(story);
     if (hero) add(hero, 'protagonist');
-  } else {
+  } else if (story.type === 'series') {
     const bookIds = new Set(books.filter((b) => b.parentId === story.id).map((b) => b.id));
     for (const l of links) if (bookIds.has(l.toId)) add(l.fromId, 'book');
     for (const b of books) {
@@ -81,14 +91,15 @@ export function withoutStory(characters: Entry[], links: Link[], books: Entry[])
   return characters.filter((c) => !placed.has(c.id));
 }
 
-/** Stories (series and outlines) and every cast link, live. */
+/** Stories (series and outlines), groups, and every cast link, live. */
 export function useCasts() {
   const links = useLinks({ kind: 'cast' });
   const series = useEntries('series');
   const books = useEntries('book');
+  const groups = useEntries('cast_group');
   const stories = useMemo(
-    () => storyList(series.data ?? [], books.data ?? []),
-    [series.data, books.data],
+    () => storyList(series.data ?? [], books.data ?? [], groups.data ?? []),
+    [series.data, books.data, groups.data],
   );
   // Links to a story in the trash don't count.
   const live = useMemo(() => {
@@ -99,12 +110,24 @@ export function useCasts() {
     links: live,
     books: books.data ?? EMPTY_ENTRIES,
     stories,
-    ready: links.data !== undefined && series.data !== undefined && books.data !== undefined,
+    ready:
+      links.data !== undefined &&
+      series.data !== undefined &&
+      books.data !== undefined &&
+      groups.data !== undefined,
   };
 }
 
 const EMPTY_LINKS: Link[] = [];
 const EMPTY_ENTRIES: Entry[] = [];
+
+/** Makes a new group of characters and returns its id. */
+export const createCastGroup = (workspaceId: string, name: string) =>
+  createEntry(workspaceId, { type: 'cast_group', title: name.trim() });
+
+/** The kind of cast, for labels. */
+export const castKind = (story: Entry) =>
+  story.type === 'series' ? 'Series' : story.type === 'cast_group' ? 'Group' : 'Story';
 
 export function addToCast(workspaceId: string, characterId: string, storyId: string): void {
   addLink(workspaceId, characterId, 'cast', storyId);

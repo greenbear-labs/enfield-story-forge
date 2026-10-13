@@ -3,12 +3,13 @@ import { storyName } from './castModel';
 
 /**
  * Options for choosing a story: each series (its whole cast) with its books
- * under it, then the standalone stories. Put inside a <select>.
+ * under it, then the standalone stories, then groups. Put inside a <select>.
  */
 export function StoryOptions({ stories, skip }: { stories: Story[]; skip?: Set<string> }) {
   const shown = stories.filter((s) => !skip?.has(s.story.id));
   const series = shown.filter((s) => s.story.type === 'series');
   const standalone = shown.filter((s) => s.story.type === 'book' && !s.series);
+  const groups = shown.filter((s) => s.story.type === 'cast_group');
   const booksOf = (id: string) => shown.filter((s) => s.series?.id === id);
   // A series' books show under it even if the series itself is skipped.
   const seriesIds = new Set(
@@ -35,6 +36,15 @@ export function StoryOptions({ stories, skip }: { stories: Story[]; skip?: Set<s
       {standalone.length > 0 && (
         <optgroup label={seriesIds.size ? 'Standalone stories' : 'Stories'}>
           {standalone.map((s) => (
+            <option key={s.story.id} value={s.story.id}>
+              {storyName(s.story)}
+            </option>
+          ))}
+        </optgroup>
+      )}
+      {groups.length > 0 && (
+        <optgroup label="Groups">
+          {groups.map((s) => (
             <option key={s.story.id} value={s.story.id}>
               {storyName(s.story)}
             </option>

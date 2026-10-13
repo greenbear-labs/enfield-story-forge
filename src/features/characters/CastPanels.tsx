@@ -64,7 +64,7 @@ export function CharacterStories({ character }: { character: Entry }) {
             </span>
           ))}
           <label className="min-w-[180px]">
-            <span className="sr-only">Add them to a story</span>
+            <span className="sr-only">Add them to a story or group</span>
             <select
               className="txt py-1 text-[0.85rem]"
               value=""
@@ -72,7 +72,7 @@ export function CharacterStories({ character }: { character: Entry }) {
                 if (e.target.value) addToCast(ws, character.id, e.target.value);
               }}
             >
-              <option value="">+ Add to a story…</option>
+              <option value="">+ Add to a story or group…</option>
               <StoryOptions stories={casts.stories} skip={new Set(mine)} />
             </select>
           </label>
@@ -89,7 +89,7 @@ function StoryLink({ story }: { story: Entry }) {
     </Link>
   ) : (
     <Link to="/characters" search={{ story: story.id }} className="hover:underline">
-      {storyName(story)} (series)
+      {storyName(story)} ({story.type === 'series' ? 'series' : 'group'})
     </Link>
   );
 }
