@@ -723,6 +723,13 @@
     min-height: 100dvh;
     background: color-mix(in srgb, var(--sec-world-soft) 45%, var(--bg));
   }
+  /* ----- Shadow Paths ----- */
+  /* Its own app: a dusk-indigo wash. */
+  .paths-app {
+    min-height: 100dvh;
+    background: color-mix(in srgb, var(--sec-paths-soft) 50%, var(--bg));
+  }
+
   .world-table {
     border-collapse: collapse;
     min-width: 100%;

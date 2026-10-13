@@ -23,7 +23,7 @@ React 19 + TypeScript (strict) + Vite 8, TanStack Router (code-based routes in `
 
 ```
 src/
-  app/              router, app shell, top bar, station nav, World Creator shell, app switcher, theme, navigation config
+  app/              router, app shell, top bar, station nav, World Creator and Shadow Paths shells, app switcher, theme, navigation config
   features/
     auth/           auth store, auth actions, landing and sign-in pages
     hub/            the Hub, and the first-time welcome tour (tour.ts; put away in `settings/welcome`)
@@ -35,6 +35,7 @@ src/
     characters/     Character Center: casts and groups, the character library (cards, list, or by cast; filtered by story), character page (core card + modules, Stats), Quick Card, Character Interview, Archetype Spark (pools as data), the Relationship Web (webModel.ts)
     desk/           Writer's Desk: manuscripts, Send to Writer's Desk, chapters (Chapter Builder), scene cards, Scene Desk (TipTap prose editor, lazy-loaded; focus mode), plotlines and the Chapter Breakdown grid, Compile (compile.ts: one manuscript from a book; settings in the book's `fields.compile`; exports work from its `Compiled` result: Markdown, print to PDF, and DOCX and EPUB from bookFiles.ts, zipped by src/lib/zip.ts), writing goals and streaks (writingModel.ts, WritingHabit), Story health (healthModel.ts: pacing, POV balance, gentle checks; knowledgeModel.ts: who knows what), Import a draft (importModel.ts: Word, Markdown, or text into a new manuscript; .docx read with src/lib/unzip.ts)
     world/          Enfield World Creator (its own app at /world): notebooks, indexes (table, gallery, list; custom columns; presets as data), world pages with rich text (/ commands, @links), pages inside pages, the notebook tree (drag to reorder or nest pages; Alt+Up/Down; `planTreeMove` renumbers siblings), and notebook export (Markdown, print or PDF)
+    paths/          Enfield Shadow Paths (its own app at /paths): choose-your-own-adventure stories (`adventure` entries; `fields.blurb`, `fields.categories`); plan in planning/shadow-paths-plan.md
     images/         images on entries: the gallery (EntryGallery), card covers, avatars and thumbnails
     search/         Ctrl+K search over all entries
     feedback/       Send feedback (account menu) and the admin-only Feedback inbox at /feedback; notes live in the top-level `feedback` collection (the admin is set in firestore.rules)

@@ -88,6 +88,7 @@ export function HubPage() {
   const conceptCount = countOf('concept');
   const characterCount = countOf('character');
   const notebookCount = countOf('notebook');
+  const adventureCount = countOf('adventure');
   const outlineCount = countOf('book');
   const books = useEntryMap(entries.data?.filter((e) => e.type === 'book'));
   // The chapter or scene you touched last, to go back to.
@@ -169,7 +170,7 @@ export function HubPage() {
       </section>
 
       <section
-        className="grid grid-cols-2 gap-3 max-[900px]:grid-cols-1"
+        className="grid grid-cols-3 gap-3 max-[900px]:grid-cols-1"
         aria-label="Companion workshops"
       >
         <Link to="/characters" data-sec="char" className="comp">
@@ -195,6 +196,18 @@ export function HubPage() {
             </p>
           </span>
           <span className="font-mono text-muted">{notebookCount}</span>
+        </Link>
+        <Link to="/paths" data-sec="paths" className="comp">
+          <span className="badge">
+            <Icon name="paths" />
+          </span>
+          <span>
+            <h3>Enfield Shadow Paths ↗</h3>
+            <p className="text-[0.85rem] text-muted">
+              Choose-your-own-adventure stories to build and play. Opens as its own app.
+            </p>
+          </span>
+          <span className="font-mono text-muted">{adventureCount}</span>
         </Link>
       </section>
 

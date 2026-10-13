@@ -13,6 +13,7 @@ import { SignInPage } from '../features/auth/SignInPage';
 import { HubPage } from '../features/hub/HubPage';
 import { CHARACTER_VIEWS, type CharacterView } from '../features/characters/characterModel';
 import { AppShell } from './AppShell';
+import { PathsShell } from './PathsShell';
 import { WorldShell } from './WorldShell';
 
 /** A page loaded the first time it's opened, so the first screen loads faster. */
@@ -96,6 +97,9 @@ const NotebookPrintPage = lazyPage(
 const WorldHomePage = lazyPage(() => import('../features/world/WorldHomePage'), 'WorldHomePage');
 const WorldPagePage = lazyPage(() => import('../features/world/WorldPagePage'), 'WorldPagePage');
 
+const AdventurePage = lazyPage(() => import('../features/paths/AdventurePage'), 'AdventurePage');
+const PathsHomePage = lazyPage(() => import('../features/paths/PathsHomePage'), 'PathsHomePage');
+
 const optionalString = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
 
 const rootRoute = createRootRoute({
@@ -157,6 +161,14 @@ const worldRoute = createRoute({
   id: 'world',
   beforeLoad: requireUser,
   component: WorldShell,
+});
+
+/** Enfield Shadow Paths: its own app, with its own shell. */
+const pathsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  id: 'paths',
+  beforeLoad: requireUser,
+  component: PathsShell,
 });
 
 const hubRoute = createRoute({ getParentRoute: () => appRoute, path: '/hub', component: HubPage });
@@ -412,6 +424,20 @@ const worldPageRoute = createRoute({
   },
 });
 
+const pathsHomeRoute = createRoute({
+  getParentRoute: () => pathsRoute,
+  path: '/paths',
+  component: PathsHomePage,
+});
+const adventureRoute = createRoute({
+  getParentRoute: () => pathsRoute,
+  path: '/paths/$adventureId',
+  component: function AdventureRouteComponent() {
+    const { adventureId } = adventureRoute.useParams();
+    return <AdventurePage adventureId={adventureId} />;
+  },
+});
+
 const routeTree = rootRoute.addChildren([
   landingRoute,
   signInRoute,
@@ -450,6 +476,7 @@ const routeTree = rootRoute.addChildren([
     indexRoute,
     worldPageRoute,
   ]),
+  pathsRoute.addChildren([pathsHomeRoute, adventureRoute]),
 ]);
 
 export const router = createRouter({
