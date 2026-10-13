@@ -24,6 +24,8 @@ export const ENTRY_TYPES = [
   'structure',
   /** Shadow Paths: a choose-your-own-adventure story. */
   'adventure',
+  /** One passage of an adventure (parent: the adventure). Its choices are `fields.choices`. */
+  'passage',
 ] as const;
 export type EntryType = (typeof ENTRY_TYPES)[number];
 
@@ -46,6 +48,7 @@ export const ENTRY_SECTION: Record<EntryType, Section> = {
   plotline: 'desk',
   structure: 'story',
   adventure: 'paths',
+  passage: 'paths',
 };
 
 export const LINK_KINDS = [

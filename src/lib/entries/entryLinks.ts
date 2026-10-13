@@ -1,9 +1,7 @@
 import type { Entry } from '../../data/types';
 
 /** Where an entry opens in the app, for entry types that have a page so far. */
-export function entryRoute(
-  entry: Pick<Entry, 'id' | 'type'> & { parentId?: string | null },
-):
+export function entryRoute(entry: Pick<Entry, 'id' | 'type'> & { parentId?: string | null }):
   | { to: '/shards/$shardId'; params: { shardId: string } }
   | { to: '/shards/groups/$groupId'; params: { groupId: string } }
   | { to: '/concepts/$conceptId'; params: { conceptId: string } }
@@ -18,6 +16,11 @@ export function entryRoute(
   | { to: '/world/index/$indexId'; params: { indexId: string } }
   | { to: '/world/pages/$pageId'; params: { pageId: string } }
   | { to: '/paths/$adventureId'; params: { adventureId: string } }
+  | {
+      to: '/paths/$adventureId';
+      params: { adventureId: string };
+      search: { passage: string };
+    }
   | null {
   switch (entry.type) {
     case 'shard':
@@ -50,6 +53,14 @@ export function entryRoute(
       return { to: '/world/pages/$pageId', params: { pageId: entry.id } };
     case 'adventure':
       return { to: '/paths/$adventureId', params: { adventureId: entry.id } };
+    case 'passage':
+      return entry.parentId
+        ? {
+            to: '/paths/$adventureId',
+            params: { adventureId: entry.parentId },
+            search: { passage: entry.id },
+          }
+        : null;
     default:
       return null;
   }
@@ -71,6 +82,7 @@ const TYPE_NAMES: Partial<Record<Entry['type'], string>> = {
   index: 'Index',
   page: 'World page',
   adventure: 'Adventure',
+  passage: 'Passage',
 };
 
 export const entryTypeName = (type: Entry['type']) => TYPE_NAMES[type] ?? type;

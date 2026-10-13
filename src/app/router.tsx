@@ -459,9 +459,14 @@ const pathsHomeRoute = createRoute({
 const adventureRoute = createRoute({
   getParentRoute: () => pathsRoute,
   path: '/paths/$adventureId',
+  // passage: the passage that's open.
+  validateSearch: (search: Record<string, unknown>): { passage?: string } => ({
+    passage: optionalString(search.passage),
+  }),
   component: function AdventureRouteComponent() {
     const { adventureId } = adventureRoute.useParams();
-    return <AdventurePage adventureId={adventureId} />;
+    const { passage } = adventureRoute.useSearch();
+    return <AdventurePage adventureId={adventureId} passageId={passage} />;
   },
 });
 
