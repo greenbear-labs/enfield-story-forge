@@ -24,10 +24,14 @@ const TITLES: Record<Mode, string> = {
 export function SignInPage({
   redirect,
   startWithSignUp,
+  app = 'forge',
 }: {
   redirect?: string;
   startWithSignUp?: boolean;
+  /** Shadow Paths has its own sign-in page, in its own look. Same account. */
+  app?: 'forge' | 'paths';
 }) {
+  const paths = app === 'paths';
   const navigate = useNavigate();
   const [mode, setMode] = useState<Mode>(startWithSignUp ? 'signUp' : 'signIn');
   const [email, setEmail] = useState('');
@@ -46,8 +50,12 @@ export function SignInPage({
 
   // Leave once Firebase reports the user (also covers visiting this page while signed in).
   useEffect(() => {
-    if (signedIn) void navigate({ href: safeRedirect(redirect), replace: true });
-  }, [signedIn, redirect, navigate]);
+    if (signedIn)
+      void navigate({
+        href: safeRedirect(redirect, undefined, paths ? '/paths' : '/hub'),
+        replace: true,
+      });
+  }, [signedIn, redirect, navigate, paths]);
 
   const run = async (action: () => Promise<void>, after?: () => void) => {
     setBusy(true);
@@ -78,11 +86,24 @@ export function SignInPage({
   };
 
   return (
-    <div className="flex min-h-dvh flex-col" data-sec="home">
+    <div
+      className={paths ? 'paths-app flex flex-col' : 'flex min-h-dvh flex-col'}
+      data-sec={paths ? 'paths' : 'home'}
+    >
       <header className="px-5 py-3 max-sm:px-4">
-        <Link to="/" className="inline-flex items-center gap-2" aria-label="Story Forge home">
-          <Wordmark tagline="Enfield" />
-        </Link>
+        {paths ? (
+          <Link
+            to="/shadow-paths"
+            className="inline-flex items-center gap-2"
+            aria-label="Shadow Paths home"
+          >
+            <Wordmark tagline="Enfield" app="paths" />
+          </Link>
+        ) : (
+          <Link to="/" className="inline-flex items-center gap-2" aria-label="Story Forge home">
+            <Wordmark tagline="Enfield" />
+          </Link>
+        )}
       </header>
       <main className="flex flex-1 items-start justify-center px-4 pt-10 pb-16 max-sm:pt-4">
         <div className="panel flex w-full max-w-[400px] flex-col gap-4 p-6 max-sm:p-5">
@@ -91,7 +112,9 @@ export function SignInPage({
             <p className="text-muted">
               {mode === 'reset'
                 ? 'We’ll email you a link to choose a new password.'
-                : 'Welcome to the Story Forge.'}
+                : paths
+                  ? 'Welcome, traveler. Your path is waiting.'
+                  : 'Welcome to the Story Forge.'}
             </p>
           </div>
 

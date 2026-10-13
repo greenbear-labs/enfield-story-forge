@@ -24,4 +24,9 @@ describe('safeRedirect', () => {
   ])('rejects %s', (redirect) => {
     expect(safeRedirect(redirect, origin)).toBe('/hub');
   });
+
+  it('falls back to the given page', () => {
+    expect(safeRedirect(undefined, origin, '/paths')).toBe('/paths');
+    expect(safeRedirect('//evil.example/x', origin, '/paths')).toBe('/paths');
+  });
 });

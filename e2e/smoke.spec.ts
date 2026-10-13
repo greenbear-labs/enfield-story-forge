@@ -19,3 +19,17 @@ test('anyone can open the create-account form from the landing page', async ({ p
   await expect(page.getByRole('heading', { name: 'Create an account' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Create account' })).toBeVisible();
 });
+
+test('Shadow Paths has its own landing page and sign-in', async ({ page }) => {
+  await page.goto('/shadow-paths');
+  await expect(page).toHaveTitle('Enfield Shadow Paths');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Shadow Paths');
+  await page.getByRole('link', { name: 'Begin your journey' }).click();
+  await expect(page.getByRole('heading', { name: 'Create an account' })).toBeVisible();
+  await expect(page.getByText('Welcome, traveler.')).toBeVisible();
+});
+
+test('signed-out visitors to Shadow Paths sign in there', async ({ page }) => {
+  await page.goto('/paths');
+  await expect(page).toHaveURL(/\/shadow-paths\/sign-in\?redirect=/);
+});
