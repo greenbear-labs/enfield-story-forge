@@ -183,20 +183,6 @@ export function downloadFile(filename: string, content: string | Blob, type: str
 
 const stamp = () => new Date().toISOString().slice(0, 10);
 
-/** Everything in the workspace, as JSON. Timestamps become ISO strings. */
-export async function exportJson(workspaceId: string): Promise<void> {
-  const data = await readWorkspace(workspaceId);
-  const json = JSON.stringify(
-    { app: 'Enfield Story Forge', version: 1, exportedAt: new Date().toISOString(), ...data },
-    (_key, value: unknown) =>
-      value && typeof value === 'object' && 'toDate' in value && typeof value.toDate === 'function'
-        ? (value.toDate() as Date).toISOString()
-        : value,
-    2,
-  );
-  downloadFile(`story-forge-${stamp()}.json`, json, 'application/json');
-}
-
 export async function exportMarkdown(workspaceId: string): Promise<void> {
   const { entries, links, bodies } = await readWorkspace(workspaceId);
   downloadFile(
