@@ -10,6 +10,7 @@ import { useEntries, useEntry } from '../../lib/entries/hooks';
 import { useAutosaved } from '../../lib/entries/useAutosaved';
 import { useAuthStore } from '../auth/authStore';
 import { beatNote } from '../outlines/outlineModel';
+import { Thumb } from '../images/EntryImg';
 import { structureByKey, useStructures } from '../outlines/structures';
 import { addScene, chapterBeatKeys, childrenOf, move, sceneText, words } from './deskModel';
 import { SceneSetup } from './SceneSetup';
@@ -225,6 +226,7 @@ function SceneCard({
     <li className="panel flex flex-col gap-3">
       <div className="flex items-center gap-2">
         <span className="font-mono text-[0.85rem] text-accent">{n}</span>
+        <Thumb entry={scene} size={32} />
         <label className="min-w-0 flex-1">
           <span className="sr-only">Scene title</span>
           <input
