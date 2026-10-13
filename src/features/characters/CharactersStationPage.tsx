@@ -51,6 +51,8 @@ export function CharactersStationPage({
         'Quick Card': () => setOpen('quick'),
         'Character Interview': () => void navigate({ to: '/characters/interview' }),
         'Archetype Spark': () => setOpen('spark'),
+        'Relationship Web': () =>
+          void navigate({ to: '/characters/web', search: storyId ? { story: storyId } : {} }),
       }}
     >
       <CastShelf current={storyId} onNewGroup={() => setOpen('group')} />

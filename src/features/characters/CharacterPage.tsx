@@ -28,8 +28,12 @@ import {
   fieldText,
   filledCount,
   relationNotes,
+  STAT_SUGGESTIONS,
+  statsOf,
   type FieldDef,
+  type Stat,
 } from './characterModel';
+import { RELATION_KINDS, relationKinds, type RelationKind } from './webModel';
 import { AppearsIn } from '../desk/AppearsIn';
 import { EntryGallery } from '../images/EntryGallery';
 import { CharacterStories } from './CastPanels';
@@ -186,6 +190,7 @@ function CharacterEditor({ character }: { character: Entry }) {
             </div>
           </Module>
         ))}
+        <Stats character={character} />
         <Relationships character={character} />
         <Module
           title="Interview answers"
@@ -283,6 +288,7 @@ function Relationships({ character }: { character: Entry }) {
   const cast = useEntries('character');
   const castById = useEntryMap(cast.data);
   const notes = relationNotes(character);
+  const kinds = relationKinds(character);
   const [adding, setAdding] = useState('');
 
   const related = (outgoing.data ?? []).flatMap((l) => castById.get(l.toId) ?? []);
@@ -319,9 +325,18 @@ function Relationships({ character }: { character: Entry }) {
           character={character}
           other={other}
           note={notes[other.id] ?? ''}
+          kind={kinds[other.id] ?? ''}
           onRemove={() => {
             removeLink(ws, character.id, 'related', other.id);
-            updateEntry(ws, character.id, {}, { [`relations.${other.id}`]: removedField() });
+            updateEntry(
+              ws,
+              character.id,
+              {},
+              {
+                [`relations.${other.id}`]: removedField(),
+                [`relationKinds.${other.id}`]: removedField(),
+              },
+            );
           }}
         />
       ))}
@@ -371,6 +386,13 @@ function Relationships({ character }: { character: Entry }) {
           </ul>
         </div>
       )}
+      <Link
+        to="/characters/web"
+        search={{ focus: character.id }}
+        className="self-start text-[0.85rem] font-semibold text-accent hover:underline"
+      >
+        See them on the Relationship Web →
+      </Link>
     </Module>
   );
 }
@@ -379,11 +401,13 @@ function RelationRow({
   character,
   other,
   note,
+  kind,
   onRemove,
 }: {
   character: Entry;
   other: Entry;
   note: string;
+  kind: RelationKind | '';
   onRemove: () => void;
 }) {
   const ws = useAuthStore((s) => s.workspaceId)!;
@@ -405,6 +429,28 @@ function RelationRow({
           How {character.title || 'they'} sees {name}
         </span>
         <input className="txt" placeholder="e.g. Older sister. Owes her a debt." {...field.props} />
+      </label>
+      <label className="flex-none">
+        <span className="sr-only">Kind of relationship with {name}</span>
+        <select
+          className="txt"
+          value={kind}
+          onChange={(e) =>
+            updateEntry(
+              ws,
+              character.id,
+              {},
+              { [`relationKinds.${other.id}`]: e.target.value || removedField() },
+            )
+          }
+        >
+          <option value="">Kind…</option>
+          {RELATION_KINDS.map((k) => (
+            <option key={k.key} value={k.key}>
+              {k.label}
+            </option>
+          ))}
+        </select>
       </label>
       <button
         type="button"
@@ -459,5 +505,93 @@ function FromShards({ characterId }: { characterId: string }) {
         ))}
       </div>
     </section>
+  );
+}
+
+/** Free name and value pairs: age, height, strength, whatever the story needs. */
+function Stats({ character }: { character: Entry }) {
+  const ws = useAuthStore((s) => s.workspaceId)!;
+  const stats = statsOf(character);
+  const names = new Set(stats.map((st) => st.name.trim().toLowerCase()));
+  const suggestions = STAT_SUGGESTIONS.filter((n) => !names.has(n.toLowerCase()));
+  const add = (name: string) => {
+    const id = crypto.randomUUID().replaceAll('-', '').slice(0, 12);
+    const order = stats.length ? stats[stats.length - 1]!.order + 1 : 0;
+    updateEntry(ws, character.id, {}, { [`stats.${id}`]: { name, value: '', order } });
+  };
+  const filled = stats.filter((st) => st.name.trim() && st.value.trim()).length;
+  return (
+    <Module
+      title="Stats"
+      blurb="Age, height, strength, or anything else worth a number or a word."
+      count={`${filled}`}
+    >
+      {stats.length === 0 && (
+        <p className="text-[0.9rem] text-muted">No stats yet. Add one below.</p>
+      )}
+      {stats.map((st) => (
+        <StatRow key={st.id} character={character} stat={st} />
+      ))}
+      <div className="flex flex-wrap items-center gap-1.5">
+        <button type="button" className="btn btn-small" onClick={() => add('')}>
+          <Icon name="plus" size={14} />
+          Add a stat
+        </button>
+        {suggestions.map((n) => (
+          <button key={n} type="button" className="chip hover:underline" onClick={() => add(n)}>
+            + {n}
+          </button>
+        ))}
+      </div>
+    </Module>
+  );
+}
+
+function StatRow({ character, stat }: { character: Entry; stat: Stat }) {
+  const ws = useAuthStore((s) => s.workspaceId)!;
+  const path = `stats.${stat.id}`;
+  const name = useAutosaved(stat.name, (v) =>
+    updateEntry(ws, character.id, {}, { [`${path}.name`]: v.trim() }),
+  );
+  const value = useAutosaved(stat.value, (v) =>
+    updateEntry(ws, character.id, {}, { [`${path}.value`]: v.trim() }),
+  );
+  const label = name.props.value.trim() || 'this stat';
+  const remove = () => {
+    name.flush();
+    value.flush();
+    const saved = {
+      name: name.props.value.trim(),
+      value: value.props.value.trim(),
+      order: stat.order,
+    };
+    updateEntry(ws, character.id, {}, { [path]: removedField() });
+    toast(`Removed ${label}.`, {
+      action: {
+        label: 'Undo',
+        onClick: () => updateEntry(ws, character.id, {}, { [path]: saved }),
+      },
+    });
+  };
+  return (
+    <div className="flex items-center gap-2">
+      <label className="w-[38%] min-w-0 flex-none">
+        <span className="sr-only">Stat name</span>
+        <input className="txt font-semibold" placeholder="Name, e.g. Age" {...name.props} />
+      </label>
+      <label className="min-w-0 flex-1">
+        <span className="sr-only">{stat.name.trim() ? `${stat.name.trim()} value` : 'Value'}</span>
+        <input className="txt" placeholder="Value, e.g. 32" {...value.props} />
+      </label>
+      <button
+        type="button"
+        className="btn btn-ghost btn-icon flex-none"
+        aria-label={`Remove ${label}`}
+        title={`Remove ${label}`}
+        onClick={remove}
+      >
+        <Icon name="close" size={14} />
+      </button>
+    </div>
   );
 }
