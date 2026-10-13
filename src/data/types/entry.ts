@@ -8,6 +8,8 @@ export const ENTRY_TYPES = [
   'index',
   'page',
   'character',
+  /** A named group of characters that isn't tied to a story (a story's cast comes from `cast` links). */
+  'cast_group',
   'shard',
   'shard_group',
   'concept',
@@ -27,6 +29,7 @@ export const ENTRY_SECTION: Record<EntryType, Section> = {
   index: 'world',
   page: 'world',
   character: 'char',
+  cast_group: 'char',
   shard: 'shard',
   shard_group: 'shard',
   concept: 'concept',

@@ -14,6 +14,7 @@ import { AppendixPage } from '../features/appendix/AppendixPage';
 import { CharacterInterviewPage } from '../features/characters/CharacterInterviewPage';
 import { CharacterPage } from '../features/characters/CharacterPage';
 import { CharactersStationPage } from '../features/characters/CharactersStationPage';
+import { CHARACTER_VIEWS, type CharacterView } from '../features/characters/characterModel';
 import { ConceptGeneratorPage } from '../features/concepts/ConceptGeneratorPage';
 import { ConceptPage } from '../features/concepts/ConceptPage';
 import { ConceptsStationPage } from '../features/concepts/ConceptsStationPage';
@@ -242,13 +243,14 @@ const sceneRoute = createRoute({
 const charactersRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/characters',
-  // story: show one story's cast ("none" for characters in no story yet).
-  validateSearch: (search: Record<string, unknown>): { story?: string } => ({
+  // story: show one story's cast ("none" for characters in no story yet); view: list or casts.
+  validateSearch: (search: Record<string, unknown>): { story?: string; view?: CharacterView } => ({
     story: optionalString(search.story),
+    view: CHARACTER_VIEWS.find((v) => v.key === search.view && v.key !== 'cards')?.key,
   }),
   component: function CharactersRouteComponent() {
-    const { story } = charactersRoute.useSearch();
-    return <CharactersStationPage story={story ?? null} />;
+    const { story, view } = charactersRoute.useSearch();
+    return <CharactersStationPage story={story ?? null} view={view ?? 'cards'} />;
   },
 });
 const characterInterviewRoute = createRoute({
