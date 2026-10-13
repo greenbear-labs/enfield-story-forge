@@ -46,6 +46,33 @@ service cloud.firestore {
       }
     }
 
+    // Notes from the "Send feedback" button. Anyone signed in can send one as
+    // themselves; only the admin reads them (the Feedback inbox), marks them
+    // done, or deletes them.
+    function isAdmin() {
+      return signedIn()
+        && request.auth.token.email == 'adventurebyalex@gmail.com'
+        && request.auth.token.email_verified == true;
+    }
+
+    match /feedback/{feedbackId} {
+      allow create: if isAdmin() || (signedIn()
+        && request.resource.data.keys().hasOnly(
+             ['uid', 'name', 'email', 'kind', 'message', 'page', 'device', 'status', 'createdAt'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.email == request.auth.token.get('email', '')
+        && request.resource.data.kind in ['problem', 'idea', 'other']
+        && request.resource.data.message is string
+        && request.resource.data.message.size() > 0
+        && request.resource.data.message.size() <= 5000
+        && request.resource.data.name is string && request.resource.data.name.size() <= 200
+        && request.resource.data.page is string && request.resource.data.page.size() <= 2000
+        && request.resource.data.device is string && request.resource.data.device.size() <= 1000
+        && request.resource.data.status == 'new'
+        && request.resource.data.createdAt == request.time);
+      allow read, update, delete: if isAdmin();
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }
