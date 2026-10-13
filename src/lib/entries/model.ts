@@ -12,6 +12,8 @@ export interface NewEntry {
   status?: string;
   /** Position among siblings. Defaults to creation time, so new entries go last. */
   order?: string;
+  /** For writing that arrives with its prose, like an imported scene. */
+  wordCount?: number;
 }
 
 /** The stored fields of a new entry, minus timestamps (the data layer adds those). */
@@ -29,6 +31,7 @@ export function newEntryData(workspaceId: string, input: NewEntry, now = Date.no
     tags: normalizeTags(input.tags ?? []),
     images: [],
     status: input.status,
+    wordCount: input.wordCount,
     // Stored as null (not left out) so "not in the trash" is an equality query.
     deletedAt: null,
   };
