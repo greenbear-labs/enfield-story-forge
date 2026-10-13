@@ -11,6 +11,9 @@ import { recentlyUpdatedFirst } from '../../lib/entries/model';
 import { useAuthStore } from '../auth/authStore';
 import { WritingHabit } from '../desk/WritingHabit';
 import { createShard } from '../shards/shardModel';
+import { useWelcomeDismissed } from '../../lib/entries/welcome';
+import { TOUR, tourDone } from './tour';
+import { WelcomeTour } from './WelcomeTour';
 
 interface JourneyStep {
   to: StationPath;
@@ -74,6 +77,11 @@ export function HubPage() {
   const workspaceId = useAuthStore((s) => s.workspaceId);
   const [shard, setShard] = useState('');
   const entries = useEntries();
+  const dismissed = useWelcomeDismissed();
+  const [tourOpen, setTourOpen] = useState(false);
+  const showTour =
+    entries.data !== undefined &&
+    (tourOpen || (dismissed.data === false && tourDone(entries.data) < TOUR.length));
   const countOf = (type: Entry['type']) => entries.data?.filter((e) => e.type === type).length ?? 0;
   const shardCount = countOf('shard');
   const conceptCount = countOf('concept');
@@ -117,14 +125,27 @@ export function HubPage() {
             Every story moves through four stations. Start at any of them.
           </p>
         </div>
-        <Link
-          to="/appendix"
-          search={{ topic: 'How Story Forge works' }}
-          className="inline-flex items-center gap-1 text-[0.82rem] font-semibold text-accent"
-        >
-          <Icon name="info" size={16} /> How Story Forge works
-        </Link>
+        <span className="flex flex-wrap items-center gap-3">
+          {!showTour && entries.data !== undefined && dismissed.data !== undefined && (
+            <button
+              type="button"
+              className="inline-flex items-center gap-1 text-[0.82rem] font-semibold text-accent hover:underline"
+              onClick={() => setTourOpen(true)}
+            >
+              <Icon name="spark" size={16} /> Welcome tour
+            </button>
+          )}
+          <Link
+            to="/appendix"
+            search={{ topic: 'How Story Forge works' }}
+            className="inline-flex items-center gap-1 text-[0.82rem] font-semibold text-accent"
+          >
+            <Icon name="info" size={16} /> How Story Forge works
+          </Link>
+        </span>
       </section>
+
+      {showTour && <WelcomeTour entries={entries.data!} onClose={() => setTourOpen(false)} />}
 
       <section className="journey" aria-label="The journey">
         {JOURNEY.map((s) => (
