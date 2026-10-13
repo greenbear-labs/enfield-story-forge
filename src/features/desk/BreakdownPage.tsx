@@ -11,7 +11,7 @@ import { useEntries, useEntry, useLinks } from '../../lib/entries/hooks';
 import { useAutosaved } from '../../lib/entries/useAutosaved';
 import { useAuthStore } from '../auth/authStore';
 import { InfoLink } from '../appendix/InfoLink';
-import { structureByKey } from '../outlines/structures';
+import { structureByKey, useStructures } from '../outlines/structures';
 import { chapterBeatKeys, childrenOf, move } from './deskModel';
 import {
   addPlotline,
@@ -161,6 +161,8 @@ function Grid({
   rows: BreakdownRow[];
   onEdit: (plotline: Entry, chapter: number) => void;
 }) {
+  // Re-render when the writer's own structures load or change.
+  useStructures();
   const structure = structureByKey(
     typeof chapters[0]?.fields.structure === 'string' ? chapters[0].fields.structure : undefined,
   );

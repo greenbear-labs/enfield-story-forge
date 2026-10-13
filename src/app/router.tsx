@@ -71,6 +71,7 @@ const NewOutlinePage = lazyPage(
   () => import('../features/outlines/NewOutlinePage'),
   'NewOutlinePage',
 );
+const StructurePage = lazyPage(() => import('../features/outlines/StructurePage'), 'StructurePage');
 const OutlinePage = lazyPage(() => import('../features/outlines/OutlinePage'), 'OutlinePage');
 const OutlinesStationPage = lazyPage(
   () => import('../features/outlines/OutlinesStationPage'),
@@ -231,6 +232,14 @@ const newOutlineRoute = createRoute({
     return (
       <NewOutlinePage key={`${concept}:${character}`} conceptId={concept} characterId={character} />
     );
+  },
+});
+const structureRoute = createRoute({
+  getParentRoute: () => appRoute,
+  path: '/outlines/structures/$structureId',
+  component: function StructureRouteComponent() {
+    const { structureId } = structureRoute.useParams();
+    return <StructurePage key={structureId} structureId={structureId} />;
   },
 });
 const outlineRoute = createRoute({
@@ -418,6 +427,7 @@ const routeTree = rootRoute.addChildren([
     conceptRoute,
     outlinesRoute,
     newOutlineRoute,
+    structureRoute,
     outlineRoute,
     deskRoute,
     manuscriptRoute,

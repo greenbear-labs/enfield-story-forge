@@ -1,6 +1,7 @@
 import { Outlet } from '@tanstack/react-router';
 import { Suspense } from 'react';
 import { Loading } from '../components/ui/Loading';
+import { CustomStructuresSync } from '../features/outlines/CustomStructuresSync';
 import { CaptureShardDialog } from '../features/shards/CaptureShardDialog';
 import { TopBar } from './TopBar';
 
@@ -22,6 +23,7 @@ export function AppShell() {
         </Suspense>
       </main>
       <CaptureShardDialog />
+      <CustomStructuresSync />
     </>
   );
 }

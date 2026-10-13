@@ -37,10 +37,11 @@ import {
   alignBeats,
   chapterFor,
   structureByKey,
-  STRUCTURES,
+  useStructures,
   type Beat,
   type Structure,
 } from './structures';
+import { createStructure, customEntryId, customKey } from './customStructures';
 
 export function OutlinePage({ outlineId }: { outlineId: string }) {
   const outline = useEntry(outlineId);
@@ -92,6 +93,7 @@ function OutlineEditor({ outline }: { outline: Entry }) {
     () => [...(series.data ?? [])].sort((a, b) => a.title.localeCompare(b.title)),
     [series.data],
   );
+  const structures = useStructures();
   const structure = outlineStructure(outline);
   const [sending, setSending] = useState(false);
 
@@ -149,12 +151,34 @@ function OutlineEditor({ outline }: { outline: Entry }) {
                 toast('Structure switched. Your notes for the old one are kept.');
               }}
             >
-              {STRUCTURES.map((s) => (
-                <option key={s.key} value={s.key}>
-                  {s.name}
-                </option>
-              ))}
+              <StructureOptions structures={structures} />
             </select>
+            <span className="text-[0.8rem] text-muted">
+              {structure.custom ? (
+                <Link
+                  to="/outlines/structures/$structureId"
+                  params={{ structureId: customEntryId(structure.key)! }}
+                  className="text-accent underline"
+                >
+                  Edit this structure
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  className="text-accent underline"
+                  onClick={() => {
+                    const id = createStructure(ws, structure);
+                    updateEntry(ws, outline.id, {}, { structure: customKey(id) });
+                    void navigate({
+                      to: '/outlines/structures/$structureId',
+                      params: { structureId: id },
+                    });
+                  }}
+                >
+                  Make your own version
+                </button>
+              )}
+            </span>
           </label>
           <label className="flex flex-col gap-1">
             <span className="label">Series</span>
@@ -332,6 +356,7 @@ function SpineField({ outline, slot, n }: { outline: Entry; slot: SpineSlot; n: 
 
 function BeatBoard({ outline, structure }: { outline: Entry; structure: Structure }) {
   const ws = useAuthStore((s) => s.workspaceId)!;
+  const structures = useStructures();
   const { filled, total } = beatsFilled(outline);
   const overlay = outlineOverlay(outline);
   const chapters = chapterCount(outline);
@@ -368,8 +393,11 @@ function BeatBoard({ outline, structure }: { outline: Entry; structure: Structur
         </span>
       </div>
       <p className="-mt-1.5 text-[0.85rem] text-muted">
-        {structure.name}, from {structure.origin}. Each beat shows roughly how far through the story
-        it lands. <InfoLink topic={structure.name} label={`About ${structure.name}`} />
+        {structure.custom
+          ? `${structure.name}, your own structure.`
+          : `${structure.name}, from ${structure.origin}.`}{' '}
+        Each beat shows roughly how far through the story it lands.{' '}
+        {!structure.custom && <InfoLink topic={structure.name} label={`About ${structure.name}`} />}
       </p>
       <div className="panel flex flex-wrap items-end gap-3 !py-3">
         <label className="flex min-w-[220px] flex-1 flex-col gap-1">
@@ -380,12 +408,10 @@ function BeatBoard({ outline, structure }: { outline: Entry; structure: Structur
             onChange={(e) => updateEntry(ws, outline.id, {}, { overlay: e.target.value })}
           >
             <option value="">No second structure</option>
-            {STRUCTURES.filter((st) => st.key !== structure.key).map((st) => (
-              <option key={st.key} value={st.key}>
-                {st.name}
-                {otherNotes.includes(st.key) ? ' (has your notes)' : ''}
-              </option>
-            ))}
+            <StructureOptions
+              structures={structures.filter((st) => st.key !== structure.key)}
+              note={(st) => (otherNotes.includes(st.key) ? ' (has your notes)' : '')}
+            />
           </select>
         </label>
         <label className="flex w-[160px] flex-col gap-1">
@@ -506,5 +532,28 @@ function BeatCard({
         </ul>
       )}
     </li>
+  );
+}
+
+/** The library's structures, then the writer's own in their own group. */
+function StructureOptions({
+  structures,
+  note = () => '',
+}: {
+  structures: Structure[];
+  note?: (s: Structure) => string;
+}) {
+  const option = (s: Structure) => (
+    <option key={s.key} value={s.key}>
+      {s.name}
+      {note(s)}
+    </option>
+  );
+  const own = structures.filter((s) => s.custom);
+  return (
+    <>
+      {structures.filter((s) => !s.custom).map(option)}
+      {own.length > 0 && <optgroup label="Your structures">{own.map(option)}</optgroup>}
+    </>
   );
 }

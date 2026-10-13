@@ -13,7 +13,15 @@ import {
   START_METHODS,
   structuresWithNotes,
 } from './outlineModel';
-import { alignBeats, chapterFor, structureByKey, STRUCTURES } from './structures';
+import type { Entry } from '../../data/types';
+import { customEntryId, outlinesUsing, structureFromEntry } from './customStructures';
+import {
+  alignBeats,
+  chapterFor,
+  setCustomStructures,
+  structureByKey,
+  STRUCTURES,
+} from './structures';
 
 const book = (title: string, opts: Parameters<typeof fakeShard>[1] = {}) =>
   fakeShard('', { type: 'book', title, ...opts });
@@ -112,5 +120,58 @@ describe('overlay and chapters', () => {
       null,
     );
     expect(chapterCount(book('z', { fields: { chapters: 0 } }))).toBe(null);
+  });
+});
+
+describe('custom structures', () => {
+  const entry = (fields: Record<string, unknown>, title = 'Braided') =>
+    ({ id: 'abc', title, type: 'structure', fields }) as unknown as Entry;
+
+  it('reads beats in story order and clamps their places', () => {
+    const s = structureFromEntry(
+      entry({
+        bestFor: 'Two timelines',
+        beats: {
+          b: { name: 'Middle', part: 'Act 2', position: 0.5, prompt: '' },
+          a: { name: 'Hook', part: 'Act 1', position: -1, prompt: 'Why now?' },
+          c: { name: '', part: '', position: 3, prompt: '' },
+          bad: 'nope',
+        },
+      }),
+    );
+    expect(s.key).toBe('custom-abc');
+    expect(s.custom).toBe(true);
+    expect(s.bestFor).toBe('Two timelines');
+    expect(s.beats.map((b) => [b.name, b.position])).toEqual([
+      ['Hook', 0],
+      ['Middle', 0.5],
+      ['Untitled beat', 1],
+    ]);
+  });
+
+  it('falls back to a name and a blurb', () => {
+    const s = structureFromEntry(entry({}, '  '));
+    expect(s.name).toBe('Untitled structure');
+    expect(s.bestFor).toBe('Your own stories');
+    expect(s.beats).toEqual([]);
+  });
+
+  it('is found by key once loaded, and falls back when it is gone', () => {
+    const s = structureFromEntry(entry({ beats: { x: { name: 'Only', position: 0.4 } } }));
+    setCustomStructures([s]);
+    expect(structureByKey('custom-abc').name).toBe('Braided');
+    setCustomStructures([]);
+    expect(structureByKey('custom-abc').key).toBe('monomyth');
+    expect(customEntryId('custom-abc')).toBe('abc');
+    expect(customEntryId('monomyth')).toBeNull();
+  });
+
+  it('finds the outlines that use it', () => {
+    const books = [
+      { id: '1', fields: { structure: 'custom-abc' } },
+      { id: '2', fields: { structure: 'monomyth', overlay: 'custom-abc' } },
+      { id: '3', fields: { structure: 'three-act' } },
+    ] as unknown as Entry[];
+    expect(outlinesUsing(books, 'custom-abc').map((b) => b.id)).toEqual(['1', '2']);
   });
 });

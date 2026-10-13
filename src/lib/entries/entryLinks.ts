@@ -10,6 +10,7 @@ export function entryRoute(
   | { to: '/characters/$characterId'; params: { characterId: string } }
   | { to: '/characters'; search: { story: string } }
   | { to: '/outlines/$outlineId'; params: { outlineId: string } }
+  | { to: '/outlines/structures/$structureId'; params: { structureId: string } }
   | { to: '/desk/chapters/$chapterId'; params: { chapterId: string } }
   | { to: '/desk/scenes/$sceneId'; params: { sceneId: string } }
   | { to: '/desk/$bookId/breakdown'; params: { bookId: string } }
@@ -26,6 +27,8 @@ export function entryRoute(
       return { to: '/concepts/$conceptId', params: { conceptId: entry.id } };
     case 'book':
       return { to: '/outlines/$outlineId', params: { outlineId: entry.id } };
+    case 'structure':
+      return { to: '/outlines/structures/$structureId', params: { structureId: entry.id } };
     case 'chapter':
       return { to: '/desk/chapters/$chapterId', params: { chapterId: entry.id } };
     case 'scene':
@@ -56,6 +59,7 @@ const TYPE_NAMES: Partial<Record<Entry['type'], string>> = {
   character: 'Character',
   cast_group: 'Cast group',
   book: 'Outline',
+  structure: 'Structure',
   chapter: 'Chapter',
   scene: 'Scene',
   plotline: 'Plotline',

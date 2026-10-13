@@ -20,6 +20,8 @@ export const ENTRY_TYPES = [
   'scene',
   'beat',
   'plotline',
+  /** A story structure the writer made: its beats are `fields.beats`, keyed by beat id. */
+  'structure',
 ] as const;
 export type EntryType = (typeof ENTRY_TYPES)[number];
 
@@ -40,6 +42,7 @@ export const ENTRY_SECTION: Record<EntryType, Section> = {
   chapter: 'desk',
   scene: 'desk',
   plotline: 'desk',
+  structure: 'story',
 };
 
 export const LINK_KINDS = [

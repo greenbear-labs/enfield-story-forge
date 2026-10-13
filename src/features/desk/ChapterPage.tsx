@@ -10,7 +10,7 @@ import { useEntries, useEntry } from '../../lib/entries/hooks';
 import { useAutosaved } from '../../lib/entries/useAutosaved';
 import { useAuthStore } from '../auth/authStore';
 import { beatNote } from '../outlines/outlineModel';
-import { structureByKey } from '../outlines/structures';
+import { structureByKey, useStructures } from '../outlines/structures';
 import { addScene, chapterBeatKeys, childrenOf, move, sceneText, words } from './deskModel';
 import { SceneSetup } from './SceneSetup';
 
@@ -77,6 +77,8 @@ function ChapterBuilder({ chapter }: { chapter: Entry }) {
   const goal = useAutosaved(sceneText(chapter, 'goal'), (v) =>
     updateEntry(ws, chapter.id, {}, { goal: v.trim() }),
   );
+  // Re-render when the writer's own structures load or change.
+  useStructures();
   const structure = structureByKey(
     typeof chapter.fields.structure === 'string' ? chapter.fields.structure : undefined,
   );

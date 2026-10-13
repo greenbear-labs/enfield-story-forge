@@ -15,7 +15,7 @@ import {
   type Format,
   type StartMethod,
 } from './outlineModel';
-import { DEFAULT_STRUCTURE, STRUCTURES } from './structures';
+import { DEFAULT_STRUCTURE, useStructures } from './structures';
 
 interface Props {
   conceptId?: string;
@@ -30,6 +30,7 @@ export function NewOutlinePage({ conceptId, characterId }: Props) {
   const characters = useEntries('character');
   const series = useEntries('series');
   const conceptsById = useEntryMap(concepts.data);
+  const structures = useStructures();
   const charactersById = useEntryMap(characters.data);
 
   const [method, setMethod] = useState<StartMethod>(
@@ -309,7 +310,7 @@ export function NewOutlinePage({ conceptId, characterId }: Props) {
           aria-label="Structure"
           className="grid grid-cols-2 gap-2 max-sm:grid-cols-1"
         >
-          {STRUCTURES.map((s) => (
+          {structures.map((s) => (
             <button
               key={s.key}
               type="button"
@@ -319,11 +320,19 @@ export function NewOutlinePage({ conceptId, characterId }: Props) {
             >
               <span className="text-[0.95rem] font-semibold">{s.name}</span>
               <span className="text-[0.8rem] opacity-80">
+                {s.custom ? 'Yours · ' : ''}
                 {s.beats.length} beats · {s.bestFor}
               </span>
             </button>
           ))}
         </div>
+        <p className="text-[0.85rem] text-muted">
+          None quite fits?{' '}
+          <Link to="/outlines" hash="structures" className="text-accent underline">
+            Make your own structure
+          </Link>
+          , or pick the closest and make your own version of it later.
+        </p>
       </section>
 
       <div className="flex flex-wrap items-center gap-2">
