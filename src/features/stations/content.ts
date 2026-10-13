@@ -125,10 +125,16 @@ export const deskStation: StationContent = {
       description:
         'Set up the scene on the side, write the prose, and go full screen with focus mode.',
     },
+    {
+      name: 'Import a draft',
+      icon: 'upload',
+      description:
+        'Already writing? Bring a Word, Markdown, or text file in as chapters and scenes.',
+    },
   ],
   library: {
     title: 'Your manuscripts',
-    empty: 'No manuscripts yet. Send an outline here to begin.',
+    empty: 'No manuscripts yet. Send an outline here to begin, or import a draft you already have.',
   },
 };
 

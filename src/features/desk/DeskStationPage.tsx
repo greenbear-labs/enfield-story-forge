@@ -1,5 +1,5 @@
 import { useNavigate } from '@tanstack/react-router';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Loading } from '../../components/ui/Loading';
 import type { Entry } from '../../data/types';
@@ -7,6 +7,7 @@ import { useEntries } from '../../lib/entries/hooks';
 import { recentlyUpdatedFirst } from '../../lib/entries/model';
 import { cardGrid } from '../shards/ShardCard';
 import { deskStation } from '../stations/content';
+import { ImportDraftDialog } from './ImportDraftDialog';
 import { StationPage, StationSection } from '../stations/StationPage';
 import { onDesk } from './deskModel';
 import { ManuscriptCard } from './ManuscriptCard';
@@ -15,6 +16,7 @@ import { WritingHabit } from './WritingHabit';
 
 export function DeskStationPage() {
   const navigate = useNavigate();
+  const [importing, setImporting] = useState(false);
   const books = useEntries('book');
   const manuscripts = useMemo(
     () => (books.data ?? []).filter(onDesk).sort(recentlyUpdatedFirst),
@@ -50,6 +52,7 @@ export function DeskStationPage() {
             : latest
               ? void navigate({ to: '/desk/$bookId', params: { bookId: latest.id } })
               : void navigate({ to: '/outlines' }),
+        'Import a draft': () => setImporting(true),
       }}
     >
       <StationSection title="Your writing">
@@ -58,6 +61,7 @@ export function DeskStationPage() {
         </div>
       </StationSection>
       <Library manuscripts={manuscripts} loading={books.data === undefined} error={!!books.error} />
+      {importing && <ImportDraftDialog onClose={() => setImporting(false)} />}
     </StationPage>
   );
 }

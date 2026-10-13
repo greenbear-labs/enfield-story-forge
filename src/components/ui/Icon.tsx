@@ -164,6 +164,7 @@ const ICONS = {
     </>
   ),
   download: <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />,
+  upload: <path d="M12 20V9M7 14l5-5 5 5M5 4h14" />,
   tag: (
     <>
       <path d="M3 12V4h8l10 10-8 8z" />
