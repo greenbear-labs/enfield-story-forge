@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router';
 import { useMemo } from 'react';
+import { useStructures } from '../outlines/structures';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Icon } from '../../components/ui/Icon';
 import { Loading } from '../../components/ui/Loading';
@@ -74,15 +75,22 @@ function StoryHealth({ book }: { book: Entry }) {
       .filter((c): c is Entry => !!c && !c.deletedAt)
       .sort((a, b) => a.title.localeCompare(b.title));
   }, [book, casts.links, casts.books, chapters, scenes.data, characterMap]);
+  // The beats named in checks can come from the writer's own structures.
+  const structures = useStructures();
   const result = useMemo(() => {
     if (loading) return null;
     const plotlines = childrenOf(allPlotlines.data, book.id);
-    return health(chapters, scenes.data, plotlines, characterMap, [
-      ...plotlineLinks.data!,
-      ...mentionLinks.data!,
-    ]);
+    return health(
+      chapters,
+      scenes.data,
+      plotlines,
+      characterMap,
+      [...plotlineLinks.data!, ...mentionLinks.data!],
+      structures,
+    );
   }, [
     loading,
+    structures,
     chapters,
     allPlotlines.data,
     scenes.data,

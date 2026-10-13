@@ -28,13 +28,16 @@ export function StationSection({
   title,
   actions,
   children,
+  id,
 }: {
   title: string;
   actions?: ReactNode;
   children: ReactNode;
+  /** For links straight to this section. */
+  id?: string;
 }) {
   return (
-    <section className="flex flex-col gap-2.5">
+    <section id={id} className="flex scroll-mt-4 flex-col gap-2.5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-[1.05rem]">{title}</h2>
         {actions}

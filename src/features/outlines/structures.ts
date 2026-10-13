@@ -1,3 +1,6 @@
+import { useMemo } from 'react';
+import { create } from 'zustand';
+
 /**
  * The structure library, as data. Each beat has a target position (0 to 1,
  * how far through the story it usually lands), so beats from different
@@ -21,6 +24,8 @@ export interface Structure {
   origin: string;
   bestFor: string;
   beats: Beat[];
+  /** One the writer made (a `structure` entry), not from the library. */
+  custom?: boolean;
 }
 
 const beat = (key: string, name: string, position: number, part: string, prompt: string): Beat => ({
@@ -490,9 +495,24 @@ export const DEFAULT_STRUCTURE = 'monomyth';
 
 const BY_KEY = new Map(STRUCTURES.map((s) => [s.key, s]));
 
+/** The writer's own structures, kept current by `CustomStructuresSync`. */
+const useCustomStructures = create<{ list: Structure[] }>(() => ({ list: [] }));
+
+export function setCustomStructures(list: Structure[]): void {
+  useCustomStructures.setState({ list });
+}
+
+/** The library, then the writer's own. Re-renders when theirs change. */
+export function useStructures(): Structure[] {
+  const custom = useCustomStructures((s) => s.list);
+  return useMemo(() => [...STRUCTURES, ...custom], [custom]);
+}
+
 /** A structure by key, falling back to the Monomyth. */
 export const structureByKey = (key: string | undefined): Structure =>
-  BY_KEY.get(key ?? '') ?? BY_KEY.get(DEFAULT_STRUCTURE)!;
+  BY_KEY.get(key ?? '') ??
+  useCustomStructures.getState().list.find((s) => s.key === key) ??
+  BY_KEY.get(DEFAULT_STRUCTURE)!;
 
 /**
  * Lines up a second structure with the first: each overlay beat goes to the

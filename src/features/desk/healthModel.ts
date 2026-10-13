@@ -1,5 +1,5 @@
 import type { Entry, Link } from '../../data/types';
-import { structureByKey } from '../outlines/structures';
+import { structureByKey, type Structure } from '../outlines/structures';
 import { chapterBeatKeys, childrenOf, sceneText, scenePov, words } from './deskModel';
 import { breakdown, longestGap, plotlinesByScene } from './plotlineModel';
 
@@ -61,6 +61,8 @@ export function health(
   plotlines: Entry[],
   characters: Map<string, Entry>,
   links: Link[] | undefined,
+  /** The writer's own structures too, so their beats can be named. */
+  structures: Structure[] = [],
 ): Health {
   const checks: Check[] = [];
   const paces: ChapterPace[] = chapters.map((chapter, i) => {
@@ -80,9 +82,9 @@ export function health(
   // Chapters with nothing in them yet, and the beats they were meant to carry.
   for (const p of paces) {
     if (p.kinds.length) continue;
-    const structure = structureByKey(
-      typeof p.chapter.fields.structure === 'string' ? p.chapter.fields.structure : undefined,
-    );
+    const key =
+      typeof p.chapter.fields.structure === 'string' ? p.chapter.fields.structure : undefined;
+    const structure = structures.find((s) => s.key === key) ?? structureByKey(key);
     const beats = chapterBeatKeys(p.chapter)
       .map((k) => structure.beats.find((b) => b.key === k)?.name)
       .filter(Boolean);

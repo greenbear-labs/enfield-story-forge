@@ -7,7 +7,7 @@ import type { Entry } from '../../data/types';
 import { updateEntry } from '../../lib/entries/entries';
 import { useEntries, useEntry } from '../../lib/entries/hooks';
 import { useAuthStore } from '../auth/authStore';
-import { structureByKey } from '../outlines/structures';
+import { structureByKey, useStructures } from '../outlines/structures';
 import { addChapter, chapterBeatKeys, childrenOf, move, sceneText, words } from './deskModel';
 import { bookTarget, parseGoal, percent } from './writingModel';
 
@@ -212,6 +212,8 @@ function ChapterRow({
   first: boolean;
   last: boolean;
 }) {
+  // Re-render when the writer's own structures load or change.
+  useStructures();
   const structure = structureByKey(
     typeof chapter.fields.structure === 'string' ? chapter.fields.structure : undefined,
   );
