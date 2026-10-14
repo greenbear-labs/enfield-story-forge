@@ -786,9 +786,9 @@
     }
   }
   /* A wide picture with the night fading over its edges, for page heads. */
+  /* Not clipped, so its options menu can open past the bottom edge. */
   .paths-banner {
     position: relative;
-    overflow: hidden;
     border: 1px solid var(--line);
     border-radius: 10px;
     background: var(--sunken);
@@ -800,11 +800,13 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: inherit;
   }
   .paths-banner::after {
     content: '';
     position: absolute;
     inset: 0;
+    border-radius: inherit;
     background: linear-gradient(
       90deg,
       rgb(10 18 17 / 0.92) 0%,

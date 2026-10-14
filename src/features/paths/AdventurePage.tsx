@@ -114,6 +114,26 @@ function Adventure({ adventure, passageId }: { adventure: Entry; passageId: stri
     });
   };
 
+  const onDownload = (kind: 'playable' | 'twine') => {
+    title.flush();
+    blurb.flush();
+    const all = passages ?? [];
+    import('../../lib/entries/adventureFiles')
+      .then((files) =>
+        kind === 'playable'
+          ? files.downloadPlayable(ws, adventure, all)
+          : files.downloadTwine(ws, adventure, all),
+      )
+      .then(() =>
+        toast(
+          kind === 'playable'
+            ? 'Downloaded. Open the file in any browser to play.'
+            : 'Downloaded. In Twine, use Library › Import to open it.',
+        ),
+      )
+      .catch(() => toast('Couldn’t make the file. Try again in a moment.'));
+  };
+
   return (
     <>
       <header className="paths-banner flex min-h-[150px] items-end gap-3 p-6 max-sm:p-4">
@@ -152,11 +172,41 @@ function Adventure({ adventure, passageId }: { adventure: Entry; passageId: stri
               </button>
             )}
           >
-            {() => (
-              <button type="button" role="menuitem" className="menu-item" onClick={onDelete}>
-                <Icon name="trash" size={16} />
-                Delete adventure
-              </button>
+            {(close) => (
+              <>
+                {passages && passages.length > 0 && (
+                  <>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="menu-item"
+                      onClick={() => {
+                        close();
+                        onDownload('playable');
+                      }}
+                    >
+                      <Icon name="download" size={16} />
+                      Download to play (one HTML file)
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="menu-item"
+                      onClick={() => {
+                        close();
+                        onDownload('twine');
+                      }}
+                    >
+                      <Icon name="download" size={16} />
+                      Download for Twine
+                    </button>
+                  </>
+                )}
+                <button type="button" role="menuitem" className="menu-item" onClick={onDelete}>
+                  <Icon name="trash" size={16} />
+                  Delete adventure
+                </button>
+              </>
             )}
           </Menu>
         </div>

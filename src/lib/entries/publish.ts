@@ -39,7 +39,8 @@ import { coverArtOf } from '../../features/paths/pathsModel';
 
 type Publishable = Pick<Entry, 'id' | 'title' | 'fields' | 'images' | 'coverImageId'>;
 
-const coverUrlOf = async (entry: Publishable): Promise<string | null> => {
+/** A picture's web address: its cover image, else its built-in art. */
+export const coverUrlOf = async (entry: Publishable): Promise<string | null> => {
   const cover = coverOf(entry);
   return cover ? imageUrl(cover).catch(() => null) : coverArtOf(entry);
 };
