@@ -12,6 +12,7 @@ export const ashwood: SampleStory = {
   passages: {
     start: {
       title: 'The Forest Path',
+      sound: 'rain',
       art: '/paths-art/ashwood/start.webp',
       text: ['The forest path twists ahead, slick with rain. A lantern flickers deeper inside.'],
       choices: [
@@ -21,6 +22,7 @@ export const ashwood: SampleStory = {
     },
     lantern: {
       title: 'The Lantern',
+      sound: 'heartbeat',
       art: '/paths-art/ashwood/lantern.webp',
       text: ['The lantern hangs from a crooked branch. Its flame pulses like a heartbeat.'],
       choices: [
@@ -30,6 +32,7 @@ export const ashwood: SampleStory = {
     },
     clearing: {
       title: 'The Clearing',
+      sound: 'drone',
       art: '/paths-art/ashwood/clearing.webp',
       text: [
         'You enter a clearing. The trees are silent. A shadow moves at the edge of your vision.',
@@ -49,6 +52,7 @@ export const ashwood: SampleStory = {
     },
     consumed: {
       title: 'Lantern Consumed',
+      sound: 'fire',
       art: '/paths-art/ashwood/fire.webp',
       ending: 'death',
       text: ['The moment you touch the lantern, fire engulfs you. The Ashwood drinks your ashes.'],
@@ -63,6 +67,7 @@ export const ashwood: SampleStory = {
     },
     keeper: {
       title: 'Keeper of the Flame',
+      sound: 'fire',
       art: '/paths-art/ashwood/true.webp',
       ending: 'true',
       text: [

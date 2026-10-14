@@ -34,6 +34,7 @@ import {
   type EndingType,
 } from './pathsModel';
 
+import { PassageSound } from './PassageSound';
 import { ChoiceRules, PassageLines } from './StateEditor';
 import { storyVars, type StoryVar } from './stateModel';
 
@@ -255,6 +256,8 @@ export function PassagePanel({
       )}
 
       <EntryGallery entry={passage} label="Pictures" />
+
+      <PassageSound passage={passage} />
 
       <label className="flex flex-col gap-1">
         <span className="label">Private notes (readers never see these)</span>

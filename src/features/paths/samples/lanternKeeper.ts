@@ -15,6 +15,7 @@ export const lanternKeeper: SampleStory = {
   passages: {
     gate: {
       title: 'The Gate at Dusk',
+      sound: 'wind',
       text: [
         'The path to Hollowmere ends at a rusted gate. Beyond it stand a cottage with one lit window and a lighthouse in the middle of a field, miles from any sea.',
         'A note is tied to the gate with black ribbon: KEEPER WANTED. ASK WITHIN.',
@@ -35,6 +36,7 @@ export const lanternKeeper: SampleStory = {
     },
     cottage: {
       title: 'The Cottage',
+      sound: 'fire',
       text: [
         'An old woman opens the door before you knock. “You’re late,” she says, as if she has been expecting you for a hundred years.',
         'On the table sit a brass lantern, unlit, and a cup of tea, still steaming.',
@@ -73,6 +75,7 @@ export const lanternKeeper: SampleStory = {
     },
     field: {
       title: 'The Field of Bells',
+      sound: 'night',
       text: [
         'The grass is waist-high and full of small brass bells that ring without any wind.',
         'Halfway across, a voice you know calls your name. It sounds like your mother. It sounds like you.',
@@ -112,6 +115,7 @@ export const lanternKeeper: SampleStory = {
     },
     door: {
       title: 'The Lighthouse Door',
+      sound: 'sea',
       text: [
         'The door stands open. Stairs wind up into the dark, and something at the top is breathing slowly, like the sea.',
       ],
@@ -137,6 +141,7 @@ export const lanternKeeper: SampleStory = {
     },
     'lamp-room': {
       title: 'The Lamp Room',
+      sound: 'drone',
       text: [
         'At the top, the great lamp is dark. In its glass you see the field below, and in the field every traveler who ever answered the voice, looking up at you.',
         'The lamp needs a flame.',
@@ -167,6 +172,7 @@ export const lanternKeeper: SampleStory = {
     },
     'the-sea': {
       title: 'The Bell That Calls the Sea',
+      sound: 'sea',
       text: [
         'You ring it once. Far off, impossibly, you hear waves.',
         'By morning the field is a shore and the lighthouse has its sea at last. On the tide, every lost traveler comes wading home, shaking the grass from their hair.',

@@ -15,6 +15,7 @@ export const bookThatReads: SampleStory = {
   passages: {
     rain: {
       title: 'Rain on the Window',
+      sound: 'rain',
       text: [
         'The library closed an hour ago, but you are still inside, and so is the rain.',
         'On the desk in front of you, a book has opened by itself. Its first line reads: Hello. Who is reading me?',
@@ -88,6 +89,7 @@ export const bookThatReads: SampleStory = {
     },
     stacks: {
       title: 'Someone in the Stacks',
+      sound: 'drone',
       text: [
         'Between two shelves stands a person made of pages, rustling softly. They have no face yet.',
         'They are waiting for the book to finish describing one.',
@@ -111,6 +113,7 @@ export const bookThatReads: SampleStory = {
     },
     'last-chapter': {
       title: 'The Last Chapter',
+      sound: 'heartbeat',
       text: [
         'Only one page is left. The story says that the reader, having read this far, becomes part of the book.',
       ],
