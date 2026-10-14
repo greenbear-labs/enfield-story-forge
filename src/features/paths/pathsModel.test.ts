@@ -58,14 +58,14 @@ describe('choicesOf', () => {
       choicesOf({
         fields: {
           choices: {
-            b: { label: 'Run', to: 'p2', order: 1 },
+            b: { label: 'Run', to: 'p2', order: 1, cost: 3 },
             a: { label: 'Hide', to: '', order: 0 },
           },
         },
       }),
     ).toEqual([
-      { id: 'a', label: 'Hide', to: null, order: 0, requires: [], effects: [] },
-      { id: 'b', label: 'Run', to: 'p2', order: 1, requires: [], effects: [] },
+      { id: 'a', label: 'Hide', to: null, order: 0, requires: [], effects: [], cost: 0 },
+      { id: 'b', label: 'Run', to: 'p2', order: 1, requires: [], effects: [], cost: 3 },
     ]);
   });
 

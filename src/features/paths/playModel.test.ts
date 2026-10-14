@@ -25,7 +25,16 @@ describe('readPlay', () => {
   it('reads a stored playthrough and drops what it does not understand', () => {
     expect(
       readPlay({ path: ['a', 3, '', 'b'], endings: { e1: 100, e2: 'soon' }, extra: true }),
-    ).toEqual({ path: ['a', 'b'], via: ['', ''], endings: { e1: 100 } });
+    ).toEqual({ ...EMPTY_PLAY, path: ['a', 'b'], via: ['', ''], endings: { e1: 100 } });
+    expect(
+      readPlay({
+        path: ['a'],
+        kinds: { e1: 'death', e2: 'bogus' },
+        unlocked: { 'p:c': 5, 'p:d': 'x' },
+        title: 'T',
+        total: 4,
+      }),
+    ).toMatchObject({ kinds: { e1: 'death' }, unlocked: { 'p:c': 5 }, title: 'T', total: 4 });
   });
 
   it('treats a missing or odd document as a fresh start', () => {
@@ -69,7 +78,7 @@ describe('endings', () => {
       passage('d1', 'death'),
       passage('d2', 'death'),
     ];
-    const tally = endingTally(passages, { path: [], via: [], endings: { d1: 1, gone: 2 } });
+    const tally = endingTally(passages, { endings: { d1: 1, gone: 2 } });
     expect(tally.found).toBe(1);
     expect(tally.total).toBe(3);
     expect(tally.byType.map((t) => [t.type, t.found, t.total])).toEqual([

@@ -76,6 +76,7 @@ export function samplePassageFields(
           order: i,
           requires: rules(c.needs),
           effects: rules(c.does),
+          ...(c.cost ? { cost: c.cost } : {}),
         },
       ]),
     ),

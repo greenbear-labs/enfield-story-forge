@@ -89,6 +89,8 @@ export interface Choice {
   requires: Cond[];
   /** What taking it changes. */
   effects: Effect[];
+  /** Gems a reader spends to unlock it, once (0: free). */
+  cost: number;
 }
 
 export interface MapPos {
@@ -140,10 +142,14 @@ export function choicesOf(passage: Pick<Entry, 'fields'>): Choice[] {
         order: typeof c.order === 'number' ? c.order : 0,
         requires: readConds(c.requires),
         effects: readEffects(c.effects),
+        cost: typeof c.cost === 'number' && c.cost > 0 ? Math.round(c.cost) : 0,
       };
     })
     .sort((a, b) => a.order - b.order || a.id.localeCompare(b.id));
 }
+
+/** The most gems a choice can cost. */
+export const MAX_COST = 99;
 
 /** The order after the last choice, for a new one. */
 export const nextChoiceOrder = (choices: Choice[]): number =>
@@ -260,12 +266,15 @@ export function updateChoice(
   ws: string,
   passageId: string,
   choiceId: string,
-  change: { label?: string; to?: string | null; order?: number },
+  change: { label?: string; to?: string | null; order?: number; cost?: number },
 ): void {
   const fields: Record<string, unknown> = {};
   if (change.label !== undefined) fields[`choices.${choiceId}.label`] = change.label;
   if (change.to !== undefined) fields[`choices.${choiceId}.to`] = change.to ?? '';
   if (change.order !== undefined) fields[`choices.${choiceId}.order`] = change.order;
+  if (change.cost !== undefined)
+    fields[`choices.${choiceId}.cost`] =
+      change.cost > 0 ? Math.min(MAX_COST, Math.round(change.cost)) : removedField();
   updateEntry(ws, passageId, {}, fields);
 }
 

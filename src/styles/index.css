@@ -742,6 +742,10 @@
     --sec-paths: #e7b04e;
     --sec-paths-soft: #2d2513;
     --mist: #7fc8b8;
+    --bronze: #d39a62;
+    --bronze-soft: #2b1e12;
+    --silver: #dfe6ea;
+    --silver-soft: #232a2c;
     --font-display: 'IM Fell English', 'Literata', Georgia, serif;
     color-scheme: dark;
     min-height: 100dvh;
@@ -1008,6 +1012,67 @@
   }
   .sp-choice:disabled::before {
     content: none;
+  }
+  .sp-choice-cost {
+    display: block;
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    color: var(--accent);
+  }
+  .sp-choice:disabled .sp-choice-cost {
+    color: var(--muted);
+  }
+  /* Gems: the reader's balance in the header, and the medals on the profile. */
+  .sp-gems {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 3px 10px;
+    font-size: 0.85rem;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+  .sp-gems:hover {
+    border-color: var(--accent);
+  }
+  .sp-medal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 10px;
+    text-align: center;
+  }
+  .sp-medal-disc {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 999px;
+    border: 2px dashed var(--line);
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    color: var(--muted);
+  }
+  .sp-medal[data-tier='Bronze'] .sp-medal-disc {
+    border: 2px solid var(--bronze);
+    color: var(--bronze);
+    background: var(--bronze-soft);
+  }
+  .sp-medal[data-tier='Silver'] .sp-medal-disc {
+    border: 2px solid var(--silver);
+    color: var(--silver);
+    background: var(--silver-soft);
+  }
+  .sp-medal[data-tier='Gold'] .sp-medal-disc {
+    border: 2px solid var(--accent);
+    color: var(--accent);
+    background: var(--accent-soft);
+    box-shadow: 0 0 16px var(--accent-soft);
   }
   .sp-choice:disabled {
     cursor: not-allowed;

@@ -148,6 +148,7 @@ export const lanternKeeper: SampleStory = {
           needs: [{ var: 'lantern', op: 'has' }],
         },
         { label: 'Break the glass and let them out', to: 'set-free' },
+        { label: 'Ring the old brass bell beside the lamp', to: 'the-sea', cost: 5 },
       ],
     },
     keeper: {
@@ -163,6 +164,14 @@ export const lanternKeeper: SampleStory = {
         },
       ],
       ending: 'true',
+    },
+    'the-sea': {
+      title: 'The Bell That Calls the Sea',
+      text: [
+        'You ring it once. Far off, impossibly, you hear waves.',
+        'By morning the field is a shore and the lighthouse has its sea at last. On the tide, every lost traveler comes wading home, shaking the grass from their hair.',
+      ],
+      ending: 'secret',
     },
     'set-free': {
       title: 'The Field Set Free',
