@@ -14,17 +14,38 @@ export interface Play {
   /** The choice taken to reach each step of the path (`via[i]` was picked in `path[i - 1]`; empty for the first). */
   via: string[];
   endings: Record<string, number>;
+  /** Each ending found's type, kept so rewards can count them without the story. */
+  kinds: Record<string, EndingType>;
+  /** Choices unlocked with gems (`passageId:choiceId` → gems spent). Unlocked for good. */
+  unlocked: Record<string, number>;
+  /** The story's title and number of endings, kept for the profile (readers only). */
+  title: string;
+  total: number;
 }
 
 /** A route this long is a reader going round in circles; the oldest steps are dropped. */
 export const MAX_PATH = 300;
 
-export const EMPTY_PLAY: Play = { path: [], via: [], endings: {} };
+export const EMPTY_PLAY: Play = {
+  path: [],
+  via: [],
+  endings: {},
+  kinds: {},
+  unlocked: {},
+  title: '',
+  total: 0,
+};
+
+/** The key a choice is unlocked under. */
+export const unlockKey = (passageId: string, choiceId: string) => `${passageId}:${choiceId}`;
+
+const record = (v: unknown): Record<string, unknown> =>
+  v && typeof v === 'object' && !Array.isArray(v) ? (v as Record<string, unknown>) : {};
 
 /** A playthrough from its stored data, ignoring anything malformed. */
 export function readPlay(data: unknown): Play {
   if (!data || typeof data !== 'object') return EMPTY_PLAY;
-  const raw = data as { path?: unknown; via?: unknown; endings?: unknown };
+  const raw = data as Record<string, unknown>;
   const path = Array.isArray(raw.path)
     ? raw.path.filter((id): id is string => typeof id === 'string' && !!id)
     : [];
@@ -35,7 +56,21 @@ export function readPlay(data: unknown): Play {
   // Older runs (or odd data) without choices line up as unknown steps.
   const rawVia = Array.isArray(raw.via) ? raw.via : [];
   const via = path.map((_, i) => (typeof rawVia[i] === 'string' ? (rawVia[i] as string) : ''));
-  return { path, via, endings };
+  const kinds: Record<string, EndingType> = {};
+  for (const [id, kind] of Object.entries(record(raw.kinds)))
+    if (ENDING_TYPES.some((t) => t.key === kind)) kinds[id] = kind as EndingType;
+  const unlocked: Record<string, number> = {};
+  for (const [key, cost] of Object.entries(record(raw.unlocked)))
+    if (typeof cost === 'number' && cost >= 0) unlocked[key] = cost;
+  return {
+    path,
+    via,
+    endings,
+    kinds,
+    unlocked,
+    title: typeof raw.title === 'string' ? raw.title : '',
+    total: typeof raw.total === 'number' ? raw.total : 0,
+  };
 }
 
 export type Route = Pick<Play, 'path' | 'via'>;
@@ -54,8 +89,10 @@ export const stepBack = (route: Route): Route =>
   route.path.length > 1 ? { path: route.path.slice(0, -1), via: route.via.slice(0, -1) } : route;
 
 /** Whether arriving at `passage` finds an ending this player hasn't found before. */
-export const findsNewEnding = (play: Play, passage: Pick<Entry, 'id' | 'fields'>): boolean =>
-  !!endingOf(passage) && !(passage.id in play.endings);
+export const findsNewEnding = (
+  play: Pick<Play, 'endings'>,
+  passage: Pick<Entry, 'id' | 'fields'>,
+): boolean => !!endingOf(passage) && !(passage.id in play.endings);
 
 export interface EndingTally {
   type: EndingType;
@@ -70,7 +107,7 @@ export interface EndingTally {
  */
 export function endingTally(
   passages: Pick<Entry, 'id' | 'fields'>[],
-  play: Play,
+  play: Pick<Play, 'endings'>,
 ): { found: number; total: number; byType: EndingTally[] } {
   const byType = ENDING_TYPES.map((t) => {
     const of = passages.filter((p) => endingOf(p) === t.key);

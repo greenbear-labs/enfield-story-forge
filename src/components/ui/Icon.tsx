@@ -163,6 +163,7 @@ const ICONS = {
     </>
   ),
   close: <path d="M6 6l12 12M18 6 6 18" />,
+  gem: <path d="M6 4h12l3 5-9 11L3 9zM3 9h18M9 4 8 9l4 11 4-11-1-5" />,
   trash: (
     <>
       <path d="M4 7h16M10 11v6M14 11v6" />

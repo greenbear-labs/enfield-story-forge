@@ -14,6 +14,7 @@ import { EntryGallery } from '../images/EntryGallery';
 import type { WorldSave } from '../world/WorldEditor';
 import { linkables } from '../world/worldModel';
 import {
+  MAX_COST,
   addChoice,
   choicesInto,
   choicesOf,
@@ -349,6 +350,24 @@ function ChoiceRow({
           ))}
           <option value={NEW_PASSAGE}>+ A new passage</option>
         </select>
+      </label>
+      <label className="flex flex-wrap items-center gap-2 text-[0.85rem]">
+        <span className="text-muted">Gems to unlock</span>
+        <input
+          type="number"
+          min={0}
+          max={MAX_COST}
+          className="txt w-[72px] py-1"
+          value={choice.cost}
+          onChange={(e) =>
+            updateChoice(ws, passage.id, choice.id, {
+              cost: Math.max(0, Math.round(Number(e.target.value)) || 0),
+            })
+          }
+        />
+        <span className="text-muted">
+          {choice.cost ? 'Readers pay once, then it stays open' : 'Free'}
+        </span>
       </label>
       <ChoiceRules passage={passage} choice={choice} vars={vars} />
     </li>

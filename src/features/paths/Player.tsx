@@ -4,11 +4,19 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { Loading } from '../../components/ui/Loading';
 import { toast } from '../../components/ui/toast';
 import type { Entry } from '../../data/types';
-import { savePlay, setEndingsFound, usePlay } from '../../lib/entries/plays';
+import { savePlay, setEndingsFound, usePlay, usePlays } from '../../lib/entries/plays';
+import { gemBalance, gemsForEnding, gemsText } from './rewardsModel';
 import { proseToHtml } from '../../lib/entries/prose';
 import { useAuthStore } from '../auth/authStore';
 import { Icon } from '../../components/ui/Icon';
-import { choicesOf, endingLabel, endingOf, passageName, startIdOf } from './pathsModel';
+import {
+  choicesOf,
+  endingLabel,
+  endingOf,
+  passageName,
+  startIdOf,
+  type Choice,
+} from './pathsModel';
 import {
   beginAt,
   endingTally,
@@ -16,6 +24,7 @@ import {
   findsNewEnding,
   stepBack,
   stepTo,
+  unlockKey,
   type Play,
   type Route,
 } from './playModel';
@@ -79,20 +88,30 @@ export function Player({
   const byId = useMemo(() => new Map(passages.map((p) => [p.id, p])), [passages]);
   const live = usePlay(story.playId);
   const play = live.data;
+  // A reader's gems (playtests don't earn or spend any).
+  const allPlays = usePlays().data;
+  const gems = draft || !allPlays ? null : gemBalance(allPlays);
+  const endingCount = useMemo(() => passages.filter((p) => endingOf(p)).length, [passages]);
   // The ending just found for the first time, to celebrate it.
   const [fresh, setFresh] = useState<string | null>(null);
   usePathsTitle(`Playing ${story.title || 'Untitled adventure'}`);
 
   /** Saves the reader's new place, and returns whether they just found a new ending. */
-  const save = (route: Route, current: Play): boolean => {
+  const save = (route: Route, current: Play, unlock?: { key: string; cost: number }): boolean => {
     const at = byId.get(route.path.at(-1)!);
-    const isNew = !!at && findsNewEnding(current, at);
-    savePlay(ws, story.playId, { ...route, endingFound: isNew ? at.id : undefined });
+    const kind = at ? endingOf(at) : null;
+    const isNew = !!at && !!kind && findsNewEnding(current, at);
+    savePlay(ws, story.playId, {
+      ...route,
+      endingFound: isNew ? { id: at.id, kind } : undefined,
+      unlock,
+      story: draft ? undefined : { title: story.title, total: endingCount },
+    });
     window.scrollTo({ top: 0 });
     return isNew;
   };
-  const go = (route: Route, current: Play) =>
-    setFresh(save(route, current) ? route.path.at(-1)! : null);
+  const go = (route: Route, current: Play, unlock?: { key: string; cost: number }) =>
+    setFresh(save(route, current, unlock) ? route.path.at(-1)! : null);
   const begin = (current: Play) => {
     const at = startIdOf(story);
     if (at) go(beginAt(at), current);
@@ -177,8 +196,18 @@ export function Player({
           vars={vars}
           state={state}
           fresh={fresh === current.id}
+          unlocked={play.unlocked}
+          gems={gems}
           tally={tally}
-          onChoose={(to, choiceId) => go(stepTo(play, to, choiceId), play)}
+          onChoose={(to, choice) => {
+            const key = unlockKey(current.id, choice.id);
+            const unlock =
+              gems !== null && choice.cost > 0 && !(key in play.unlocked)
+                ? { key, cost: choice.cost }
+                : undefined;
+            if (unlock && gems! < unlock.cost) return;
+            go(stepTo(play, to, choice.id), play, unlock);
+          }}
           onBack={play.path.length > 1 ? () => go(stepBack(play), play) : null}
           onAgain={() => begin(play)}
           onForget={Object.keys(play.endings).length ? forget : null}
@@ -260,6 +289,8 @@ function PassageView({
   vars,
   state,
   fresh,
+  unlocked,
+  gems,
   tally,
   onChoose,
   onBack,
@@ -275,8 +306,12 @@ function PassageView({
   vars: StoryVar[];
   state: StoryState;
   fresh: boolean;
+  /** Choices this reader has unlocked with gems. */
+  unlocked: Play['unlocked'];
+  /** The reader's gems, or null in a playtest. */
+  gems: number | null;
   tally: ReturnType<typeof endingTally>;
-  onChoose: (to: string, choiceId: string) => void;
+  onChoose: (to: string, choice: Choice) => void;
   onBack: (() => void) | null;
   onAgain: () => void;
   onForget: (() => void) | null;
@@ -313,7 +348,12 @@ function PassageView({
 
       {ending && (
         <section className="sp-ending" data-ending={ending} aria-label="The end">
-          {fresh && <p className="sp-ending-new">New ending found</p>}
+          {fresh && (
+            <p className="sp-ending-new">
+              New ending found
+              {gems !== null && ` · +${gemsText(gemsForEnding(ending))}`}
+            </p>
+          )}
           <p className="font-display text-[1.8rem] leading-tight">The end</p>
           <p className="text-[0.9rem] text-muted">
             {endingLabel(ending)} · {endingsFoundText(tally)}
@@ -347,22 +387,39 @@ function PassageView({
             const to = c.to ? byId.get(c.to) : undefined;
             const label = c.label.trim() || (to ? passageName(to) : 'Go on');
             const needs = unmet(state, c.requires, vars);
+            // A reader pays a choice's gems once; a playtest shows the cost but it's free.
+            const toUnlock = c.cost > 0 && !(unlockKey(passage.id, c.id) in unlocked) ? c.cost : 0;
+            const short = gems !== null && toUnlock > gems;
             return (
               <li key={c.id}>
                 <button
                   type="button"
                   className="sp-choice"
-                  disabled={!to || needs.length > 0}
-                  onClick={() => to && onChoose(to.id, c.id)}
+                  disabled={!to || needs.length > 0 || short}
+                  onClick={() => to && onChoose(to.id, c)}
                 >
-                  {needs.length > 0 && <Icon name="lock" size={16} className="sp-choice-lock" />}
+                  {needs.length > 0 ? (
+                    <Icon name="lock" size={16} className="sp-choice-lock" />
+                  ) : (
+                    toUnlock > 0 && <Icon name="gem" size={16} className="sp-choice-lock" />
+                  )}
                   {label}
                   {needs.length > 0 ? (
                     <span className="block font-[family-name:var(--font-ui)] text-[0.8rem] text-muted">
                       Needs: {needs.map((n) => condText(n, vars)).join(', ')}
                     </span>
+                  ) : !to ? (
+                    <span className="text-[0.8rem] text-muted"> · not written yet</span>
                   ) : (
-                    !to && <span className="text-[0.8rem] text-muted"> · not written yet</span>
+                    toUnlock > 0 && (
+                      <span className="sp-choice-cost">
+                        {gems === null
+                          ? `Costs ${gemsText(toUnlock)} to unlock · free in playtest`
+                          : short
+                            ? `Unlock for ${gemsText(toUnlock)} · you have ${gemsText(gems)}`
+                            : `Unlock for ${gemsText(toUnlock)}`}
+                      </span>
+                    )
                   )}
                 </button>
               </li>

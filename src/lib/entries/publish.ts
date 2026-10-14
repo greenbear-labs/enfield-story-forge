@@ -201,3 +201,15 @@ export function useLibrary(): Live<PublishedStory[]> {
     ),
   );
 }
+
+/** The stories this writer has published (any status). */
+export function useMyPublished(): Live<PublishedStory[]> {
+  const uid = useAuthStore((s) => s.user?.uid);
+  return useListener<PublishedStory[]>(uid ? `myPublished:${uid}` : null, (onData, onError) =>
+    onSnapshot(
+      query(collection(getFirebase().db, paths.published()), where('ownerId', '==', uid)),
+      (snap) => onData(snap.docs.map((d) => readStory(d.id, d.data()))),
+      onError,
+    ),
+  );
+}

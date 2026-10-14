@@ -1,5 +1,6 @@
 import { collection, doc, onSnapshot, serverTimestamp, setDoc } from 'firebase/firestore';
 import { useAuthStore } from '../../features/auth/authStore';
+import type { EndingType } from '../../features/paths/pathsModel';
 import { readPlay, type Play } from '../../features/paths/playModel';
 import { getFirebase } from '../firebase/client';
 import { paths } from '../firestore/paths';
@@ -12,19 +13,37 @@ import { useListener, type Live } from './hooks';
  * playing works offline.
  */
 
-/** Saves where the reader is, and marks an ending found if they just reached a new one. */
+/**
+ * Saves where the reader is. Also marks an ending found if they just reached a
+ * new one, a choice unlocked if they just spent gems on it, and (for readers)
+ * the story's title and number of endings, for the profile.
+ */
 export function savePlay(
   workspaceId: string,
   adventureId: string,
-  change: { path: string[]; via: string[]; endingFound?: string },
+  change: {
+    path: string[];
+    via: string[];
+    endingFound?: { id: string; kind: EndingType };
+    unlock?: { key: string; cost: number };
+    story?: { title: string; total: number };
+  },
 ) {
   const data: Record<string, unknown> = {
     path: change.path,
     via: change.via,
     updatedAt: serverTimestamp(),
   };
-  // Merging adds the ending to the ones already found.
-  if (change.endingFound) data.endings = { [change.endingFound]: Date.now() };
+  // Merging adds to the endings and unlocks already there.
+  if (change.endingFound) {
+    data.endings = { [change.endingFound.id]: Date.now() };
+    data.kinds = { [change.endingFound.id]: change.endingFound.kind };
+  }
+  if (change.unlock) data.unlocked = { [change.unlock.key]: change.unlock.cost };
+  if (change.story) {
+    data.title = change.story.title;
+    data.total = change.story.total;
+  }
   fireAndTrack(
     setDoc(doc(getFirebase().db, paths.play(workspaceId, adventureId)), data, { merge: true }),
     'save your place in the story',

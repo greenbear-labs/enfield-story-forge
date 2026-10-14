@@ -30,6 +30,8 @@ export interface SampleChoice {
   to: string;
   needs?: SampleRule<CondOp>[];
   does?: SampleRule<EffectOp>[];
+  /** Gems to unlock it. */
+  cost?: number;
 }
 
 export interface SampleRule<Op extends string> {

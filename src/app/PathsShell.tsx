@@ -1,6 +1,7 @@
 import { Outlet } from '@tanstack/react-router';
 import { Suspense } from 'react';
 import { Loading } from '../components/ui/Loading';
+import { GemCount } from '../features/paths/GemCount';
 import { AccountMenu } from './AccountMenu';
 import { AppSwitcher } from './AppSwitcher';
 import { SearchButton } from './SearchButton';
@@ -21,6 +22,7 @@ export function PathsShell() {
         <div className="flex items-center gap-2.5 px-5 py-2 max-sm:gap-1.5 max-sm:px-4">
           <AppSwitcher current="paths" />
           <SearchButton />
+          <GemCount />
           <SyncIndicator />
           <AccountMenu />
         </div>
