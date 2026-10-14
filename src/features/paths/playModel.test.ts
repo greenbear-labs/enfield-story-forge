@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   EMPTY_PLAY,
   MAX_PATH,
+  beginAt,
   endingTally,
   endingsFoundText,
   findsNewEnding,
@@ -17,10 +18,14 @@ const passage = (id: string, ending?: string): Pick<Entry, 'id' | 'fields'> => (
 });
 
 describe('readPlay', () => {
+  it('lines up the choices taken with the route', () => {
+    expect(readPlay({ path: ['a', 'b', 'c'], via: ['', 'c1'] }).via).toEqual(['', 'c1', '']);
+  });
+
   it('reads a stored playthrough and drops what it does not understand', () => {
     expect(
       readPlay({ path: ['a', 3, '', 'b'], endings: { e1: 100, e2: 'soon' }, extra: true }),
-    ).toEqual({ path: ['a', 'b'], endings: { e1: 100 } });
+    ).toEqual({ path: ['a', 'b'], via: ['', ''], endings: { e1: 100 } });
   });
 
   it('treats a missing or odd document as a fresh start', () => {
@@ -30,27 +35,28 @@ describe('readPlay', () => {
 });
 
 describe('stepping through a story', () => {
-  it('adds the next passage to the route', () => {
-    expect(stepTo(['a'], 'b')).toEqual(['a', 'b']);
+  it('adds the next passage, and the choice that led there, to the route', () => {
+    expect(stepTo(beginAt('a'), 'b', 'c1')).toEqual({ path: ['a', 'b'], via: ['', 'c1'] });
   });
 
   it('keeps only the latest steps of a very long route', () => {
-    const long = Array.from({ length: MAX_PATH }, (_, i) => `p${i}`);
-    const next = stepTo(long, 'last');
-    expect(next).toHaveLength(MAX_PATH);
-    expect(next.at(-1)).toBe('last');
-    expect(next[0]).toBe('p1');
+    const path = Array.from({ length: MAX_PATH }, (_, i) => `p${i}`);
+    const next = stepTo({ path, via: path.map(() => 'c') }, 'last', 'cl');
+    expect(next.path).toHaveLength(MAX_PATH);
+    expect(next.via).toHaveLength(MAX_PATH);
+    expect(next.path.at(-1)).toBe('last');
+    expect(next.path[0]).toBe('p1');
   });
 
   it('goes back a step, but never past the start of the run', () => {
-    expect(stepBack(['a', 'b'])).toEqual(['a']);
-    expect(stepBack(['a'])).toEqual(['a']);
+    expect(stepBack({ path: ['a', 'b'], via: ['', 'c1'] })).toEqual({ path: ['a'], via: [''] });
+    expect(stepBack(beginAt('a'))).toEqual(beginAt('a'));
   });
 });
 
 describe('endings', () => {
   it('knows when an ending is found for the first time', () => {
-    const play = { path: [], endings: { old: 1 } };
+    const play = { path: [], via: [], endings: { old: 1 } };
     expect(findsNewEnding(play, passage('new', 'death'))).toBe(true);
     expect(findsNewEnding(play, passage('old', 'death'))).toBe(false);
     expect(findsNewEnding(play, passage('plain'))).toBe(false);
@@ -63,7 +69,7 @@ describe('endings', () => {
       passage('d1', 'death'),
       passage('d2', 'death'),
     ];
-    const tally = endingTally(passages, { path: [], endings: { d1: 1, gone: 2 } });
+    const tally = endingTally(passages, { path: [], via: [], endings: { d1: 1, gone: 2 } });
     expect(tally.found).toBe(1);
     expect(tally.total).toBe(3);
     expect(tally.byType.map((t) => [t.type, t.found, t.total])).toEqual([
