@@ -267,14 +267,22 @@ const outlinesRoute = createRoute({
 const newOutlineRoute = createRoute({
   getParentRoute: () => appRoute,
   path: '/outlines/new',
-  validateSearch: (search: Record<string, unknown>): { concept?: string; character?: string } => ({
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { concept?: string; character?: string; group?: string } => ({
     concept: optionalString(search.concept),
     character: optionalString(search.character),
+    group: optionalString(search.group),
   }),
   component: function NewOutlineRouteComponent() {
-    const { concept, character } = newOutlineRoute.useSearch();
+    const { concept, character, group } = newOutlineRoute.useSearch();
     return (
-      <NewOutlinePage key={`${concept}:${character}`} conceptId={concept} characterId={character} />
+      <NewOutlinePage
+        key={`${concept}:${character}:${group}`}
+        conceptId={concept}
+        characterId={character}
+        groupId={group}
+      />
     );
   },
 });
