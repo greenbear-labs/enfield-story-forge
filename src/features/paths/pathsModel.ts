@@ -24,10 +24,12 @@ export const CATEGORIES = [
   'Post-Apocalyptic',
 ] as const;
 
-/** Built-in art used as a cover (sample stories), from public/paths-art/. */
+/** Built-in art (sample stories), from public/paths-art/: an adventure's cover or a passage's picture. */
 export function coverArtOf(entry: Pick<Entry, 'fields'>): string | null {
   const art = entry.fields.coverArt;
-  return typeof art === 'string' && /^\/paths-art\/[\w-]+\.webp$/.test(art) ? art : null;
+  return typeof art === 'string' && /^\/paths-art\/(?:[\w-]+\/)?[\w-]+\.webp$/.test(art)
+    ? art
+    : null;
 }
 
 export const adventureBlurb = (adventure: Pick<Entry, 'fields'>): string =>

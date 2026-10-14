@@ -27,6 +27,7 @@ import {
   addChoice,
   CARD,
   choicesOf,
+  coverArtOf,
   createPassage,
   freeSpot,
   endingLabel,
@@ -50,6 +51,7 @@ function PassageCard({ data, selected }: NodeProps<PassageNode>) {
   const ending = endingOf(passage);
   const choices = choicesOf(passage).length;
   const cover = coverOf(passage);
+  const art = coverArtOf(passage);
   return (
     <div
       className="sp-node"
@@ -57,7 +59,11 @@ function PassageCard({ data, selected }: NodeProps<PassageNode>) {
       data-selected={selected || undefined}
     >
       <Handle type="target" position={Position.Left} />
-      {cover && <EntryImg image={cover} alt="" className="sp-node-cover" />}
+      {cover ? (
+        <EntryImg image={cover} alt="" className="sp-node-cover" />
+      ) : (
+        art && <img src={art} alt="" className="sp-node-cover" />
+      )}
       <div className="flex flex-col gap-1 px-3 py-2">
         {(isStart || ending) && (
           <span className="flex flex-wrap gap-1">

@@ -93,6 +93,16 @@ export function samplePassageFields(
   };
 }
 
+/** A passage's place on the map, its ending, and its picture. */
+const passageBase = (
+  p: SampleStory['passages'][string],
+  pos: MapPos,
+): Record<string, FieldValue> => ({
+  pos: { ...pos },
+  ...(p.ending ? { ending: p.ending } : {}),
+  ...(p.art ? { coverArt: p.art } : {}),
+});
+
 type Made = Pick<Entry, 'id' | 'title' | 'fields' | 'images' | 'coverImageId'>;
 
 /**
@@ -116,7 +126,7 @@ export function addSample(ws: string, sample: SampleStory) {
         type: 'passage',
         parentId: adventureId,
         title: p.title,
-        fields: { pos: { ...pos[key]! }, ...(p.ending ? { ending: p.ending } : {}) },
+        fields: passageBase(p, pos[key]!),
       }),
     );
   const idOf = (key: string) => ids.get(key) ?? '';
@@ -133,7 +143,7 @@ export function addSample(ws: string, sample: SampleStory) {
     passages.push({
       id,
       title: p.title,
-      fields: { pos: { ...pos[key]! }, ...(p.ending ? { ending: p.ending } : {}), ...fields },
+      fields: { ...passageBase(p, pos[key]!), ...fields },
       images: [],
     });
   }

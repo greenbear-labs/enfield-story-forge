@@ -91,5 +91,7 @@ function DraftProse({ passageId }: { passageId: string }) {
 
 function DraftArt({ passage }: { passage: PlayablePassage }) {
   const cover = coverOf(passage as Entry);
-  return cover ? <EntryImg image={cover} alt="" className="sp-page-art" /> : null;
+  if (cover) return <EntryImg image={cover} alt="" className="sp-page-art" />;
+  const art = coverArtOf(passage);
+  return art ? <img src={art} alt="" className="sp-page-art" /> : null;
 }
