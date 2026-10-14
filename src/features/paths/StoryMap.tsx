@@ -116,7 +116,9 @@ function MapView({
   );
 
   // Follow the saved passages (adjusting state while rendering, as React suggests for props),
-  // but leave a card that's being dragged where the pointer has it.
+  // but leave a card that's being dragged where the pointer has it. A card keeps its measured
+  // size: React Flow hides a card until it's measured, and won't measure it again unless its
+  // size changes.
   const [synced, setSynced] = useState({ passages, startId, selectedId });
   if (
     synced.passages !== passages ||
@@ -125,11 +127,13 @@ function MapView({
   ) {
     setSynced({ passages, startId, selectedId });
     setNodes((prev) => {
-      const dragging = new Map(prev.filter((n) => n.dragging).map((n) => [n.id, n] as const));
+      const before = new Map(prev.map((n) => [n.id, n] as const));
       return passages.map((p) => {
         const node = toNode(p, startId, selectedId);
-        const moving = dragging.get(p.id);
-        return moving ? { ...node, position: moving.position, dragging: true } : node;
+        const old = before.get(p.id);
+        if (!old) return node;
+        const kept = { ...node, measured: old.measured };
+        return old.dragging ? { ...kept, position: old.position, dragging: true } : kept;
       });
     });
   }

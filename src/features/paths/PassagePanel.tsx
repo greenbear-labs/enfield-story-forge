@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router';
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef } from 'react';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { Icon } from '../../components/ui/Icon';
@@ -151,6 +152,14 @@ export function PassagePanel({
             Start the story here
           </button>
         )}
+        <Link
+          to="/paths/$adventureId/play"
+          params={{ adventureId: adventure.id }}
+          search={{ from: passage.id }}
+          className="btn btn-small"
+        >
+          Play from here
+        </Link>
       </div>
 
       <div className="flex flex-col gap-1.5">
