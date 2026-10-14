@@ -21,9 +21,11 @@ import {
   castKind,
   castOf,
   createCastGroup,
+  groupIdea,
   removeFromCast,
   storyName,
   useCasts,
+  useStoriesFromGroup,
   withoutStory,
   type CastReason,
 } from './castModel';
@@ -178,7 +180,7 @@ function NewGroupDialog({ onClose }: { onClose: () => void }) {
       <form className="flex flex-col gap-3" onSubmit={save}>
         <p className="text-[0.88rem] text-muted">
           A group gathers characters who belong together: a crew, a family, or the cast of a story
-          you haven’t outlined yet. Each outline already has its own cast.
+          you haven’t outlined yet. When it’s ready, turn it into a story and they become its cast.
         </p>
         <label className="flex flex-col gap-1">
           <span className="label">Name</span>
@@ -375,52 +377,99 @@ function CurrentCast({
 }) {
   const ws = useAuthStore((s) => s.workspaceId)!;
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      {story.type === 'cast_group' && <GroupName key={story.id} group={story} />}
-      {others.length > 0 && (
-        <label className="min-w-[200px] flex-1 sm:max-w-[320px]">
-          <span className="sr-only">Add someone to this cast</span>
-          <select
-            className="txt"
-            value=""
-            onChange={(e) => {
-              if (e.target.value) onAdd(e.target.value);
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-2">
+        {story.type === 'cast_group' && <GroupName key={story.id} group={story} />}
+        {others.length > 0 && (
+          <label className="min-w-[200px] flex-1 sm:max-w-[320px]">
+            <span className="sr-only">Add someone to this cast</span>
+            <select
+              className="txt"
+              value=""
+              onChange={(e) => {
+                if (e.target.value) onAdd(e.target.value);
+              }}
+            >
+              <option value="">+ Add someone to this cast…</option>
+              {others.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.title || 'Unnamed character'}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        {story.type === 'book' && (
+          <Link
+            to="/outlines/$outlineId"
+            params={{ outlineId: story.id }}
+            data-sec="story"
+            className="btn btn-small text-accent"
+          >
+            Open the outline →
+          </Link>
+        )}
+        {story.type === 'cast_group' && (
+          <button
+            type="button"
+            className="btn btn-small"
+            onClick={() => {
+              trashEntry(ws, story.id);
+              onGone();
+              toast(`Deleted the group “${storyName(story)}”. Its characters are still here.`, {
+                action: { label: 'Undo', onClick: () => restoreEntry(ws, story.id) },
+              });
             }}
           >
-            <option value="">+ Add someone to this cast…</option>
-            {others.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.title || 'Unnamed character'}
-              </option>
-            ))}
-          </select>
-        </label>
-      )}
-      {story.type === 'book' && (
+            <Icon name="trash" size={14} /> Delete group
+          </button>
+        )}
+      </div>
+      {story.type === 'cast_group' && <GroupIdea key={story.id} group={story} />}
+    </div>
+  );
+}
+
+/** A group's idea, the stories it has become, and a way to make it a story. */
+function GroupIdea({ group }: { group: Entry }) {
+  const ws = useAuthStore((s) => s.workspaceId)!;
+  const idea = useAutosaved(groupIdea(group), (v) => updateEntry(ws, group.id, {}, { notes: v }));
+  const stories = useStoriesFromGroup(group.id);
+  return (
+    <div className="panel flex flex-col gap-2.5" data-sec="char">
+      <label className="flex flex-col gap-1">
+        <span className="label">What brings them together?</span>
+        <textarea
+          className="txt min-h-16"
+          placeholder="Who they are to each other, and the trouble that might make a story."
+          {...idea.props}
+        />
+      </label>
+      <div data-sec="story" className="flex flex-wrap items-center gap-2">
         <Link
-          to="/outlines/$outlineId"
-          params={{ outlineId: story.id }}
-          data-sec="story"
+          to="/outlines/new"
+          search={{ group: group.id }}
+          onClick={() => idea.flush()}
           className="btn btn-small text-accent"
         >
-          Open the outline →
+          Turn into a story →
         </Link>
-      )}
-      {story.type === 'cast_group' && (
-        <button
-          type="button"
-          className="btn btn-small"
-          onClick={() => {
-            trashEntry(ws, story.id);
-            onGone();
-            toast(`Deleted the group “${storyName(story)}”. Its characters are still here.`, {
-              action: { label: 'Undo', onClick: () => restoreEntry(ws, story.id) },
-            });
-          }}
-        >
-          <Icon name="trash" size={14} /> Delete group
-        </button>
-      )}
+        {stories.length > 0 && (
+          <>
+            <span className="label">Became</span>
+            {stories.map((b) => (
+              <Link
+                key={b.id}
+                to="/outlines/$outlineId"
+                params={{ outlineId: b.id }}
+                className="chip hover:underline"
+              >
+                {storyName(b)}
+              </Link>
+            ))}
+          </>
+        )}
+      </div>
     </div>
   );
 }

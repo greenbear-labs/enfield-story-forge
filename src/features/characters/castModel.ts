@@ -1,14 +1,17 @@
 import { useMemo } from 'react';
 import type { Entry, Link } from '../../data/types';
 import { addLink, createEntry, removeLink } from '../../lib/entries/entries';
-import { useEntries, useLinks } from '../../lib/entries/hooks';
+import { useEntries, useEntryMap, useLinks } from '../../lib/entries/hooks';
+import { fieldText } from './characterModel';
 import { protagonistId } from '../outlines/outlineModel';
 
 /**
  * A story's cast: characters with a `cast` link (character → book or series).
  * Someone in a series' cast is in the cast of every book in it, and a book's
  * protagonist is always in its cast. A cast can also be a free-standing group
- * (a `cast_group` entry), with its members linked the same way.
+ * (a `cast_group` entry), with its members linked the same way. A group can
+ * become a story: the new outline gets the group's members in its cast and a
+ * `source` link (book → group), and the group stays as it is.
  */
 
 export interface Story {
@@ -135,4 +138,22 @@ export function addToCast(workspaceId: string, characterId: string, storyId: str
 
 export function removeFromCast(workspaceId: string, characterId: string, storyId: string): void {
   removeLink(workspaceId, characterId, 'cast', storyId);
+}
+
+/** What a group is about: a note on who they are and what brings them together. */
+export const groupIdea = (group: Entry) => fieldText(group, 'notes');
+
+/** A group's members: the characters added to it. */
+export const membersOf = (groupId: string, links: Link[]) =>
+  links.filter((l) => l.toId === groupId).map((l) => l.fromId);
+
+/** The outlines a group has turned into, live. */
+export function useStoriesFromGroup(groupId: string): Entry[] {
+  const links = useLinks({ kind: 'source', toId: groupId });
+  const books = useEntries('book');
+  const byId = useEntryMap(books.data);
+  return useMemo(
+    () => (links.data ?? []).flatMap((l) => byId.get(l.fromId) ?? []),
+    [links.data, byId],
+  );
 }

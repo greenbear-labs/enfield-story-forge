@@ -191,6 +191,9 @@ export interface OutlineInput {
   spine?: Record<string, string>;
   protagonistId?: string | null;
   conceptId?: string | null;
+  /** A character group the story grows from: it becomes the story's cast. */
+  groupId?: string | null;
+  castIds?: string[];
 }
 
 /** An outline is a `book` entry. Its series, if any, is its parent. */
@@ -215,6 +218,8 @@ export function createOutline(workspaceId: string, input: OutlineInput): string 
     fields,
   });
   if (input.conceptId) addLink(workspaceId, id, 'source', input.conceptId);
+  if (input.groupId) addLink(workspaceId, id, 'source', input.groupId);
+  for (const characterId of input.castIds ?? []) addLink(workspaceId, characterId, 'cast', id);
   return id;
 }
 

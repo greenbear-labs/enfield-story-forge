@@ -256,26 +256,48 @@ function OutlineEditor({ outline }: { outline: Entry }) {
   );
 }
 
-/** The concept this outline grew from, if any. */
+/** The concept or character group this outline grew from, if any. */
 function FromConcept({ outlineId }: { outlineId: string }) {
   const links = useLinks({ kind: 'source', fromId: outlineId });
   const concepts = useEntries('concept');
+  const groups = useEntries('cast_group');
   const byId = useEntryMap(concepts.data);
+  const groupsById = useEntryMap(groups.data);
   const sources = (links.data ?? []).flatMap((l) => byId.get(l.toId) ?? []);
-  if (sources.length === 0) return null;
+  const fromGroups = (links.data ?? []).flatMap((l) => groupsById.get(l.toId) ?? []);
+  if (sources.length === 0 && fromGroups.length === 0) return null;
   return (
-    <div data-sec="concept" className="flex flex-wrap items-center gap-2">
-      <span className="label">From the concept</span>
-      {sources.map((c) => (
-        <Link
-          key={c.id}
-          to="/concepts/$conceptId"
-          params={{ conceptId: c.id }}
-          className="chip hover:underline"
-        >
-          {c.title || 'Untitled concept'}
-        </Link>
-      ))}
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+      {sources.length > 0 && (
+        <div data-sec="concept" className="flex flex-wrap items-center gap-2">
+          <span className="label">From the concept</span>
+          {sources.map((c) => (
+            <Link
+              key={c.id}
+              to="/concepts/$conceptId"
+              params={{ conceptId: c.id }}
+              className="chip hover:underline"
+            >
+              {c.title || 'Untitled concept'}
+            </Link>
+          ))}
+        </div>
+      )}
+      {fromGroups.length > 0 && (
+        <div data-sec="char" className="flex flex-wrap items-center gap-2">
+          <span className="label">From the group</span>
+          {fromGroups.map((g) => (
+            <Link
+              key={g.id}
+              to="/characters"
+              search={{ story: g.id }}
+              className="chip hover:underline"
+            >
+              {g.title || 'Untitled group'}
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

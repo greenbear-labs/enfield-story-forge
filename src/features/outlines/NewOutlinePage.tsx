@@ -2,9 +2,10 @@ import { Link, useNavigate } from '@tanstack/react-router';
 import { useMemo, useState, type FormEvent } from 'react';
 import { Icon } from '../../components/ui/Icon';
 import { toast } from '../../components/ui/toast';
-import { useEntries, useEntryMap } from '../../lib/entries/hooks';
+import { useEntries, useEntryMap, useLinks } from '../../lib/entries/hooks';
 import { newestFirst } from '../../lib/entries/model';
 import { useAuthStore } from '../auth/authStore';
+import { groupIdea, membersOf, storyName } from '../characters/castModel';
 import { fieldText, filterCast } from '../characters/characterModel';
 import { conceptLogline } from '../concepts/conceptModel';
 import {
@@ -20,10 +21,12 @@ import { DEFAULT_STRUCTURE, useStructures } from './structures';
 interface Props {
   conceptId?: string;
   characterId?: string;
+  /** A character group to grow the story from: its members become the cast. */
+  groupId?: string;
 }
 
 /** "How do you want to start?", then a name, a format, a series, and a structure. */
-export function NewOutlinePage({ conceptId, characterId }: Props) {
+export function NewOutlinePage({ conceptId, characterId, groupId }: Props) {
   const ws = useAuthStore((s) => s.workspaceId);
   const navigate = useNavigate();
   const concepts = useEntries('concept');
@@ -32,13 +35,28 @@ export function NewOutlinePage({ conceptId, characterId }: Props) {
   const conceptsById = useEntryMap(concepts.data);
   const structures = useStructures();
   const charactersById = useEntryMap(characters.data);
+  const groups = useEntries('cast_group');
+  const group = groupId ? groups.data?.find((g) => g.id === groupId) : undefined;
+  const groupLinks = useLinks({ kind: 'cast', toId: groupId });
+  const members = useMemo(
+    () =>
+      group
+        ? filterCast(
+            membersOf(group.id, groupLinks.data ?? []).flatMap(
+              (id) => charactersById.get(id) ?? [],
+            ),
+            '',
+          )
+        : [],
+    [group, groupLinks.data, charactersById],
+  );
 
   const [method, setMethod] = useState<StartMethod>(
-    conceptId ? 'concept' : characterId ? 'character' : 'theme',
+    conceptId ? 'concept' : characterId ? 'character' : groupId ? 'premise' : 'theme',
   );
   const [pickedConcept, setPickedConcept] = useState(conceptId ?? '');
   const [pickedCharacter, setPickedCharacter] = useState(characterId ?? '');
-  const [premise, setPremise] = useState('');
+  const [premiseText, setPremise] = useState<string | null>(null);
   const [theme, setTheme] = useState('');
   const [title, setTitle] = useState<string | null>(null);
   const [format, setFormat] = useState<Format>('novel');
@@ -48,8 +66,10 @@ export function NewOutlinePage({ conceptId, characterId }: Props) {
 
   const concept = method === 'concept' ? conceptsById.get(pickedConcept) : undefined;
   const character = method === 'character' ? charactersById.get(pickedCharacter) : undefined;
-  // The name follows the chosen concept until you type your own.
-  const shownTitle = title ?? concept?.title ?? '';
+  // The name follows the chosen concept (or the group) until you type your own.
+  const shownTitle = title ?? concept?.title ?? group?.title ?? '';
+  // A group's idea is the premise until you change it.
+  const premise = premiseText ?? (group ? groupIdea(group) : '');
   const conceptList = useMemo(() => [...(concepts.data ?? [])].sort(newestFirst), [concepts.data]);
   const cast = useMemo(() => filterCast(characters.data ?? [], ''), [characters.data]);
   const seriesList = useMemo(
@@ -85,6 +105,8 @@ export function NewOutlinePage({ conceptId, characterId }: Props) {
       spine,
       protagonistId: character?.id ?? null,
       conceptId: concept?.id ?? null,
+      groupId: group?.id ?? null,
+      castIds: members.map((c) => c.id),
     });
     toast('Outline started.');
     void navigate({ to: '/outlines/$outlineId', params: { outlineId: id } });
@@ -116,6 +138,30 @@ export function NewOutlinePage({ conceptId, characterId }: Props) {
           </p>
         </div>
       </header>
+
+      {group && (
+        <section data-sec="char" className="panel flex flex-col gap-2" aria-label="From the group">
+          <span className="label">From the group {storyName(group)}</span>
+          {members.length > 0 ? (
+            <>
+              <span className="flex flex-wrap gap-1.5">
+                {members.map((c) => (
+                  <span key={c.id} className="chip">
+                    {c.title || 'Unnamed character'}
+                  </span>
+                ))}
+              </span>
+              <span className="text-[0.82rem] text-muted">
+                They’ll be the story’s cast. The group stays as it is.
+              </span>
+            </>
+          ) : (
+            <span className="text-[0.85rem] text-muted">
+              No one in this group yet. You can add the cast later.
+            </span>
+          )}
+        </section>
+      )}
 
       <section className="panel flex flex-col gap-3" aria-labelledby="step-start">
         <h2 id="step-start" className="text-[1.1rem]">
@@ -189,11 +235,32 @@ export function NewOutlinePage({ conceptId, characterId }: Props) {
                   onChange={(e) => setPickedCharacter(e.target.value)}
                 >
                   <option value="">Choose a character…</option>
-                  {cast.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.title || 'Unnamed character'}
-                    </option>
-                  ))}
+                  {members.length > 0 ? (
+                    <>
+                      <optgroup label={`In ${storyName(group!)}`}>
+                        {members.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.title || 'Unnamed character'}
+                          </option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="Everyone else">
+                        {cast
+                          .filter((c) => !members.includes(c))
+                          .map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.title || 'Unnamed character'}
+                            </option>
+                          ))}
+                      </optgroup>
+                    </>
+                  ) : (
+                    cast.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.title || 'Unnamed character'}
+                      </option>
+                    ))
+                  )}
                 </select>
               </label>
               <span className="text-[0.82rem] text-muted">
