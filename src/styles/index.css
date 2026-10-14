@@ -944,6 +944,99 @@
   .sp-details > summary::marker {
     color: var(--accent);
   }
+  /* ----- Shadow Paths: playing ----- */
+  .sp-page {
+    animation: sp-turn 0.45s ease-out;
+  }
+  @keyframes sp-turn {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+      filter: blur(2px);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sp-page {
+      animation: none;
+    }
+  }
+  .sp-page-art {
+    width: 100%;
+    max-height: 340px;
+    object-fit: cover;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: 0 10px 40px rgb(0 0 0 / 0.45);
+  }
+  /* Read, not edited: no room kept for writing. */
+  .rich-page.sp-prose {
+    min-height: 0;
+    font-family: 'Literata', Georgia, serif;
+    font-size: 1.12rem;
+    line-height: 1.75;
+  }
+  .sp-choice {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    text-align: left;
+    cursor: pointer;
+    transition:
+      border-color 0.15s,
+      box-shadow 0.15s;
+  }
+  .sp-choice::before {
+    content: '❯ ';
+    color: var(--accent);
+  }
+  .sp-choice:hover:not(:disabled),
+  .sp-choice:focus-visible {
+    border-color: var(--accent);
+    box-shadow: 0 0 20px rgb(231 176 78 / 0.3);
+  }
+  .sp-choice:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+  .sp-ending {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 22px 18px;
+    border: 3px double var(--ending);
+    border-radius: 10px;
+    background:
+      radial-gradient(ellipse at 50% 0%, var(--accent-soft), transparent 70%), var(--sunken);
+    box-shadow: 0 0 34px rgb(0 0 0 / 0.4);
+    text-align: center;
+  }
+  .sp-ending-new {
+    color: var(--ending);
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-shadow: 0 0 18px var(--ending);
+  }
+  .sp-route {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px 0;
+    color: var(--muted);
+  }
+  .sp-route li + li::before {
+    content: ' → ';
+    color: var(--accent);
+    white-space: pre;
+  }
 
   .paths-glow {
     text-shadow: 0 0 22px rgb(231 176 78 / 0.45);

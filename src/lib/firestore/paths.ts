@@ -10,6 +10,7 @@
  * workspaces/{workspaceId}/settings/writing                     (the daily goal)
  * workspaces/{workspaceId}/settings/welcome                     (the welcome tour, once dismissed)
  * workspaces/{workspaceId}/settings/backup                      (when the last backup was made)
+ * workspaces/{workspaceId}/plays/{adventureId}                  (a Shadow Paths playthrough: the route so far, endings found)
  * feedback/{feedbackId}                                          (notes from the Send feedback button; only the admin reads them)
  */
 
@@ -47,6 +48,10 @@ export const paths = {
   writingSettings: (workspaceId: string) => `${paths.workspace(workspaceId)}/settings/writing`,
   welcomeSettings: (workspaceId: string) => `${paths.workspace(workspaceId)}/settings/welcome`,
   backupSettings: (workspaceId: string) => `${paths.workspace(workspaceId)}/settings/backup`,
+
+  plays: (workspaceId: string) => `${paths.workspace(workspaceId)}/plays`,
+  play: (workspaceId: string, adventureId: string) =>
+    `${paths.plays(workspaceId)}/${seg(adventureId, 'adventureId')}`,
 
   feedback: () => 'feedback',
   feedbackNote: (id: string) => `feedback/${seg(id, 'feedbackId')}`,

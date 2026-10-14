@@ -147,23 +147,34 @@ function Adventure({ adventure, passageId }: { adventure: Entry; passageId: stri
       <section className="flex flex-col gap-2.5" aria-label="The story">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-[1.4rem]">The story</h2>
-          <div role="group" aria-label="Show the story as" className="flex gap-1.5">
-            <button
-              type="button"
-              className="seg"
-              aria-pressed={view === 'map'}
-              onClick={() => setView('map')}
-            >
-              Map
-            </button>
-            <button
-              type="button"
-              className="seg"
-              aria-pressed={view === 'list'}
-              onClick={() => setView('list')}
-            >
-              List
-            </button>
+          <div className="flex flex-wrap items-center gap-2">
+            {startId && (
+              <Link
+                to="/paths/$adventureId/play"
+                params={{ adventureId: adventure.id }}
+                className="btn btn-primary btn-small"
+              >
+                Playtest
+              </Link>
+            )}
+            <div role="group" aria-label="Show the story as" className="flex gap-1.5">
+              <button
+                type="button"
+                className="seg"
+                aria-pressed={view === 'map'}
+                onClick={() => setView('map')}
+              >
+                Map
+              </button>
+              <button
+                type="button"
+                className="seg"
+                aria-pressed={view === 'list'}
+                onClick={() => setView('list')}
+              >
+                List
+              </button>
+            </div>
           </div>
         </div>
         {allPassages.error ? (
