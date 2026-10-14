@@ -41,6 +41,10 @@ export interface PublishedStory {
   /** Milliseconds; null until the server has written it. */
   publishedAt: number | null;
   updatedAt: number | null;
+  /** The admin's note when a submission is sent back (empty otherwise). */
+  reviewNote: string;
+  /** Its place among the library's featured stories, or null if it isn't featured. */
+  featured: number | null;
 }
 
 export interface PublishedPassage extends PlayablePassage {
@@ -115,7 +119,42 @@ export function readStory(id: string, data: Record<string, unknown>): PublishedS
     endingCount: typeof data.endingCount === 'number' ? data.endingCount : 0,
     publishedAt: millis(data.publishedAt),
     updatedAt: millis(data.updatedAt),
+    reviewNote: str(data.reviewNote),
+    featured: typeof data.featured === 'number' ? data.featured : null,
   };
+}
+
+/**
+ * What the admin keeps on a story that the author's update carries over:
+ * where it's featured, and the review note (dropped once it's submitted again).
+ */
+export function keptFromReview(
+  before: Record<string, unknown> | undefined,
+  status: PublishStatus,
+): Record<string, unknown> {
+  const kept: Record<string, unknown> = {};
+  if (!before) return kept;
+  if (typeof before.featured === 'number') kept.featured = before.featured;
+  if (before.reviewedAt) kept.reviewedAt = before.reviewedAt;
+  if (typeof before.reviewNote === 'string' && before.reviewNote && status !== 'submitted')
+    kept.reviewNote = before.reviewNote;
+  return kept;
+}
+
+/** The library's featured stories, in the admin's order. */
+export const featuredOf = (stories: PublishedStory[]) =>
+  stories
+    .filter((s) => s.featured !== null)
+    .sort((a, b) => a.featured! - b.featured! || a.title.localeCompare(b.title));
+
+/** The featured order with this story moved up or down one place. */
+export function moveFeatured(featured: PublishedStory[], id: string, by: -1 | 1) {
+  const ids = featured.map((s) => s.id);
+  const at = ids.indexOf(id);
+  const to = at + by;
+  if (at < 0 || to < 0 || to >= ids.length) return null;
+  [ids[at], ids[to]] = [ids[to]!, ids[at]!];
+  return ids;
 }
 
 export function readPassage(id: string, data: Record<string, unknown>): PublishedPassage {

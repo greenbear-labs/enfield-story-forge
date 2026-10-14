@@ -7,7 +7,7 @@ import { useBody, useEntries, useEntry } from '../../lib/entries/hooks';
 import { coverOf } from '../../lib/entries/images';
 import { EntryImg } from '../images/EntryImg';
 import { EntryGate } from '../world/WorldFrame';
-import { adventureBlurb } from './pathsModel';
+import { adventureBlurb, coverArtOf } from './pathsModel';
 import { Player, Prose, type PlayablePassage } from './Player';
 
 /** Playtest: the author plays their own draft the way a reader will. */
@@ -51,7 +51,7 @@ function Playtest({ adventure, from }: { adventure: Entry; from: string | null }
         cover ? (
           <EntryImg image={cover} alt="" />
         ) : (
-          <img src="/paths-art/lantern-path.webp" alt="" />
+          <img src={coverArtOf(adventure) ?? '/paths-art/lantern-path.webp'} alt="" />
         )
       }
       from={from}

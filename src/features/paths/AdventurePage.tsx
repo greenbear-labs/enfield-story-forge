@@ -20,13 +20,14 @@ import { PassagePanel } from './PassagePanel';
 import { CategoryPicker } from './CategoryPicker';
 import { StoryStateEditor } from './StateEditor';
 import { StoryHealth } from './StoryHealth';
-import { PublishDialog } from './PublishDialog';
+import { PublishDialog, ReviewNote } from './PublishDialog';
 import { isShared, statusLabel } from './publishModel';
 import { usePublishedStory } from '../../lib/entries/publish';
 import { storyVars } from './stateModel';
 import {
   adventureBlurb,
   adventureCategories,
+  coverArtOf,
   createPassage,
   freeSpot,
   posOf,
@@ -116,7 +117,11 @@ function Adventure({ adventure, passageId }: { adventure: Entry; passageId: stri
   return (
     <>
       <header className="paths-banner flex min-h-[150px] items-end gap-3 p-6 max-sm:p-4">
-        {cover ? <EntryImg image={cover} alt="" /> : <img src="/paths-art/fog-glade.webp" alt="" />}
+        {cover ? (
+          <EntryImg image={cover} alt="" />
+        ) : (
+          <img src={coverArtOf(adventure) ?? '/paths-art/fog-glade.webp'} alt="" />
+        )}
         <div className="paths-banner-body flex min-w-0 flex-1 flex-col gap-1">
           <span className="label text-accent">
             Adventure ·{' '}
@@ -156,6 +161,8 @@ function Adventure({ adventure, passageId }: { adventure: Entry; passageId: stri
           </Menu>
         </div>
       </header>
+
+      {published?.reviewNote && <ReviewNote note={published.reviewNote} />}
 
       <section id="the-story" className="flex flex-col gap-2.5" aria-label="The story">
         <div className="flex flex-wrap items-center justify-between gap-2">

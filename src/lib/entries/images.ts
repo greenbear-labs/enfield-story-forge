@@ -15,10 +15,10 @@ const UNDO_MS = 8000;
 /** A problem worth telling the writer about, in words they can act on. */
 export class ImageError extends Error {}
 
-export const imagesOf = (entry: Entry): EntryImage[] => entry.images ?? [];
+export const imagesOf = (entry: Pick<Entry, 'images'>): EntryImage[] => entry.images ?? [];
 
 /** The cover: the one picked, or else the first image. */
-export function coverOf(entry: Entry): EntryImage | undefined {
+export function coverOf(entry: Pick<Entry, 'images' | 'coverImageId'>): EntryImage | undefined {
   const images = imagesOf(entry);
   return images.find((i) => i.id === entry.coverImageId) ?? images[0];
 }

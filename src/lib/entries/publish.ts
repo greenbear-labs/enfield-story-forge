@@ -1,5 +1,6 @@
 import {
   collection,
+  deleteField,
   doc,
   getDoc,
   getDocs,
@@ -13,6 +14,7 @@ import {
 import { useAuthStore } from '../../features/auth/authStore';
 import {
   chunk,
+  keptFromReview,
   passageData,
   readPassage,
   readStory,
@@ -27,6 +29,7 @@ import { paths } from '../firestore/paths';
 import { fireAndTrack } from './entries';
 import { useListener, type Live } from './hooks';
 import { coverOf, imageUrl } from './images';
+import { coverArtOf } from '../../features/paths/pathsModel';
 
 /**
  * Shadow Paths publishing: copies an adventure and its passages to
@@ -34,9 +37,11 @@ import { coverOf, imageUrl } from './images';
  * prose, so it needs the passages' bodies (from the cache when offline).
  */
 
-const coverUrlOf = async (entry: Entry): Promise<string | null> => {
+type Publishable = Pick<Entry, 'id' | 'title' | 'fields' | 'images' | 'coverImageId'>;
+
+const coverUrlOf = async (entry: Publishable): Promise<string | null> => {
   const cover = coverOf(entry);
-  return cover ? imageUrl(cover).catch(() => null) : null;
+  return cover ? imageUrl(cover).catch(() => null) : coverArtOf(entry);
 };
 
 /**
@@ -45,9 +50,11 @@ const coverUrlOf = async (entry: Entry): Promise<string | null> => {
  */
 export async function publishStory(
   workspaceId: string,
-  adventure: Entry,
-  passages: Entry[],
+  adventure: Publishable,
+  passages: Publishable[],
   status: PublishStatus,
+  /** Each passage's prose, if it's already at hand (otherwise it's read). */
+  bodies?: Map<string, unknown>,
 ): Promise<void> {
   const { db } = getFirebase();
   const user = useAuthStore.getState().user;
@@ -60,10 +67,12 @@ export async function publishStory(
     Promise.all(
       passages.map(async (p) => {
         const [body, art] = await Promise.all([
-          getDoc(doc(db, paths.body(workspaceId, p.id))),
+          bodies?.has(p.id)
+            ? bodies.get(p.id)
+            : getDoc(doc(db, paths.body(workspaceId, p.id))).then((b) => b.data()?.doc),
           coverUrlOf(p),
         ]);
-        return { id: p.id, data: passageData(p, body.data()?.doc, art) };
+        return { id: p.id, data: passageData(p, body, art) };
       }),
     ),
     getDocs(collection(db, paths.publishedPassages(adventure.id))).catch(() => null),
@@ -80,6 +89,7 @@ export async function publishStory(
       status,
       cover,
     ),
+    ...keptFromReview(before?.data(), status),
     publishedAt: before?.data()?.publishedAt ?? serverTimestamp(),
     updatedAt: serverTimestamp(),
   };
@@ -109,6 +119,47 @@ export function setStoryStatus(storyId: string, status: PublishStatus) {
       updatedAt: serverTimestamp(),
     }),
     status === 'private' ? 'stop sharing the story' : 'change who can read the story',
+  );
+}
+
+/** The admin's review: approve (into the library) or send back with a note. */
+export function reviewStory(storyId: string, verdict: { approve: true } | { note: string }) {
+  fireAndTrack(
+    updateDoc(doc(getFirebase().db, paths.publishedStory(storyId)), {
+      status: 'approve' in verdict ? 'public' : 'unlisted',
+      reviewNote: 'approve' in verdict ? deleteField() : verdict.note.trim(),
+      reviewedAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }),
+    'save the review',
+  );
+}
+
+/** The admin's featured order: these stories, first to last. Others stop being featured. */
+export function setFeatured(order: string[], unfeature: string[] = []) {
+  const batch = writeBatch(getFirebase().db);
+  order.forEach((id, i) =>
+    batch.update(doc(getFirebase().db, paths.publishedStory(id)), {
+      featured: i,
+      updatedAt: serverTimestamp(),
+    }),
+  );
+  for (const id of unfeature)
+    batch.update(doc(getFirebase().db, paths.publishedStory(id)), {
+      featured: deleteField(),
+      updatedAt: serverTimestamp(),
+    });
+  fireAndTrack(batch.commit(), 'save the featured stories');
+}
+
+/** Stories waiting for review (only the admin can list them). */
+export function useReviewQueue(enabled: boolean): Live<PublishedStory[]> {
+  return useListener<PublishedStory[]>(enabled ? 'reviewQueue' : null, (onData, onError) =>
+    onSnapshot(
+      query(collection(getFirebase().db, paths.published()), where('status', '==', 'submitted')),
+      (snap) => onData(snap.docs.map((d) => readStory(d.id, d.data()))),
+      onError,
+    ),
   );
 }
 
