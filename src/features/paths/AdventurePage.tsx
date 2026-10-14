@@ -18,6 +18,8 @@ import { trashAll } from '../world/worldModel';
 import { PassageList } from './PassageList';
 import { PassagePanel } from './PassagePanel';
 import { CategoryPicker } from './CategoryPicker';
+import { StoryStateEditor } from './StateEditor';
+import { storyVars } from './stateModel';
 import {
   adventureBlurb,
   adventureCategories,
@@ -234,6 +236,15 @@ function Adventure({ adventure, passageId }: { adventure: Entry; passageId: stri
           </div>
         )}
       </section>
+
+      <details className="panel sp-details" open={storyVars(adventure).length > 0 || undefined}>
+        <summary className="cursor-pointer font-display text-[1.15rem]">
+          Story state: items, flags, and counters
+        </summary>
+        <div className="pt-3">
+          <StoryStateEditor adventure={adventure} />
+        </div>
+      </details>
 
       <details className="panel sp-details">
         <summary className="cursor-pointer font-display text-[1.15rem]">

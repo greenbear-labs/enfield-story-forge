@@ -9,6 +9,7 @@ import { coverOf } from '../../lib/entries/images';
 import { savePlay, setEndingsFound, usePlay } from '../../lib/entries/plays';
 import { proseToHtml } from '../../lib/entries/prose';
 import { useAuthStore } from '../auth/authStore';
+import { Icon } from '../../components/ui/Icon';
 import { EntryImg } from '../images/EntryImg';
 import { EntryGate } from '../world/WorldFrame';
 import {
@@ -20,13 +21,26 @@ import {
   startIdOf,
 } from './pathsModel';
 import {
+  beginAt,
   endingTally,
   endingsFoundText,
   findsNewEnding,
   stepBack,
   stepTo,
   type Play,
+  type Route,
 } from './playModel';
+import {
+  condText,
+  linesOf,
+  meets,
+  stateAlong,
+  stateSummary,
+  storyVars,
+  unmet,
+  type StoryState,
+  type StoryVar,
+} from './stateModel';
 import { usePathsTitle } from './usePathsTitle';
 
 /**
@@ -59,24 +73,25 @@ function Player({ adventure, from }: { adventure: Entry; from: string | null }) 
   usePathsTitle(`Playing ${adventure.title || 'Untitled adventure'}`);
 
   /** Saves the reader's new place, and returns whether they just found a new ending. */
-  const save = (path: string[], current: Play): boolean => {
-    const at = byId.get(path.at(-1)!);
+  const save = (route: Route, current: Play): boolean => {
+    const at = byId.get(route.path.at(-1)!);
     const isNew = !!at && findsNewEnding(current, at);
-    savePlay(ws, adventure.id, { path, endingFound: isNew ? at.id : undefined });
+    savePlay(ws, adventure.id, { ...route, endingFound: isNew ? at.id : undefined });
     window.scrollTo({ top: 0 });
     return isNew;
   };
-  const go = (path: string[], current: Play) => setFresh(save(path, current) ? path.at(-1)! : null);
+  const go = (route: Route, current: Play) =>
+    setFresh(save(route, current) ? route.path.at(-1)! : null);
   const begin = (current: Play) => {
     const at = startIdOf(adventure);
-    if (at) go([at], current);
+    if (at) go(beginAt(at), current);
   };
 
   // "Play from here" on a passage starts a run there, then tidies the address.
   const ready = play !== undefined && passages !== undefined;
   useEffect(() => {
     if (!ready || !from) return;
-    if (byId.has(from)) save([from], play);
+    if (byId.has(from)) save(beginAt(from), play);
     void navigate({
       to: '/paths/$adventureId/play',
       params: { adventureId: adventure.id },
@@ -95,6 +110,14 @@ function Player({ adventure, from }: { adventure: Entry; from: string | null }) 
   const currentId = play.path.at(-1);
   const current = currentId ? byId.get(currentId) : undefined;
   const startId = startIdOf(adventure);
+  const vars = storyVars(adventure);
+  const state = stateAlong(
+    play.path,
+    play.via,
+    byId,
+    vars,
+    (p, choiceId) => choicesOf(p).find((c) => c.id === choiceId)?.effects ?? [],
+  );
 
   const forget = () => {
     const before = play.endings;
@@ -129,6 +152,8 @@ function Player({ adventure, from }: { adventure: Entry; from: string | null }) 
         </span>
       </nav>
 
+      {current && vars.length > 0 && <StateStrip vars={vars} state={state} />}
+
       {play.path.length === 0 || !current ? (
         <Cover
           adventure={adventure}
@@ -143,10 +168,12 @@ function Player({ adventure, from }: { adventure: Entry; from: string | null }) 
           passage={current}
           byId={byId}
           route={play.path}
+          vars={vars}
+          state={state}
           fresh={fresh === current.id}
           tally={tally}
-          onChoose={(to) => go(stepTo(play.path, to), play)}
-          onBack={play.path.length > 1 ? () => go(stepBack(play.path), play) : null}
+          onChoose={(to, choiceId) => go(stepTo(play, to, choiceId), play)}
+          onBack={play.path.length > 1 ? () => go(stepBack(play), play) : null}
           onAgain={() => begin(play)}
           onForget={Object.keys(play.endings).length ? forget : null}
         />
@@ -207,6 +234,8 @@ function PassageView({
   passage,
   byId,
   route,
+  vars,
+  state,
   fresh,
   tally,
   onChoose,
@@ -218,9 +247,11 @@ function PassageView({
   passage: Entry;
   byId: Map<string, Entry>;
   route: string[];
+  vars: StoryVar[];
+  state: StoryState;
   fresh: boolean;
   tally: ReturnType<typeof endingTally>;
-  onChoose: (to: string) => void;
+  onChoose: (to: string, choiceId: string) => void;
   onBack: (() => void) | null;
   onAgain: () => void;
   onForget: (() => void) | null;
@@ -230,6 +261,10 @@ function PassageView({
   const ending = endingOf(passage);
   const choices = choicesOf(passage);
   const html = body.data ? proseToHtml(body.data.doc) : '';
+  // Lines that only show sometimes: the ones whose need the reader meets.
+  const lines = linesOf(passage).filter(
+    (l) => l.text.trim() && (!l.when || meets(state, l.when, vars)),
+  );
 
   return (
     <article className="sp-page mx-auto flex w-full max-w-[680px] flex-col gap-5">
@@ -255,6 +290,13 @@ function PassageView({
         <div className="sp-prose rich-page" dangerouslySetInnerHTML={{ __html: html }} />
       ) : (
         <p className="text-muted italic">This passage has no words yet.</p>
+      )}
+      {lines.length > 0 && (
+        <div className="sp-prose rich-page">
+          {lines.map((l) => (
+            <p key={l.id}>{l.text}</p>
+          ))}
+        </div>
       )}
 
       {ending && (
@@ -292,16 +334,24 @@ function PassageView({
           {choices.map((c) => {
             const to = c.to ? byId.get(c.to) : undefined;
             const label = c.label.trim() || (to ? passageName(to) : 'Go on');
+            const needs = unmet(state, c.requires, vars);
             return (
               <li key={c.id}>
                 <button
                   type="button"
                   className="sp-choice"
-                  disabled={!to}
-                  onClick={() => to && onChoose(to.id)}
+                  disabled={!to || needs.length > 0}
+                  onClick={() => to && onChoose(to.id, c.id)}
                 >
+                  {needs.length > 0 && <Icon name="lock" size={16} className="sp-choice-lock" />}
                   {label}
-                  {!to && <span className="text-[0.8rem] text-muted"> · not written yet</span>}
+                  {needs.length > 0 ? (
+                    <span className="block font-[family-name:var(--font-ui)] text-[0.8rem] text-muted">
+                      Needs: {needs.map((n) => condText(n, vars)).join(', ')}
+                    </span>
+                  ) : (
+                    !to && <span className="text-[0.8rem] text-muted"> · not written yet</span>
+                  )}
                 </button>
               </li>
             );
@@ -362,5 +412,37 @@ function Route({ route, byId }: { route: string[]; byId: Map<string, Entry> }) {
         ))}
       </ol>
     </details>
+  );
+}
+
+/** Playtest only: what the reader carries and what's true right now. */
+function StateStrip({ vars, state }: { vars: StoryVar[]; state: StoryState }) {
+  const { items, flags, counters } = stateSummary(state, vars);
+  const hasItems = vars.some((v) => v.kind === 'item');
+  const hasFlags = vars.some((v) => v.kind === 'flag');
+  return (
+    <aside
+      aria-label="Story state"
+      className="mx-auto flex w-full max-w-[680px] flex-wrap items-center gap-x-4 gap-y-1.5 rounded-md border border-line bg-sunken px-3 py-2 text-[0.82rem]"
+    >
+      {hasItems && (
+        <span>
+          <span className="text-muted">Carrying: </span>
+          {items.length ? items.join(', ') : 'nothing'}
+        </span>
+      )}
+      {hasFlags && (
+        <span>
+          <span className="text-muted">True: </span>
+          {flags.length ? flags.join(', ') : 'nothing yet'}
+        </span>
+      )}
+      {counters.map((c) => (
+        <span key={c.name}>
+          <span className="text-muted">{c.name}: </span>
+          {c.value}
+        </span>
+      ))}
+    </aside>
   );
 }

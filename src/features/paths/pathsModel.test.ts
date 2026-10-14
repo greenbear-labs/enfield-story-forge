@@ -64,8 +64,8 @@ describe('choicesOf', () => {
         },
       }),
     ).toEqual([
-      { id: 'a', label: 'Hide', to: null, order: 0 },
-      { id: 'b', label: 'Run', to: 'p2', order: 1 },
+      { id: 'a', label: 'Hide', to: null, order: 0, requires: [], effects: [] },
+      { id: 'b', label: 'Run', to: 'p2', order: 1, requires: [], effects: [] },
     ]);
   });
 

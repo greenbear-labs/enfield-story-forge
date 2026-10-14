@@ -6,21 +6,25 @@ import { ENDING_TYPES, endingOf, type EndingType } from './pathsModel';
  * `plays/{adventureId}`: the route taken so far (passage ids, from where the
  * run began; the last one is where the reader is now) and the endings found
  * across every run (ending passage id → when it was first found, in ms).
+ * The story state isn't saved: it's worked out from the route (see
+ * `stateAlong`).
  */
 export interface Play {
   path: string[];
+  /** The choice taken to reach each step of the path (`via[i]` was picked in `path[i - 1]`; empty for the first). */
+  via: string[];
   endings: Record<string, number>;
 }
 
 /** A route this long is a reader going round in circles; the oldest steps are dropped. */
 export const MAX_PATH = 300;
 
-export const EMPTY_PLAY: Play = { path: [], endings: {} };
+export const EMPTY_PLAY: Play = { path: [], via: [], endings: {} };
 
 /** A playthrough from its stored data, ignoring anything malformed. */
 export function readPlay(data: unknown): Play {
   if (!data || typeof data !== 'object') return EMPTY_PLAY;
-  const raw = data as { path?: unknown; endings?: unknown };
+  const raw = data as { path?: unknown; via?: unknown; endings?: unknown };
   const path = Array.isArray(raw.path)
     ? raw.path.filter((id): id is string => typeof id === 'string' && !!id)
     : [];
@@ -28,14 +32,26 @@ export function readPlay(data: unknown): Play {
   if (raw.endings && typeof raw.endings === 'object' && !Array.isArray(raw.endings))
     for (const [id, at] of Object.entries(raw.endings))
       if (typeof at === 'number') endings[id] = at;
-  return { path, endings };
+  // Older runs (or odd data) without choices line up as unknown steps.
+  const rawVia = Array.isArray(raw.via) ? raw.via : [];
+  const via = path.map((_, i) => (typeof rawVia[i] === 'string' ? (rawVia[i] as string) : ''));
+  return { path, via, endings };
 }
 
-/** The route after stepping into `to`. */
-export const stepTo = (path: string[], to: string): string[] => [...path, to].slice(-MAX_PATH);
+export type Route = Pick<Play, 'path' | 'via'>;
+
+/** A new run that starts at `at`. */
+export const beginAt = (at: string): Route => ({ path: [at], via: [''] });
+
+/** The route after taking `choiceId` into `to`. */
+export const stepTo = (route: Route, to: string, choiceId: string): Route => ({
+  path: [...route.path, to].slice(-MAX_PATH),
+  via: [...route.via, choiceId].slice(-MAX_PATH),
+});
 
 /** The route after going back one step (never past where the run began). */
-export const stepBack = (path: string[]): string[] => (path.length > 1 ? path.slice(0, -1) : path);
+export const stepBack = (route: Route): Route =>
+  route.path.length > 1 ? { path: route.path.slice(0, -1), via: route.via.slice(0, -1) } : route;
 
 /** Whether arriving at `passage` finds an ending this player hasn't found before. */
 export const findsNewEnding = (play: Play, passage: Pick<Entry, 'id' | 'fields'>): boolean =>

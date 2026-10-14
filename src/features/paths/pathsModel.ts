@@ -1,5 +1,6 @@
 import type { Entry, FieldValue } from '../../data/types';
 import { createEntry, removedField, updateEntry } from '../../lib/entries/entries';
+import { readConds, readEffects, type Cond, type Effect } from './stateModel';
 
 /**
  * Shadow Paths data. An adventure (`adventure` entry) is one
@@ -78,6 +79,10 @@ export interface Choice {
   /** The passage it leads to, or null if that isn't decided yet. */
   to: string | null;
   order: number;
+  /** What the reader needs to take it (all of them). */
+  requires: Cond[];
+  /** What taking it changes. */
+  effects: Effect[];
 }
 
 export interface MapPos {
@@ -127,6 +132,8 @@ export function choicesOf(passage: Pick<Entry, 'fields'>): Choice[] {
         label: typeof c.label === 'string' ? c.label : '',
         to: typeof c.to === 'string' && c.to ? c.to : null,
         order: typeof c.order === 'number' ? c.order : 0,
+        requires: readConds(c.requires),
+        effects: readEffects(c.effects),
       };
     })
     .sort((a, b) => a.order - b.order || a.id.localeCompare(b.id));

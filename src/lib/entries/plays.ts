@@ -16,9 +16,13 @@ import { useListener, type Live } from './hooks';
 export function savePlay(
   workspaceId: string,
   adventureId: string,
-  change: { path: string[]; endingFound?: string },
+  change: { path: string[]; via: string[]; endingFound?: string },
 ) {
-  const data: Record<string, unknown> = { path: change.path, updatedAt: serverTimestamp() };
+  const data: Record<string, unknown> = {
+    path: change.path,
+    via: change.via,
+    updatedAt: serverTimestamp(),
+  };
   // Merging adds the ending to the ones already found.
   if (change.endingFound) data.endings = { [change.endingFound]: Date.now() };
   fireAndTrack(

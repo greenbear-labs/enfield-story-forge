@@ -33,6 +33,9 @@ import {
   type EndingType,
 } from './pathsModel';
 
+import { ChoiceRules, PassageLines } from './StateEditor';
+import { storyVars, type StoryVar } from './stateModel';
+
 // The rich text editor loads only when a passage is opened.
 const WorldEditor = lazy(() => import('../world/WorldEditor'));
 
@@ -94,6 +97,7 @@ export function PassagePanel({
   };
 
   const others = passages.filter((p) => p.id !== passage.id);
+  const vars = storyVars(adventure);
 
   return (
     <aside
@@ -204,6 +208,7 @@ export function PassagePanel({
               passage={passage}
               choice={c}
               others={others}
+              vars={vars}
               first={i === 0}
               last={i === choices.length - 1}
               onNewPassage={() => {
@@ -227,6 +232,8 @@ export function PassagePanel({
           + Add a choice
         </button>
       </section>
+
+      <PassageLines passage={passage} vars={vars} />
 
       {into.length > 0 && (
         <section className="flex flex-col gap-1" aria-label="Leads here">
@@ -267,6 +274,7 @@ function ChoiceRow({
   passage,
   choice,
   others,
+  vars,
   first,
   last,
   onNewPassage,
@@ -274,6 +282,7 @@ function ChoiceRow({
   passage: Entry;
   choice: Choice;
   others: Entry[];
+  vars: StoryVar[];
   first: boolean;
   last: boolean;
   onNewPassage: () => void;
@@ -341,6 +350,7 @@ function ChoiceRow({
           <option value={NEW_PASSAGE}>+ A new passage</option>
         </select>
       </label>
+      <ChoiceRules passage={passage} choice={choice} vars={vars} />
     </li>
   );
 }
