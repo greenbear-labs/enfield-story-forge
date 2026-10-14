@@ -6,7 +6,8 @@ import { usePlays } from '../../lib/entries/plays';
 import { useLibrary } from '../../lib/entries/publish';
 import { cardGrid } from '../shards/ShardCard';
 import { CATEGORIES } from './pathsModel';
-import { newestFirst, readerPlayId, type PublishedStory } from './publishModel';
+import { featuredOf, newestFirst, readerPlayId, type PublishedStory } from './publishModel';
+import type { Play } from './playModel';
 import { usePathsTitle } from './usePathsTitle';
 
 /** The library: stories other writers have published, for anyone to play. */
@@ -18,6 +19,9 @@ export function LibraryPage() {
   const stories = useMemo(() => [...(library.data ?? [])].sort(newestFirst), [library.data]);
   const shelves = CATEGORIES.filter((c) => stories.some((s) => s.categories.includes(c)));
   const shown = shelf ? stories.filter((s) => s.categories.includes(shelf)) : stories;
+  // On the first shelf, the admin's featured stories come first.
+  const featured = shelf ? [] : featuredOf(stories);
+  const others = shown.filter((s) => !featured.includes(s));
 
   return (
     <>
@@ -63,30 +67,52 @@ export function LibraryPage() {
         </div>
       )}
 
-      <section aria-label="Stories">
-        {library.error ? (
-          <EmptyState>Couldn’t open the library. Check your connection and reload.</EmptyState>
-        ) : library.data === undefined ? (
-          <Loading />
-        ) : shown.length === 0 ? (
-          <EmptyState>
-            The shelves are empty for now. Publish an adventure and submit it to the library to be
-            the first.
-          </EmptyState>
-        ) : (
-          <div className={cardGrid}>
-            {shown.map((story) => (
-              <StoryCard
-                key={story.id}
-                story={story}
-                found={Object.keys(plays?.get(readerPlayId(story.id))?.endings ?? {}).length}
-                started={!!plays?.get(readerPlayId(story.id))?.path.length}
-              />
-            ))}
-          </div>
-        )}
-      </section>
+      {library.error ? (
+        <EmptyState>Couldn’t open the library. Check your connection and reload.</EmptyState>
+      ) : library.data === undefined ? (
+        <Loading />
+      ) : shown.length === 0 ? (
+        <EmptyState>
+          The shelves are empty for now. Publish an adventure and submit it to the library to be the
+          first.
+        </EmptyState>
+      ) : featured.length > 0 ? (
+        <>
+          <Shelf title="Featured" stories={featured} plays={plays} />
+          {others.length > 0 && <Shelf title="More stories" stories={others} plays={plays} />}
+        </>
+      ) : (
+        <Shelf title={shelf ?? 'Stories'} stories={shown} plays={plays} hideTitle={!shelf} />
+      )}
     </>
+  );
+}
+
+function Shelf({
+  title,
+  stories,
+  plays,
+  hideTitle,
+}: {
+  title: string;
+  stories: PublishedStory[];
+  plays: Map<string, Play> | undefined;
+  hideTitle?: boolean;
+}) {
+  return (
+    <section className="flex flex-col gap-2.5" aria-label={title}>
+      {!hideTitle && <h2 className="text-[1.05rem]">{title}</h2>}
+      <div className={cardGrid}>
+        {stories.map((story) => (
+          <StoryCard
+            key={story.id}
+            story={story}
+            found={Object.keys(plays?.get(readerPlayId(story.id))?.endings ?? {}).length}
+            started={!!plays?.get(readerPlayId(story.id))?.path.length}
+          />
+        ))}
+      </div>
+    </section>
   );
 }
 

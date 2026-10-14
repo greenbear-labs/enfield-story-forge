@@ -8,13 +8,18 @@ import { recentlyUpdatedFirst } from '../../lib/entries/model';
 import { CardCover } from '../images/EntryImg';
 import { cardGrid } from '../shards/ShardCard';
 import { NewAdventureDialog } from './NewAdventureDialog';
-import { adventureBlurb, adventureCategories } from './pathsModel';
+import { SampleShelf } from './SampleShelf';
+import { useIsFeedbackAdmin } from '../feedback/feedback';
+import { useReviewQueue } from '../../lib/entries/publish';
+import { adventureBlurb, adventureCategories, coverArtOf } from './pathsModel';
 import { usePathsTitle } from './usePathsTitle';
 
 /** Shadow Paths' front page: your adventures. */
 export function PathsHomePage() {
   const adventures = useEntries('adventure');
   const [creating, setCreating] = useState(false);
+  const admin = useIsFeedbackAdmin();
+  const waiting = useReviewQueue(admin).data?.length ?? 0;
   usePathsTitle('Your adventures');
   const sorted = useMemo(
     () => [...(adventures.data ?? [])].sort(recentlyUpdatedFirst),
@@ -40,6 +45,11 @@ export function PathsHomePage() {
             <Link to="/paths/library" className="btn">
               Browse the library
             </Link>
+            {admin && (
+              <Link to="/paths/review" className="btn">
+                Review{waiting ? ` (${waiting} waiting)` : ''}
+              </Link>
+            )}
           </div>
         </div>
       </header>
@@ -68,10 +78,12 @@ export function PathsHomePage() {
                   <CardCover entry={adventure} />
                 ) : (
                   <img
-                    src="/paths-art/lantern-path-small.webp"
+                    src={coverArtOf(adventure) ?? '/paths-art/lantern-path-small.webp'}
                     alt=""
                     loading="lazy"
-                    className="card-cover opacity-60 saturate-50"
+                    className={
+                      coverArtOf(adventure) ? 'card-cover' : 'card-cover opacity-60 saturate-50'
+                    }
                   />
                 )}
                 <b className="font-display text-[1.05rem]">
@@ -96,6 +108,7 @@ export function PathsHomePage() {
           </div>
         )}
       </section>
+      <SampleShelf />
       {creating && <NewAdventureDialog onClose={() => setCreating(false)} />}
     </>
   );

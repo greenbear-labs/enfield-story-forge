@@ -132,6 +132,11 @@ export function useFeedback(): Live<FeedbackNote[]> {
  * tries a one-note read from the server; offline it stays false.
  */
 export function useIsFeedbackAdmin(): boolean {
+  return useAdminCheck() === true;
+}
+
+/** Like `useIsFeedbackAdmin`, but undefined while it's still asking. */
+export function useAdminCheck(): boolean | undefined {
   const uid = useAuthStore((s) => s.user?.uid);
   const [admin, setAdmin] = useState<{ uid: string; ok: boolean } | null>(null);
   useEffect(() => {
@@ -145,7 +150,7 @@ export function useIsFeedbackAdmin(): boolean {
       live = false;
     };
   }, [uid]);
-  return !!admin && admin.uid === uid && admin.ok;
+  return admin && admin.uid === uid ? admin.ok : undefined;
 }
 
 /** The page and browser, to help reproduce a problem. */

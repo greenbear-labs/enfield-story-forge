@@ -69,6 +69,7 @@ export function PublishDialog({
         <Loading />
       ) : (
         <div className="flex flex-col gap-4 text-[0.92rem]">
+          {live.data?.reviewNote && <ReviewNote note={live.data.reviewNote} />}
           {live.data && isShared(live.data.status) && <Published story={live.data} />}
           {!canPublish ? (
             <p className="text-muted">
@@ -88,6 +89,22 @@ export function PublishDialog({
         </div>
       )}
     </Dialog>
+  );
+}
+
+/** The admin's note on a story sent back from the library review. */
+export function ReviewNote({ note }: { note: string }) {
+  return (
+    <aside
+      aria-label="Note from the library review"
+      className="rounded-md border border-accent/50 bg-accent-soft px-3 py-2 text-[0.9rem]"
+    >
+      <b className="block">Sent back from the library review</b>
+      <span className="whitespace-pre-line">{note}</span>
+      <span className="mt-1 block text-[0.82rem] text-muted">
+        Make the changes, then use Publish to submit it to the library again.
+      </span>
+    </aside>
   );
 }
 

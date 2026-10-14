@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 import type { Entry } from '../../data/types';
 import {
   chunk,
+  featuredOf,
+  keptFromReview,
+  moveFeatured,
   newestFirst,
   passageData,
   readPassage,
@@ -128,5 +131,28 @@ describe('helpers', () => {
   it('chunks writes', () => {
     expect(chunk([1, 2, 3, 4, 5], 2)).toEqual([[1, 2], [3, 4], [5]]);
     expect(chunk([], 2)).toEqual([]);
+  });
+});
+
+describe('review and featured', () => {
+  it('keeps the admin’s part on an author’s update', () => {
+    const before = { featured: 2, reviewNote: 'Fix the ending', reviewedAt: 'T', title: 'x' };
+    expect(keptFromReview(before, 'unlisted')).toEqual({
+      featured: 2,
+      reviewNote: 'Fix the ending',
+      reviewedAt: 'T',
+    });
+    // Submitting again clears the note.
+    expect(keptFromReview(before, 'submitted')).toEqual({ featured: 2, reviewedAt: 'T' });
+    expect(keptFromReview(undefined, 'unlisted')).toEqual({});
+  });
+
+  it('orders featured stories and moves them', () => {
+    const s = (id: string, featured: number | null) => readStory(id, { title: id, featured });
+    const featured = featuredOf([s('a', 1), s('b', null), s('c', 0)]);
+    expect(featured.map((x) => x.id)).toEqual(['c', 'a']);
+    expect(moveFeatured(featured, 'a', -1)).toEqual(['a', 'c']);
+    expect(moveFeatured(featured, 'a', 1)).toBeNull();
+    expect(moveFeatured(featured, 'zzz', 1)).toBeNull();
   });
 });

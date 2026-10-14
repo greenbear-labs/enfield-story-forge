@@ -76,7 +76,8 @@ service cloud.firestore {
     // Shadow Paths: a story's published copy, which readers play. The author
     // shares it with a link (unlisted), submits it to the library (submitted),
     // or stops sharing it (private). Only the admin puts a story in the library
-    // (public); after that, the author's updates keep it there.
+    // (public), after reviewing it, or sends it back with a note; after that,
+    // the author's updates keep it there. The admin also picks the featured stories.
     function storyReadable(story) {
       return story.status in ['public', 'unlisted']
         || story.ownerId == request.auth.uid
@@ -86,11 +87,23 @@ service cloud.firestore {
     function validStory(data) {
       return data.keys().hasOnly(['ownerId', 'ownerName', 'title', 'blurb', 'categories',
             'coverUrl', 'startId', 'state', 'status', 'passageCount', 'endingCount',
-            'publishedAt', 'updatedAt'])
+            'publishedAt', 'updatedAt', 'reviewNote', 'reviewedAt', 'featured'])
         && data.status in ['unlisted', 'submitted', 'public', 'private']
         && data.title is string && data.title.size() <= 500
         && data.ownerName is string && data.ownerName.size() <= 200
+        && data.get('reviewNote', '') is string && data.get('reviewNote', '').size() <= 2000
+        && (data.get('featured', null) == null || data.get('featured', null) is int)
         && data.updatedAt == request.time;
+    }
+
+    // The admin's part of a story (its review and featured place), which the
+    // author's own updates keep as they are. The author may only clear a review
+    // note, by submitting again.
+    function keepsReview(after, before) {
+      return after.get('featured', null) == before.get('featured', null)
+        && after.get('reviewedAt', null) == before.get('reviewedAt', null)
+        && (after.get('reviewNote', '') == before.get('reviewNote', '')
+          || after.get('reviewNote', '') == '');
     }
 
     match /published/{storyId} {
@@ -102,13 +115,15 @@ service cloud.firestore {
       allow create: if signedIn()
         && request.resource.data.ownerId == request.auth.uid
         && validStory(request.resource.data)
-        && (request.resource.data.status != 'public' || isAdmin());
+        && (isAdmin() || (request.resource.data.status != 'public'
+          && keepsReview(request.resource.data, {})));
       allow update: if signedIn()
         && request.resource.data.ownerId == resource.data.ownerId
         && validStory(request.resource.data)
         && (isAdmin()
           || (resource.data.ownerId == request.auth.uid
-            && (request.resource.data.status != 'public' || resource.data.status == 'public')));
+            && (request.resource.data.status != 'public' || resource.data.status == 'public')
+            && keepsReview(request.resource.data, resource.data)));
       allow delete: if signedIn() && (resource.data.ownerId == request.auth.uid || isAdmin());
 
       // The story is written first, so its passages can check who owns it.
