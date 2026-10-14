@@ -17,6 +17,8 @@ export interface SampleStory {
 
 export interface SamplePassage {
   title: string;
+  /** Art from public/paths-art/ shown with the passage. */
+  art?: string;
   /** Paragraphs. */
   text: string[];
   ending?: EndingType;

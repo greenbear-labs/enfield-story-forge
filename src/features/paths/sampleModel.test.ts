@@ -11,6 +11,13 @@ import {
 import { SAMPLE_STORIES } from './samples';
 import { linesOf, storyVars } from './stateModel';
 
+/** The art in public/paths-art/, by its path on the site. */
+const ART = new Set(
+  Object.keys(import.meta.glob('/public/paths-art/**/*.webp')).map((f) =>
+    f.slice('/public'.length),
+  ),
+);
+
 /** A sample as the entries it would become, with passage keys as ids. */
 function built(key: string) {
   const sample = SAMPLE_STORIES.find((s) => s.key === key)!;
@@ -42,10 +49,35 @@ describe('sample stories', () => {
         for (const r of [...c.requires, ...c.effects]) expect(vars).toContain(r.var);
       for (const l of linesOf(p)) expect(vars).toContain(l.when?.var);
     }
-    // Every ending type, so readers have something to hunt for.
+    // A true ending to reach, and something else to find along the way.
     const endings = new Set(Object.values(sample.passages).map((p) => p.ending));
-    for (const type of ['true', 'secret', 'death', 'other'] as const)
-      expect(endings, `${key} has a ${type} ending`).toContain(type);
+    expect(endings, `${key} has a true ending`).toContain('true');
+    expect(endings.size, `${key} has more than one kind of ending`).toBeGreaterThan(2);
+    // Every picture is built-in art that's really there.
+    for (const art of [sample.cover, ...Object.values(sample.passages).map((p) => p.art)]) {
+      if (!art) continue;
+      expect(coverArtOf({ fields: { coverArt: art } }), art).toBe(art);
+      expect(ART, art).toContain(art);
+    }
+  });
+
+  it('the written samples have every kind of ending to hunt for', () => {
+    for (const key of ['lantern-keeper', 'book-that-reads', 'fog-glade']) {
+      const endings = new Set(Object.values(built(key).sample.passages).map((p) => p.ending));
+      for (const type of ['true', 'secret', 'death', 'other'] as const)
+        expect(endings, `${key} has a ${type} ending`).toContain(type);
+    }
+  });
+
+  it('brings the Ashwood over as it was, with a picture on every passage', () => {
+    const { sample, passages } = built('ashwood');
+    expect(passages).toHaveLength(7);
+    expect(Object.values(sample.passages).every((p) => p.art)).toBe(true);
+    const start = passages.find((p) => p.id === 'start')!;
+    expect(choicesOf(start).map((c) => [c.label, c.to])).toEqual([
+      ['Approach the lantern', 'lantern'],
+      ['Turn back to the road', 'safe'],
+    ]);
   });
 
   it('reads choices and rules back as written', () => {
@@ -84,6 +116,11 @@ describe('coverArtOf', () => {
     expect(coverArtOf({ fields: { coverArt: '/paths-art/fog-glade.webp' } })).toBe(
       '/paths-art/fog-glade.webp',
     );
+    expect(coverArtOf({ fields: { coverArt: '/paths-art/ashwood/stag.webp' } })).toBe(
+      '/paths-art/ashwood/stag.webp',
+    );
+    expect(coverArtOf({ fields: { coverArt: '/paths-art/../secret.webp' } })).toBeNull();
+    expect(coverArtOf({ fields: { coverArt: '/paths-art/a/b/c.webp' } })).toBeNull();
     expect(coverArtOf({ fields: { coverArt: 'https://example.com/x.webp' } })).toBeNull();
     expect(coverArtOf({ fields: {} })).toBeNull();
   });
