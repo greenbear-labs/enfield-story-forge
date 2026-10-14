@@ -20,6 +20,9 @@ import { PassagePanel } from './PassagePanel';
 import { CategoryPicker } from './CategoryPicker';
 import { StoryStateEditor } from './StateEditor';
 import { StoryHealth } from './StoryHealth';
+import { PublishDialog } from './PublishDialog';
+import { isShared, statusLabel } from './publishModel';
+import { usePublishedStory } from '../../lib/entries/publish';
 import { storyVars } from './stateModel';
 import {
   adventureBlurb,
@@ -71,6 +74,8 @@ function Adventure({ adventure, passageId }: { adventure: Entry; passageId: stri
   const startId = startIdOf(adventure);
   const selected = passages?.find((p) => p.id === passageId) ?? null;
   const [view, setView] = useState<View>(() => (wideScreen() ? 'map' : 'list'));
+  const [publishing, setPublishing] = useState(false);
+  const published = usePublishedStory(adventure.id).data;
 
   // The open passage lives in the address, so a link (or search) can open it.
   const onSelect = useCallback(
@@ -113,7 +118,12 @@ function Adventure({ adventure, passageId }: { adventure: Entry; passageId: stri
       <header className="paths-banner flex min-h-[150px] items-end gap-3 p-6 max-sm:p-4">
         {cover ? <EntryImg image={cover} alt="" /> : <img src="/paths-art/fog-glade.webp" alt="" />}
         <div className="paths-banner-body flex min-w-0 flex-1 flex-col gap-1">
-          <span className="label text-accent">Adventure · draft</span>
+          <span className="label text-accent">
+            Adventure ·{' '}
+            {published && isShared(published.status)
+              ? statusLabel(published.status).toLowerCase()
+              : 'draft'}
+          </span>
           <label>
             <span className="sr-only">Title</span>
             <input
@@ -159,6 +169,19 @@ function Adventure({ adventure, passageId }: { adventure: Entry; passageId: stri
               >
                 Playtest
               </Link>
+            )}
+            {passages && passages.length > 0 && (
+              <button
+                type="button"
+                className="btn btn-small"
+                onClick={() => {
+                  title.flush();
+                  blurb.flush();
+                  setPublishing(true);
+                }}
+              >
+                Publish
+              </button>
             )}
             <div role="group" aria-label="Show the story as" className="flex gap-1.5">
               <button
@@ -282,6 +305,13 @@ function Adventure({ adventure, passageId }: { adventure: Entry; passageId: stri
           <EntryGallery entry={adventure} label="Cover and pictures" />
         </div>
       </details>
+      {publishing && passages && (
+        <PublishDialog
+          adventure={adventure}
+          passages={passages}
+          onClose={() => setPublishing(false)}
+        />
+      )}
     </>
   );
 }

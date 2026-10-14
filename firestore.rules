@@ -73,6 +73,54 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
+    // Shadow Paths: a story's published copy, which readers play. The author
+    // shares it with a link (unlisted), submits it to the library (submitted),
+    // or stops sharing it (private). Only the admin puts a story in the library
+    // (public); after that, the author's updates keep it there.
+    function storyReadable(story) {
+      return story.status in ['public', 'unlisted']
+        || story.ownerId == request.auth.uid
+        || isAdmin();
+    }
+
+    function validStory(data) {
+      return data.keys().hasOnly(['ownerId', 'ownerName', 'title', 'blurb', 'categories',
+            'coverUrl', 'startId', 'state', 'status', 'passageCount', 'endingCount',
+            'publishedAt', 'updatedAt'])
+        && data.status in ['unlisted', 'submitted', 'public', 'private']
+        && data.title is string && data.title.size() <= 500
+        && data.ownerName is string && data.ownerName.size() <= 200
+        && data.updatedAt == request.time;
+    }
+
+    match /published/{storyId} {
+      // A missing story reads as null, so the author can check whether it's published.
+      allow get: if signedIn() && (resource == null || storyReadable(resource.data));
+      // The library queries status == 'public'.
+      allow list: if signedIn() && storyReadable(resource.data);
+
+      allow create: if signedIn()
+        && request.resource.data.ownerId == request.auth.uid
+        && validStory(request.resource.data)
+        && (request.resource.data.status != 'public' || isAdmin());
+      allow update: if signedIn()
+        && request.resource.data.ownerId == resource.data.ownerId
+        && validStory(request.resource.data)
+        && (isAdmin()
+          || (resource.data.ownerId == request.auth.uid
+            && (request.resource.data.status != 'public' || resource.data.status == 'public')));
+      allow delete: if signedIn() && (resource.data.ownerId == request.auth.uid || isAdmin());
+
+      // The story is written first, so its passages can check who owns it.
+      match /passages/{passageId} {
+        allow read: if signedIn()
+          && storyReadable(get(/databases/$(database)/documents/published/$(storyId)).data);
+        allow write: if signedIn()
+          && getAfter(/databases/$(database)/documents/published/$(storyId)).data.ownerId
+             == request.auth.uid;
+      }
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

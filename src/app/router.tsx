@@ -104,6 +104,8 @@ const PathsLandingPage = lazyPage(
   'PathsLandingPage',
 );
 const PlayPage = lazyPage(() => import('../features/paths/PlayPage'), 'PlayPage');
+const LibraryPage = lazyPage(() => import('../features/paths/LibraryPage'), 'LibraryPage');
+const ReadPage = lazyPage(() => import('../features/paths/ReadPage'), 'ReadPage');
 const PathsHomePage = lazyPage(() => import('../features/paths/PathsHomePage'), 'PathsHomePage');
 
 const optionalString = (v: unknown) => (typeof v === 'string' && v ? v : undefined);
@@ -457,6 +459,19 @@ const pathsHomeRoute = createRoute({
   path: '/paths',
   component: PathsHomePage,
 });
+const libraryRoute = createRoute({
+  getParentRoute: () => pathsRoute,
+  path: '/paths/library',
+  component: LibraryPage,
+});
+const readRoute = createRoute({
+  getParentRoute: () => pathsRoute,
+  path: '/paths/read/$storyId',
+  component: function ReadRouteComponent() {
+    const { storyId } = readRoute.useParams();
+    return <ReadPage storyId={storyId} />;
+  },
+});
 const adventureRoute = createRoute({
   getParentRoute: () => pathsRoute,
   path: '/paths/$adventureId',
@@ -524,7 +539,7 @@ const routeTree = rootRoute.addChildren([
     indexRoute,
     worldPageRoute,
   ]),
-  pathsRoute.addChildren([pathsHomeRoute, adventureRoute, playRoute]),
+  pathsRoute.addChildren([pathsHomeRoute, libraryRoute, readRoute, adventureRoute, playRoute]),
 ]);
 
 export const router = createRouter({
