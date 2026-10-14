@@ -18,13 +18,14 @@ import {
   type NodeProps,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Entry } from '../../data/types';
 import { coverOf } from '../../lib/entries/images';
 import { useAuthStore } from '../auth/authStore';
 import { EntryImg } from '../images/EntryImg';
 import {
   addChoice,
+  CARD,
   choicesOf,
   createPassage,
   freeSpot,
@@ -137,6 +138,23 @@ function MapView({
       });
     });
   }
+
+  // A passage opened from elsewhere (story health, search) is brought into view if it's off screen.
+  useEffect(() => {
+    const node = selectedId ? flow.getNode(selectedId) : undefined;
+    const box = wrapper.current?.getBoundingClientRect();
+    if (!node || !box) return;
+    const { x, y, zoom } = flow.getViewport();
+    const left = node.position.x * zoom + x;
+    const top = node.position.y * zoom + y;
+    const width = (node.measured?.width ?? CARD.width) * zoom;
+    const height = (node.measured?.height ?? CARD.height) * zoom;
+    if (left < 0 || top < 0 || left + width > box.width || top + height > box.height)
+      void flow.setCenter(node.position.x + width / zoom / 2, node.position.y + height / zoom / 2, {
+        zoom,
+        duration: 300,
+      });
+  }, [selectedId, flow]);
 
   const edges = useMemo<Edge[]>(() => {
     const ids = new Set(passages.map((p) => p.id));

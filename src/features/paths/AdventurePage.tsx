@@ -19,6 +19,7 @@ import { PassageList } from './PassageList';
 import { PassagePanel } from './PassagePanel';
 import { CategoryPicker } from './CategoryPicker';
 import { StoryStateEditor } from './StateEditor';
+import { StoryHealth } from './StoryHealth';
 import { storyVars } from './stateModel';
 import {
   adventureBlurb,
@@ -146,7 +147,7 @@ function Adventure({ adventure, passageId }: { adventure: Entry; passageId: stri
         </div>
       </header>
 
-      <section className="flex flex-col gap-2.5" aria-label="The story">
+      <section id="the-story" className="flex flex-col gap-2.5" aria-label="The story">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-[1.4rem]">The story</h2>
           <div className="flex flex-wrap items-center gap-2">
@@ -236,6 +237,17 @@ function Adventure({ adventure, passageId }: { adventure: Entry; passageId: stri
           </div>
         )}
       </section>
+
+      {passages && passages.length > 0 && (
+        <StoryHealth
+          adventure={adventure}
+          passages={passages}
+          onOpen={(id) => {
+            onSelect(id);
+            document.getElementById('the-story')?.scrollIntoView({ block: 'start' });
+          }}
+        />
+      )}
 
       <details className="panel sp-details" open={storyVars(adventure).length > 0 || undefined}>
         <summary className="cursor-pointer font-display text-[1.15rem]">
