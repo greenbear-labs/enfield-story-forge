@@ -91,7 +91,7 @@ export function passageData(
   imageUrl: string | null,
 ) {
   const fields: Record<string, FieldValue> = {};
-  for (const key of ['choices', 'lines', 'ending'] as const) {
+  for (const key of ['choices', 'lines', 'ending', 'sound'] as const) {
     const value = passage.fields[key];
     if (value !== undefined && value !== null) fields[key] = value;
   }

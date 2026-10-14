@@ -1,3 +1,5 @@
+import { SoundToggle } from './SoundToggle';
+import { soundAlong, soundOf } from './soundModel';
 import { Link } from '@tanstack/react-router';
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { EmptyState } from '../../components/ui/EmptyState';
@@ -147,6 +149,9 @@ export function Player({
     (p, choiceId) => choicesOf(p).find((c) => c.id === choiceId)?.effects ?? [],
   );
 
+  const sound = soundAlong(play.path, byId);
+  const hasSound = passages.some((p) => soundOf(p) !== null);
+
   const forget = () => {
     const before = play.endings;
     setEndingsFound(ws, story.playId, {});
@@ -163,6 +168,7 @@ export function Player({
       >
         {nav(current?.id ?? null)}
         <span className="flex flex-wrap items-center gap-2">
+          <SoundToggle sound={sound} hasSound={hasSound} />
           {draft && <span className="chip">Playtest</span>}
           <span className="text-muted">{endingsFoundText(tally)}</span>
           {play.path.length > 0 && startId && (

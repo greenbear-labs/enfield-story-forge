@@ -14,6 +14,7 @@ export const fogGlade: SampleStory = {
   passages: {
     edge: {
       title: 'The Edge of the Fog',
+      sound: 'night',
       text: [
         'At the edge of the village the fog stands like a wall. The elders say the glade inside grants one wish a year, to whoever reaches the old well first. Tonight is the night.',
         'At your feet lies a silver coin, as if someone dropped it there on purpose.',
@@ -29,6 +30,7 @@ export const fogGlade: SampleStory = {
     },
     'two-lights': {
       title: 'Two Lights',
+      sound: 'wind',
       text: [
         'Inside, the world is white and soft and silent. Two lights glimmer ahead: one low and green, one high and gold.',
       ],
@@ -79,6 +81,7 @@ export const fogGlade: SampleStory = {
     },
     well: {
       title: 'The Old Well',
+      sound: 'drone',
       text: [
         'The well is ringed with wildflowers that glow faintly in the fog. You are first.',
         'The water is perfectly still, and your reflection smiles a moment before you do.',
@@ -109,6 +112,7 @@ export const fogGlade: SampleStory = {
     },
     home: {
       title: 'The Way Home',
+      sound: 'night',
       text: ['The fog parts like curtains, and you walk home through ordinary moonlight.'],
       lines: [
         {

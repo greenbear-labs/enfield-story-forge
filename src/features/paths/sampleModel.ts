@@ -93,7 +93,7 @@ export function samplePassageFields(
   };
 }
 
-/** A passage's place on the map, its ending, and its picture. */
+/** A passage's place on the map, its ending, its picture, and its sound. */
 const passageBase = (
   p: SampleStory['passages'][string],
   pos: MapPos,
@@ -101,6 +101,7 @@ const passageBase = (
   pos: { ...pos },
   ...(p.ending ? { ending: p.ending } : {}),
   ...(p.art ? { coverArt: p.art } : {}),
+  ...(p.sound ? { sound: p.sound } : {}),
 });
 
 type Made = Pick<Entry, 'id' | 'title' | 'fields' | 'images' | 'coverImageId'>;

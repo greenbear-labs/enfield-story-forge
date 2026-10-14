@@ -1,4 +1,5 @@
 import type { EndingType } from '../pathsModel';
+import type { PassageSound } from '../soundModel';
 import type { CondOp, EffectOp, VarKind } from '../stateModel';
 
 /** A sample story, written as data so it can be added to anyone's adventures. */
@@ -19,6 +20,8 @@ export interface SamplePassage {
   title: string;
   /** Art from public/paths-art/ shown with the passage. */
   art?: string;
+  /** The sound under it (otherwise what was playing carries on). */
+  sound?: PassageSound;
   /** Paragraphs. */
   text: string[];
   ending?: EndingType;
