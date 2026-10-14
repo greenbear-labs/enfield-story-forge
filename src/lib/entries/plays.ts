@@ -1,4 +1,4 @@
-import { doc, onSnapshot, serverTimestamp, setDoc } from 'firebase/firestore';
+import { collection, doc, onSnapshot, serverTimestamp, setDoc } from 'firebase/firestore';
 import { useAuthStore } from '../../features/auth/authStore';
 import { readPlay, type Play } from '../../features/paths/playModel';
 import { getFirebase } from '../firebase/client';
@@ -54,6 +54,18 @@ export function usePlay(adventureId: string): Live<Play> {
     onSnapshot(
       doc(getFirebase().db, paths.play(ws!, adventureId)),
       (snap) => onData(readPlay(snap.data())),
+      onError,
+    ),
+  );
+}
+
+/** Every playthrough the player has, by id. */
+export function usePlays(): Live<Map<string, Play>> {
+  const ws = useAuthStore((s) => s.workspaceId);
+  return useListener<Map<string, Play>>(ws ? `plays:${ws}` : null, (onData, onError) =>
+    onSnapshot(
+      collection(getFirebase().db, paths.plays(ws!)),
+      (snap) => onData(new Map(snap.docs.map((d) => [d.id, readPlay(d.data())]))),
       onError,
     ),
   );

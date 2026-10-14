@@ -33,9 +33,14 @@ export function PathsHomePage() {
             Stories that fork in the dark. Build a web of passages and choices, play it as you go,
             then share it for others to hunt down every ending.
           </p>
-          <button type="button" className="btn btn-primary mt-1" onClick={() => setCreating(true)}>
-            + New adventure
-          </button>
+          <div className="mt-1 flex flex-wrap gap-2">
+            <button type="button" className="btn btn-primary" onClick={() => setCreating(true)}>
+              + New adventure
+            </button>
+            <Link to="/paths/library" className="btn">
+              Browse the library
+            </Link>
+          </div>
         </div>
       </header>
 

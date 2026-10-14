@@ -166,6 +166,10 @@ export function removeEntryImage(workspaceId: string, entry: Entry, image: Entry
 
 const urlCache = new Map<string, Promise<string>>();
 
+/** The image's download URL: the saved one, or one asked of Storage. */
+export const imageUrl = (image: EntryImage): Promise<string> =>
+  image.url ? Promise.resolve(image.url) : lookUpUrl(image.storagePath);
+
 function lookUpUrl(storagePath: string): Promise<string> {
   let url = urlCache.get(storagePath);
   if (!url) {

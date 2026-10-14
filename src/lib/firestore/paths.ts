@@ -11,6 +11,8 @@
  * workspaces/{workspaceId}/settings/welcome                     (the welcome tour, once dismissed)
  * workspaces/{workspaceId}/settings/backup                      (when the last backup was made)
  * workspaces/{workspaceId}/plays/{adventureId}                  (a Shadow Paths playthrough: the route so far, endings found)
+ * published/{adventureId}                                       (a Shadow Paths story's published copy, which readers play)
+ * published/{adventureId}/passages/{passageId}
  * feedback/{feedbackId}                                          (notes from the Send feedback button; only the admin reads them)
  */
 
@@ -52,6 +54,10 @@ export const paths = {
   plays: (workspaceId: string) => `${paths.workspace(workspaceId)}/plays`,
   play: (workspaceId: string, adventureId: string) =>
     `${paths.plays(workspaceId)}/${seg(adventureId, 'adventureId')}`,
+
+  published: () => 'published',
+  publishedStory: (storyId: string) => `published/${seg(storyId, 'storyId')}`,
+  publishedPassages: (storyId: string) => `${paths.publishedStory(storyId)}/passages`,
 
   feedback: () => 'feedback',
   feedbackNote: (id: string) => `feedback/${seg(id, 'feedbackId')}`,
