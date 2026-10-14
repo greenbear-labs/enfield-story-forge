@@ -14,6 +14,7 @@ import { SendToDeskDialog } from '../desk/SendToDeskDialog';
 import { useAuthStore } from '../auth/authStore';
 import { StoryCast } from '../characters/CastPanels';
 import { EntryGallery } from '../images/EntryGallery';
+import { NewAdventureDialog } from '../paths/NewAdventureDialog';
 import { filterCast } from '../characters/characterModel';
 import {
   beatNote,
@@ -96,6 +97,7 @@ function OutlineEditor({ outline }: { outline: Entry }) {
   const structures = useStructures();
   const structure = outlineStructure(outline);
   const [sending, setSending] = useState(false);
+  const [toPaths, setToPaths] = useState(false);
 
   // The Story Spine and Beat Board tools link straight to their section.
   useEffect(() => {
@@ -213,6 +215,14 @@ function OutlineEditor({ outline }: { outline: Entry }) {
           </button>
           <button
             type="button"
+            data-sec="paths"
+            className="btn text-accent"
+            onClick={() => setToPaths(true)}
+          >
+            Make it a Shadow Paths adventure →
+          </button>
+          <button
+            type="button"
             className="btn btn-ai"
             onClick={() => toast('AI help arrives in a later version.')}
           >
@@ -238,6 +248,7 @@ function OutlineEditor({ outline }: { outline: Entry }) {
       </nav>
 
       {sending && <SendToDeskDialog outline={outline} onClose={() => setSending(false)} />}
+      {toPaths && <NewAdventureDialog outlineId={outline.id} onClose={() => setToPaths(false)} />}
       <StorySpine outline={outline} />
       <StoryCast story={outline} />
       <BeatBoard key={structure.key} outline={outline} structure={structure} />
@@ -449,8 +460,9 @@ function BeatBoard({ outline, structure }: { outline: Entry; structure: Structur
           </p>
         )}
       </div>
+      {/* A part can come round again (the Story Circle's Order), so it's keyed by its first beat. */}
       {parts.map((p) => (
-        <div key={p.part} className="flex flex-col gap-2">
+        <div key={p.beats[0]?.key ?? p.part} className="flex flex-col gap-2">
           <h3 className="label">{p.part}</h3>
           <ol className="grid grid-cols-[repeat(auto-fill,minmax(260px,1fr))] gap-3">
             {p.beats.map((b) => (
