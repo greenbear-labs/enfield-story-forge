@@ -1,6 +1,8 @@
-import { Link, useNavigate } from '@tanstack/react-router';
+import { useNavigate } from '@tanstack/react-router';
 import { useEffect, useState, type FormEvent } from 'react';
-import { Wordmark } from '../../app/AppSwitcher';
+import { Wordmark, type EnfieldApp } from '../../app/AppSwitcher';
+import { AppLink } from '../../app/AppLink';
+import { useAppTitle } from '../../app/useAppTitle';
 import { Icon } from '../../components/ui/Icon';
 import { isFirebaseConfigured } from '../../lib/firebase/config';
 import {
@@ -15,6 +17,30 @@ import { safeRedirect } from './safeRedirect';
 
 type Mode = 'signIn' | 'signUp' | 'reset';
 
+const LOOK = {
+  forge: {
+    className: 'flex min-h-dvh flex-col',
+    sec: 'home',
+    home: '/hub',
+    name: 'Story Forge',
+    welcome: 'Welcome to the Story Forge.',
+  },
+  world: {
+    className: 'world-app flex flex-col',
+    sec: 'world',
+    home: '/world',
+    name: 'World Creator',
+    welcome: 'Welcome to the World Creator. Your worlds are waiting.',
+  },
+  paths: {
+    className: 'paths-app flex flex-col',
+    sec: 'paths',
+    home: '/paths',
+    name: 'Shadow Paths',
+    welcome: 'Welcome, traveler. Your path is waiting.',
+  },
+} as const;
+
 const TITLES: Record<Mode, string> = {
   signIn: 'Sign in',
   signUp: 'Create an account',
@@ -23,17 +49,19 @@ const TITLES: Record<Mode, string> = {
 
 export function SignInPage({
   redirect,
-  startWithSignUp,
+  signUp,
   app = 'forge',
 }: {
   redirect?: string;
-  startWithSignUp?: boolean;
-  /** Shadow Paths has its own sign-in page, in its own look. Same account. */
-  app?: 'forge' | 'paths';
+  /** Open on "Create an account". */
+  signUp?: boolean;
+  /** Each app has its own sign-in page, in its own look. Same account. */
+  app?: EnfieldApp;
 }) {
-  const paths = app === 'paths';
+  const look = LOOK[app];
+  useAppTitle(app, 'Sign in');
   const navigate = useNavigate();
-  const [mode, setMode] = useState<Mode>(startWithSignUp ? 'signUp' : 'signIn');
+  const [mode, setMode] = useState<Mode>(signUp ? 'signUp' : 'signIn');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
@@ -52,10 +80,10 @@ export function SignInPage({
   useEffect(() => {
     if (signedIn)
       void navigate({
-        href: safeRedirect(redirect, undefined, paths ? '/paths' : '/hub'),
+        href: safeRedirect(redirect, undefined, look.home),
         replace: true,
       });
-  }, [signedIn, redirect, navigate, paths]);
+  }, [signedIn, redirect, navigate, look.home]);
 
   const run = async (action: () => Promise<void>, after?: () => void) => {
     setBusy(true);
@@ -86,35 +114,22 @@ export function SignInPage({
   };
 
   return (
-    <div
-      className={paths ? 'paths-app flex flex-col' : 'flex min-h-dvh flex-col'}
-      data-sec={paths ? 'paths' : 'home'}
-    >
+    <div className={look.className} data-sec={look.sec}>
       <header className="px-5 py-3 max-sm:px-4">
-        {paths ? (
-          <Link
-            to="/shadow-paths"
-            className="inline-flex items-center gap-2"
-            aria-label="Shadow Paths home"
-          >
-            <Wordmark tagline="Enfield" app="paths" />
-          </Link>
-        ) : (
-          <Link to="/" className="inline-flex items-center gap-2" aria-label="Story Forge home">
-            <Wordmark tagline="Enfield" />
-          </Link>
-        )}
+        <AppLink
+          app={app}
+          className="inline-flex items-center gap-2"
+          aria-label={`${look.name} home`}
+        >
+          <Wordmark tagline="Enfield" app={app} />
+        </AppLink>
       </header>
       <main className="flex flex-1 items-start justify-center px-4 pt-10 pb-16 max-sm:pt-4">
         <div className="panel flex w-full max-w-[400px] flex-col gap-4 p-6 max-sm:p-5">
           <div>
             <h1 className="text-[1.6rem]">{TITLES[mode]}</h1>
             <p className="text-muted">
-              {mode === 'reset'
-                ? 'We’ll email you a link to choose a new password.'
-                : paths
-                  ? 'Welcome, traveler. Your path is waiting.'
-                  : 'Welcome to the Story Forge.'}
+              {mode === 'reset' ? 'We’ll email you a link to choose a new password.' : look.welcome}
             </p>
           </div>
 

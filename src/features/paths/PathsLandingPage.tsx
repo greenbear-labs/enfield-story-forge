@@ -1,5 +1,7 @@
 import { Link } from '@tanstack/react-router';
+import { AppLink } from '../../app/AppLink';
 import { Wordmark } from '../../app/AppSwitcher';
+import { signInPath } from '../../app/hosts';
 import { useAuthStore } from '../auth/authStore';
 import { usePathsTitle } from './usePathsTitle';
 
@@ -24,6 +26,7 @@ const WAYS = [
 /** Shadow Paths' own front door, for people who come looking for it first. */
 export function PathsLandingPage() {
   const signedIn = useAuthStore((s) => s.status === 'signedIn');
+  const signIn = signInPath('paths');
   usePathsTitle();
 
   return (
@@ -46,7 +49,7 @@ export function PathsLandingPage() {
           <span className="flex items-center gap-2">
             <Wordmark tagline="Enfield" app="paths" />
           </span>
-          <Link to={signedIn ? '/paths' : '/shadow-paths/sign-in'} className="btn btn-small">
+          <Link to={signedIn ? '/paths' : signIn} className="btn btn-small">
             {signedIn ? 'Enter' : 'Sign in'}
           </Link>
         </header>
@@ -67,13 +70,13 @@ export function PathsLandingPage() {
             ) : (
               <>
                 <Link
-                  to="/shadow-paths/sign-in"
+                  to={signIn}
                   search={{ signUp: true }}
                   className="btn btn-primary px-6 py-2.5 text-base"
                 >
                   Begin your journey
                 </Link>
-                <Link to="/shadow-paths/sign-in" className="btn px-6 py-2.5 text-base">
+                <Link to={signIn} className="btn px-6 py-2.5 text-base">
                   I’ve been here before
                 </Link>
               </>
@@ -142,9 +145,13 @@ export function PathsLandingPage() {
             </h2>
             <p className="text-muted">
               One account opens every Enfield app. Writers who plan their books in{' '}
-              <Link to="/" className="text-accent underline">
+              <AppLink app="forge" className="text-accent underline">
                 Enfield Story Forge
-              </Link>{' '}
+              </AppLink>{' '}
+              and{' '}
+              <AppLink app="world" className="text-accent underline">
+                Enfield World Creator
+              </AppLink>{' '}
               can bring their characters and worlds along for the walk.
             </p>
           </div>

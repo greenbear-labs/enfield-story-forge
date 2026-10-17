@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router';
+import { AppLink } from '../../app/AppLink';
 import { Wordmark } from '../../app/AppSwitcher';
 import { Icon, type IconName } from '../../components/ui/Icon';
 import type { Section } from '../../data/types';
@@ -89,6 +90,23 @@ export function LandingPage() {
               <p className="text-[0.9rem] text-muted">{s.text}</p>
             </div>
           ))}
+        </section>
+
+        <section aria-labelledby="family" className="flex max-w-[640px] flex-col gap-2">
+          <h2 id="family" className="text-[1.1rem]">
+            Part of the Enfield family
+          </h2>
+          <p className="text-[0.9rem] text-muted">
+            One account opens every Enfield app: build your setting in{' '}
+            <AppLink app="world" className="text-accent underline">
+              Enfield World Creator
+            </AppLink>
+            , or turn a story into a choose-your-own adventure in{' '}
+            <AppLink app="paths" className="text-accent underline">
+              Enfield Shadow Paths
+            </AppLink>
+            .
+          </p>
         </section>
       </main>
 

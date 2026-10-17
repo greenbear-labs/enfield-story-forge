@@ -6,12 +6,14 @@ import { AppSwitcher } from './AppSwitcher';
 import { SearchButton } from './SearchButton';
 import { SyncIndicator } from './SyncIndicator';
 import { ThemeToggle } from './ThemeToggle';
+import { useAppTitle } from './useAppTitle';
 
 /**
  * Enfield World Creator's own layout: its own name and a teal-tinted look,
  * with the app switcher to go back to Story Forge. Same account, same library.
  */
 export function WorldShell() {
+  useAppTitle('world');
   return (
     <div data-sec="world" className="world-app">
       <a href="#main" className="skip-link">
@@ -23,7 +25,7 @@ export function WorldShell() {
           <SearchButton />
           <SyncIndicator />
           <ThemeToggle />
-          <AccountMenu />
+          <AccountMenu app="world" />
         </div>
       </header>
       <main
