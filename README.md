@@ -2,7 +2,7 @@
 
 A writing studio that takes a writer from scattered ideas to a finished, organized story. Every story moves through four connected stations (Story Shards, Concepts, Outline Builder, Writer's Desk), with the Character Center and the Enfield World Creator beside them, all sharing one library.
 
-Home: https://enfield.greenbearlabs.com
+Home: https://enfieldstoryforge.greenbearlabs.com
 
 Status: Phase 0, the foundation (sign-in, the app shell, the Hub, and placeholder station pages). The tools come in later phases.
 

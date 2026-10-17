@@ -1,6 +1,6 @@
 # Enfield Story Forge
 
-A writing studio web app: a hub of connected workshops that takes a writer from story shards to concepts, outlines, and a finished manuscript. Hosted on Vercel at https://enfield.greenbearlabs.com.
+A writing studio web app: a hub of connected workshops that takes a writer from story shards to concepts, outlines, and a finished manuscript. Hosted on Vercel at https://enfieldstoryforge.greenbearlabs.com.
 
 ## Roles
 

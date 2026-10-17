@@ -42,7 +42,7 @@ const MESSAGES: Record<string, string> = {
   'auth/popup-blocked': 'The browser blocked the Google window. Allow pop-ups and try again.',
   'auth/operation-not-allowed': 'This sign-in method isn’t turned on yet.',
   'auth/unauthorized-domain':
-    'Google sign-in isn’t allowed on this web address. Use enfield.greenbearlabs.com, or sign in with email.',
+    'Google sign-in isn’t allowed on this web address. Use enfieldstoryforge.greenbearlabs.com, or sign in with email.',
   'auth/account-exists-with-different-credential':
     'That email already has an account with a different sign-in method. Sign in with email instead.',
   'auth/web-storage-unsupported':
