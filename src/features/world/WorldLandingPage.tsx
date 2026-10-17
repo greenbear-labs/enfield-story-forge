@@ -1,7 +1,6 @@
 import { Link } from '@tanstack/react-router';
-import { AppLink } from '../../app/AppLink';
 import { Wordmark } from '../../app/AppSwitcher';
-import { signInPath } from '../../app/hosts';
+import { LANDING_PATH, SIGN_IN_PATH } from '../../app/appPaths';
 import { useAppTitle } from '../../app/useAppTitle';
 import { Icon, type IconName } from '../../components/ui/Icon';
 import { useAuthStore } from '../auth/authStore';
@@ -27,7 +26,7 @@ const WAYS: { icon: IconName; title: string; text: string }[] = [
 /** World Creator's own front door, for people who come looking for it first. */
 export function WorldLandingPage() {
   const signedIn = useAuthStore((s) => s.status === 'signedIn');
-  const signIn = signInPath('world');
+  const signIn = SIGN_IN_PATH.world;
   useAppTitle('world');
 
   return (
@@ -94,13 +93,13 @@ export function WorldLandingPage() {
           </h2>
           <p className="text-[0.9rem] text-muted">
             One account opens every Enfield app. Writers can use their places and peoples in{' '}
-            <AppLink app="forge" className="text-accent underline">
+            <Link to={LANDING_PATH.forge} className="text-accent underline">
               Enfield Story Forge
-            </AppLink>{' '}
+            </Link>{' '}
             and{' '}
-            <AppLink app="paths" className="text-accent underline">
+            <Link to={LANDING_PATH.paths} className="text-accent underline">
               Enfield Shadow Paths
-            </AppLink>
+            </Link>
             .
           </p>
         </section>

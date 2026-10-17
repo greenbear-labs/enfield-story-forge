@@ -1,7 +1,7 @@
-import { useNavigate } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState, type FormEvent } from 'react';
 import { Wordmark, type EnfieldApp } from '../../app/AppSwitcher';
-import { AppLink } from '../../app/AppLink';
+import { LANDING_PATH } from '../../app/appPaths';
 import { useAppTitle } from '../../app/useAppTitle';
 import { Icon } from '../../components/ui/Icon';
 import { isFirebaseConfigured } from '../../lib/firebase/config';
@@ -116,13 +116,13 @@ export function SignInPage({
   return (
     <div className={look.className} data-sec={look.sec}>
       <header className="px-5 py-3 max-sm:px-4">
-        <AppLink
-          app={app}
+        <Link
+          to={LANDING_PATH[app]}
           className="inline-flex items-center gap-2"
           aria-label={`${look.name} home`}
         >
           <Wordmark tagline="Enfield" app={app} />
-        </AppLink>
+        </Link>
       </header>
       <main className="flex flex-1 items-start justify-center px-4 pt-10 pb-16 max-sm:pt-4">
         <div className="panel flex w-full max-w-[400px] flex-col gap-4 p-6 max-sm:p-5">

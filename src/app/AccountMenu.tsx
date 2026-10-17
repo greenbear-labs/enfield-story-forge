@@ -10,7 +10,7 @@ import { FeedbackDialog } from '../features/feedback/FeedbackDialog';
 import { useIsFeedbackAdmin } from '../features/feedback/feedback';
 import type { EnfieldApp } from './AppSwitcher';
 import { BackupDialog } from './BackupDialog';
-import { landingHref } from './hosts';
+import { LANDING_PATH } from './appPaths';
 
 /** The account menu. Signing out goes back to `app`'s landing page. */
 export function AccountMenu({ app = 'forge' }: { app?: EnfieldApp }) {
@@ -25,9 +25,7 @@ export function AccountMenu({ app = 'forge' }: { app?: EnfieldApp }) {
   const onSignOut = async () => {
     try {
       await signOut();
-      const landing = landingHref(app);
-      if (/^https?:/.test(landing)) window.location.assign(landing);
-      else await navigate({ to: landing });
+      await navigate({ to: LANDING_PATH[app] });
     } catch {
       toast('Couldn’t sign out. Please try again.');
     }
