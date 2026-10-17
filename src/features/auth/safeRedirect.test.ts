@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { safeRedirect } from './safeRedirect';
 
-const origin = 'https://enfield.greenbearlabs.com';
+const origin = 'https://enfieldstoryforge.greenbearlabs.com';
 
 describe('safeRedirect', () => {
   it('keeps paths inside the app', () => {
