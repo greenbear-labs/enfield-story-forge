@@ -1,7 +1,6 @@
 import { Link } from '@tanstack/react-router';
-import { AppLink } from '../../app/AppLink';
 import { Wordmark } from '../../app/AppSwitcher';
-import { signInPath } from '../../app/hosts';
+import { LANDING_PATH, SIGN_IN_PATH } from '../../app/appPaths';
 import { useAuthStore } from '../auth/authStore';
 import { usePathsTitle } from './usePathsTitle';
 
@@ -26,7 +25,7 @@ const WAYS = [
 /** Shadow Paths' own front door, for people who come looking for it first. */
 export function PathsLandingPage() {
   const signedIn = useAuthStore((s) => s.status === 'signedIn');
-  const signIn = signInPath('paths');
+  const signIn = SIGN_IN_PATH.paths;
   usePathsTitle();
 
   return (
@@ -145,13 +144,13 @@ export function PathsLandingPage() {
             </h2>
             <p className="text-muted">
               One account opens every Enfield app. Writers who plan their books in{' '}
-              <AppLink app="forge" className="text-accent underline">
+              <Link to={LANDING_PATH.forge} className="text-accent underline">
                 Enfield Story Forge
-              </AppLink>{' '}
+              </Link>{' '}
               and{' '}
-              <AppLink app="world" className="text-accent underline">
+              <Link to={LANDING_PATH.world} className="text-accent underline">
                 Enfield World Creator
-              </AppLink>{' '}
+              </Link>{' '}
               can bring their characters and worlds along for the walk.
             </p>
           </div>

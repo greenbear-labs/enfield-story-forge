@@ -16,7 +16,7 @@ import { AppShell } from './AppShell';
 import { PathsShell } from './PathsShell';
 import { WorldShell } from './WorldShell';
 import type { EnfieldApp } from './AppSwitcher';
-import { elsewhere, hostApp, signInPath } from './hosts';
+import { SIGN_IN_PATH } from './appPaths';
 
 /** A page loaded the first time it's opened, so the first screen loads faster. */
 function lazyPage<M, K extends keyof M>(load: () => Promise<M>, name: K) {
@@ -136,17 +136,10 @@ const rootRoute = createRootRoute({
   ),
 });
 
-/** Each app's front door is `/` on its own address (see hosts.ts). */
-const LANDINGS = {
-  forge: LandingPage,
-  world: WorldLandingPage,
-  paths: PathsLandingPage,
-} as const;
-
 const landingRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: LANDINGS[hostApp],
+  component: LandingPage,
 });
 
 const validateSignInSearch = (
@@ -161,22 +154,17 @@ const signInRoute = createRoute({
   path: '/sign-in',
   validateSearch: validateSignInSearch,
   component: function SignInRouteComponent() {
-    return <SignInPage app={hostApp} {...signInRoute.useSearch()} />;
+    return <SignInPage {...signInRoute.useSearch()} />;
   },
 });
 
-/**
- * Pages of one app need a signed-in user, and open at that app's own address
- * when the visitor is on another app's address.
- */
+/** Pages of each app need a signed-in user, who signs in on that app's own page. */
 const guard =
   (app: EnfieldApp) =>
   async ({ location }: { location: { href: string } }) => {
-    const away = typeof window === 'undefined' ? undefined : elsewhere(app, location.href);
-    if (away) throw redirect({ href: away });
     const auth = await authReady();
     if (!auth.user) {
-      throw redirect({ to: signInPath(app), search: { redirect: location.href } });
+      throw redirect({ to: SIGN_IN_PATH[app], search: { redirect: location.href } });
     }
   };
 
@@ -195,10 +183,7 @@ const worldRoute = createRoute({
   component: WorldShell,
 });
 
-/**
- * World Creator's and Shadow Paths' front doors and sign-in under a path too,
- * so they work from any address (on their own address they're also `/`).
- */
+/** World Creator's and Shadow Paths' own front doors and sign-in. */
 const worldLandingRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/world-creator',
