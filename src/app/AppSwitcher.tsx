@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router';
+import { AppLink } from './AppLink';
 import { Icon } from '../components/ui/Icon';
 import { Menu } from '../components/ui/Menu';
 
@@ -58,8 +58,9 @@ export function AppSwitcher({ current }: { current: EnfieldApp }) {
         <>
           <div className="label px-2 pt-1 pb-1.5">Enfield apps</div>
           {(['forge', 'world', 'paths'] as const).map((app) => (
-            <Link
+            <AppLink
               key={app}
+              app={app}
               to={APP_HOME[app]}
               role="menuitem"
               className="menu-item"
@@ -73,7 +74,7 @@ export function AppSwitcher({ current }: { current: EnfieldApp }) {
                 <span className="text-[0.8rem] text-muted">{APPS[app].blurb}</span>
               </span>
               {app === current && <Icon name="check" className="text-brand" />}
-            </Link>
+            </AppLink>
           ))}
         </>
       )}

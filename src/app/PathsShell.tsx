@@ -24,7 +24,7 @@ export function PathsShell() {
           <SearchButton />
           <GemCount />
           <SyncIndicator />
-          <AccountMenu />
+          <AccountMenu app="paths" />
         </div>
       </header>
       <main

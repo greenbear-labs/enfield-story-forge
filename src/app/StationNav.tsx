@@ -20,14 +20,6 @@ export function StationNav() {
       ))}
       <span className="mx-1.5 my-2.5 w-px flex-none bg-line" aria-hidden="true" />
       <NavLink item={CHARACTER_NAV} />
-      <Link to="/world" className="st" data-sec="world">
-        <Icon name="world" />
-        <span>World Creator ↗</span>
-      </Link>
-      <Link to="/paths" className="st" data-sec="paths">
-        <Icon name="paths" />
-        <span>Shadow Paths ↗</span>
-      </Link>
       <NavLink item={APPENDIX_NAV} />
     </nav>
   );

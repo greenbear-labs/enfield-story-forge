@@ -33,3 +33,31 @@ test('signed-out visitors to Shadow Paths sign in there', async ({ page }) => {
   await page.goto('/paths');
   await expect(page).toHaveURL(/\/shadow-paths\/sign-in\?redirect=/);
 });
+
+test('World Creator has its own landing page and sign-in', async ({ page }) => {
+  await page.goto('/world-creator');
+  await expect(page).toHaveTitle('Enfield World Creator');
+  await page.getByRole('link', { name: 'Start your first world' }).click();
+  await expect(page.getByRole('heading', { name: 'Create an account' })).toBeVisible();
+  await expect(page.getByText('Welcome to the World Creator.')).toBeVisible();
+});
+
+test('signed-out visitors to World Creator sign in there', async ({ page }) => {
+  await page.goto('/world');
+  await expect(page).toHaveURL(/\/world-creator\/sign-in\?redirect=/);
+});
+
+test('each app’s own address opens that app', async ({ page }) => {
+  await page.goto('http://worlds.localhost:4173/');
+  await expect(page).toHaveTitle('Enfield World Creator');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('world worth');
+  await page.goto('http://worlds.localhost:4173/world');
+  await expect(page).toHaveURL('http://worlds.localhost:4173/sign-in?redirect=%2Fworld');
+  await expect(page.getByText('Welcome to the World Creator.')).toBeVisible();
+
+  await page.goto('http://shadowpaths.localhost:4173/');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Shadow Paths');
+  // Another app's page opens at that app's own address.
+  await page.goto('http://shadowpaths.localhost:4173/hub');
+  await expect(page).toHaveURL(/^http:\/\/enfield\.localhost:4173\/sign-in/);
+});

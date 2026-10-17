@@ -13,9 +13,10 @@ import { SignInPage } from '../features/auth/SignInPage';
 import { HubPage } from '../features/hub/HubPage';
 import { CHARACTER_VIEWS, type CharacterView } from '../features/characters/characterModel';
 import { AppShell } from './AppShell';
-import { usePathsTitle } from '../features/paths/usePathsTitle';
 import { PathsShell } from './PathsShell';
 import { WorldShell } from './WorldShell';
+import type { EnfieldApp } from './AppSwitcher';
+import { elsewhere, hostApp, signInPath } from './hosts';
 
 /** A page loaded the first time it's opened, so the first screen loads faster. */
 function lazyPage<M, K extends keyof M>(load: () => Promise<M>, name: K) {
@@ -99,6 +100,10 @@ const WorldHomePage = lazyPage(() => import('../features/world/WorldHomePage'), 
 const WorldPagePage = lazyPage(() => import('../features/world/WorldPagePage'), 'WorldPagePage');
 
 const AdventurePage = lazyPage(() => import('../features/paths/AdventurePage'), 'AdventurePage');
+const WorldLandingPage = lazyPage(
+  () => import('../features/world/WorldLandingPage'),
+  'WorldLandingPage',
+);
 const PathsLandingPage = lazyPage(
   () => import('../features/paths/PathsLandingPage'),
   'PathsLandingPage',
@@ -131,37 +136,54 @@ const rootRoute = createRootRoute({
   ),
 });
 
+/** Each app's front door is `/` on its own address (see hosts.ts). */
+const LANDINGS = {
+  forge: LandingPage,
+  world: WorldLandingPage,
+  paths: PathsLandingPage,
+} as const;
+
 const landingRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
-  component: LandingPage,
+  component: LANDINGS[hostApp],
+});
+
+const validateSignInSearch = (
+  search: Record<string, unknown>,
+): { redirect?: string; signUp?: boolean } => ({
+  redirect: optionalString(search.redirect),
+  signUp: search.signUp === true || search.signUp === 'true' ? true : undefined,
 });
 
 const signInRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/sign-in',
-  validateSearch: (search: Record<string, unknown>): { redirect?: string; signUp?: boolean } => ({
-    redirect: optionalString(search.redirect),
-    signUp: search.signUp === true || search.signUp === 'true' ? true : undefined,
-  }),
+  validateSearch: validateSignInSearch,
   component: function SignInRouteComponent() {
-    const { redirect, signUp } = signInRoute.useSearch();
-    return <SignInPage redirect={redirect} startWithSignUp={signUp} />;
+    return <SignInPage app={hostApp} {...signInRoute.useSearch()} />;
   },
 });
 
-/** Everything inside the studio needs a signed-in user. */
-const requireUser = async ({ location }: { location: { href: string } }) => {
-  const auth = await authReady();
-  if (!auth.user) {
-    throw redirect({ to: '/sign-in', search: { redirect: location.href } });
-  }
-};
+/**
+ * Pages of one app need a signed-in user, and open at that app's own address
+ * when the visitor is on another app's address.
+ */
+const guard =
+  (app: EnfieldApp) =>
+  async ({ location }: { location: { href: string } }) => {
+    const away = typeof window === 'undefined' ? undefined : elsewhere(app, location.href);
+    if (away) throw redirect({ href: away });
+    const auth = await authReady();
+    if (!auth.user) {
+      throw redirect({ to: signInPath(app), search: { redirect: location.href } });
+    }
+  };
 
 const appRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: 'app',
-  beforeLoad: requireUser,
+  beforeLoad: guard('forge'),
   component: AppShell,
 });
 
@@ -169,11 +191,27 @@ const appRoute = createRoute({
 const worldRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: 'world',
-  beforeLoad: requireUser,
+  beforeLoad: guard('world'),
   component: WorldShell,
 });
 
-/** Shadow Paths' own front door and sign-in, so it can stand on its own. */
+/**
+ * World Creator's and Shadow Paths' front doors and sign-in under a path too,
+ * so they work from any address (on their own address they're also `/`).
+ */
+const worldLandingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/world-creator',
+  component: WorldLandingPage,
+});
+const worldSignInRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/world-creator/sign-in',
+  validateSearch: validateSignInSearch,
+  component: function WorldSignInRouteComponent() {
+    return <SignInPage app="world" {...worldSignInRoute.useSearch()} />;
+  },
+});
 const pathsLandingRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/shadow-paths',
@@ -182,24 +220,17 @@ const pathsLandingRoute = createRoute({
 const pathsSignInRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/shadow-paths/sign-in',
-  validateSearch: signInRoute.options.validateSearch,
+  validateSearch: validateSignInSearch,
   component: function PathsSignInRouteComponent() {
-    const { redirect, signUp } = pathsSignInRoute.useSearch();
-    usePathsTitle('Sign in');
-    return <SignInPage app="paths" redirect={redirect} startWithSignUp={signUp} />;
+    return <SignInPage app="paths" {...pathsSignInRoute.useSearch()} />;
   },
 });
 
-/** Enfield Shadow Paths: its own app, with its own shell. Signed-out visitors sign in there. */
+/** Enfield Shadow Paths: its own app, with its own shell. */
 const pathsRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: 'paths',
-  beforeLoad: async ({ location }: { location: { href: string } }) => {
-    const auth = await authReady();
-    if (!auth.user) {
-      throw redirect({ to: '/shadow-paths/sign-in', search: { redirect: location.href } });
-    }
-  },
+  beforeLoad: guard('paths'),
   component: PathsShell,
 });
 
@@ -522,6 +553,8 @@ const playRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   landingRoute,
   signInRoute,
+  worldLandingRoute,
+  worldSignInRoute,
   pathsLandingRoute,
   pathsSignInRoute,
   appRoute.addChildren([
